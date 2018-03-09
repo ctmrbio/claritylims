@@ -12,6 +12,9 @@ Assign the QC flags to samples based on the uploaded concentration.
 Written as a learning exercise and to replace the in-built Assign QC Flags
 script which does not work in LIMS version 5.0.4."""
 
+HOSTNAME = "https://ctmr-lims.scilifelab.se"
+VERSION = "v2"
+
 def less_equal(a, b):
    return a <= b
 
