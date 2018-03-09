@@ -15,7 +15,9 @@ To be able to do this, your user should be added to the `claritylims` group:
     `usermod -a -G claritylims user.name`
 You will need to log in and out to apply this change.
 
-You may also need to adjust the write permissions on the `.git` directory to allow the group to write to it. 
+You may also need to adjust the write permissions on the `.git` directory to allow the group to write to it:
+
+   sudo chmod -R 775 .git
 
 In the case that you want to commit as your own user from the `glsjboss` user, there is this command:
 
