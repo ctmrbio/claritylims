@@ -1,0 +1,12 @@
+INCLUDE.OUTPUT.RESULTFILES
+OUTPUT.SEPARATOR,COMMA
+SORT.BY.${INPUT.CONTAINER.ROW}${INPUT.CONTAINER.COLUMN}
+SORT.VERTICAL
+<DATA>
+${INPUT.CONTAINER.PLACEMENT};${OUTPUT.UDF.Concentration}
+</DATA>
+<PLACEMENT>
+// The inputs to this segment are: String row, String column, Node containerTypeNode
+if (containerTypeNode.@name == "96 well plate") return row + column
+else return row + ":" + column
+</PLACEMENT>
