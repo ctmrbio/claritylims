@@ -17,4 +17,4 @@ QuantIt BroadRange
 QuantIt HighSensitivity
 
 ### Command:
-bash -c "/opt/gls/clarity/bin/java -cp /opt/gls/clarity/extensions/ngs-common/v5/EPP/DriverFileGenerator.jar driver_file_generator -i {processURI:v2:http} -u {username} -p {password} -t /opt/gls/clarity/customextensions/fluent/Fluent_template.csv -o {compoundOutputFileLuid4}.csv -l {compoundOutputFileLuid1}"
+bash -c "/opt/gls/clarity/bin/java -cp /opt/gls/clarity/extensions/ngs-common/v5/EPP/DriverFileGenerator.jar driver_file_generator -i {processURI:v2:http} -u {username} -p {password} -t /opt/gls/clarity/customextensions/driver_templates/Fluent_template.csv -o {compoundOutputFileLuid4}.csv -l {compoundOutputFileLuid1}"
