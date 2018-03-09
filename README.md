@@ -12,12 +12,12 @@ All git commands (commits, push, pull) should be done as your own user.
 
 To be able to do this, your user should be added to the `claritylims` group:
 
-    `usermod -a -G claritylims user.name`
+    usermod -a -G claritylims user.name
 You will need to log in and out to apply this change.
 
 You may also need to adjust the write permissions on the `.git` directory to allow the group to write to it:
 
-   sudo chmod -R 775 .git
+    sudo chmod -R 775 .git
 
 In the case that you want to commit as your own user from the `glsjboss` user, there is this command:
 
@@ -34,25 +34,25 @@ sure the automation is sound, and then commit the changes.
 
 The basic layout of an automation file should look like this:
 
-   # Clarity LIMS 5.0 Automation
-   ## Modify the command in here first, and then copy-paste to the web interface.
-   ## This will help keep the git repository up to date.
+    # Clarity LIMS 5.0 Automation
+    ## Modify the command in here first, and then copy-paste to the web interface.
+    ## This will help keep the git repository up to date.
 
-   ### Automation Name:
-   Assign QC Flags
+    ### Automation Name:
+    Assign QC Flags
 
-   ### Creation date:
-   2018-03-09
+    ### Creation date:
+    2018-03-09
 
-   ### Author:
-   Kim Wong
+    ### Author:
+    Kim Wong
 
-   ### Enabled on master steps:
-   PicoGreen QC (DNA) 5.0
-   QuantIt BroadRange
-   QuantIt HighSensitivity
+    ### Enabled on master steps:
+    PicoGreen QC (DNA) 5.0
+    QuantIt BroadRange
+    QuantIt HighSensitivity
 
-   ### Command:
-   bash -c "python /opt/gls/clarity/customextensions/assignqcflags.py -u {username} -p {password} -o '{udf:Criteria 1 - Operator}' -t '{udf:Criteria 1 - Threshold Value}' -a '{artifactsURI:v2}' -x '{outputFileLuids}'"
+    ### Command:
+    bash -c "python /opt/gls/clarity/customextensions/assignqcflags.py -u {username} -p {password} -o '{udf:Criteria 1 - Operator}' -t '{udf:Criteria 1 - Threshold Value}' -a '{artifactsURI:v2}' -x '{outputFileLuids}'"
 
 Make sure this file is updated to reflect changes in the web interface!
