@@ -8,16 +8,16 @@ The owner of this directory is user `glsjboss` and the group `claritylims`.
 
 All files and directories in this directory should be created and modified as the `glsjboss` user.
 
-To be able to push and pull from the git repository as your own user, your user should be added to
-the `claritylims` group:
+All git commands (commits, push, pull) should be done as your own user.
+
+To be able to do this, your user should be added to the `claritylims` group:
 
     `usermod -a -G claritylims user.name`
 You will need to log in and out to apply this change.
 
 You may also need to adjust the write permissions on the `.git` directory to allow the group to write to it. 
 
-To commit as another user (such as your own, from the `glsjboss` user), it may be necessary to use 
-this command:
+In the case that you want to commit as your own user from the `glsjboss` user, there is this command:
 
     GIT_COMMITTER_NAME="New Name" GIT_COMMITTER_EMAIL="name@email.com" git commit --author="New Name <name@email.com>"
 
