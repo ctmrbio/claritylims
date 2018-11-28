@@ -8,7 +8,7 @@ The owner of this directory is user `glsjboss` and the group `claritylims`.
 
 All files and directories in this directory should be created and modified as the `glsjboss` user.
 
-All git commands (commits, push, pull) should be done as your own user.
+All git commands (commits, push, pull) should be done as your own user (that is, `su user.name` or log in as your own user and then run the relevant git commands.
 
 To be able to do this, your user should be added to the `claritylims` group:
 
