@@ -3,7 +3,7 @@ OUTPUT.SEPARATOR,COMMA
 SORT.BY.${INPUT.CONTAINER.ROW}${INPUT.CONTAINER.COLUMN}
 SORT.VERTICAL
 <DATA>
-${INPUT.CONTAINER.PLACEMENT};${OUTPUT.UDF.Concentration}
+${INPUT.CONTAINER.PLACEMENT};${INPUT.UDF.Concentration}
 </DATA>
 <PLACEMENT>
 // The inputs to this segment are: String row, String column, Node containerTypeNode
