@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from StringIO import StringIO
+import io
 from lxml import etree
 import argparse
-import glsapiutil
+import glsapiutil3
 import pycurl
 import re
 import requests
@@ -32,7 +32,7 @@ Test Container_E1,1.1234
 """
 import xlrd
 
-HOSTNAME = "https://ctmr-lims-stage.scilifelab.se"
+HOSTNAME = "https://ctmr-lims-prod.scilifelab.se"
 VERSION = "v2"
 BASE_URI = HOSTNAME + "/api/" + VERSION + "/"
 
@@ -48,11 +48,15 @@ def extract_xml(username, password, url):
     c = pycurl.Curl()
     c.setopt(c.USERPWD, "%s:%s" % (username, password))
     c.setopt(c.URL, url)
-    curl_buffer = StringIO()
-    c.setopt(c.WRITEFUNCTION, curl_buffer.write)
+    curl_buffer = io.BytesIO()
+    #c.setopt(c.WRITEFUNCTION, curl_buffer.write)
+    c.setopt(c.WRITEDATA, curl_buffer)
     c.perform()
     c.close()
-    xml = etree.fromstring(curl_buffer.getvalue())
+    body = curl_buffer.getvalue()
+    #xml = etree.fromstring(curl_buffer.getvalue())
+    #xml = etree.fromstring(body.decode('utf-8'))
+    xml = etree.fromstring(body)
     return xml
 
 def extract_file_lims_id(xml):
@@ -126,7 +130,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    api = glsapiutil.glsapiutil()
+    api = glsapiutil3.glsapiutil3()
     api.setHostname(HOSTNAME)
     api.setVersion(VERSION)
     api.setup(args.username, args.password)
