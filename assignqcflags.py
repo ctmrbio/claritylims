@@ -10,7 +10,10 @@ __date__ = "2018"
 __doc__ = """
 Assign the QC flags to samples based on the uploaded concentration.
 Written as a learning exercise and to replace the in-built Assign QC Flags
-script which does not work in LIMS version 5.0.4."""
+script which does not work in LIMS version 5.0.4.
+Note that this script is fairly restricted in that it can only take
+one mandatory condition and one optional condition; more than that will have
+to be manually programmed in."""
 
 HOSTNAME = "https://ctmr-lims.scilifelab.se"
 VERSION = "v2"
