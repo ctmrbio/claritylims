@@ -56,3 +56,8 @@ The basic layout of an automation file should look like this:
     bash -c "python /opt/gls/clarity/customextensions/assignqcflags.py -u {username} -p {password} -o '{udf:Criteria 1 - Operator}' -t '{udf:Criteria 1 - Threshold Value}' -a '{artifactsURI:v2}' -x '{outputFileLuids}'"
 
 Make sure this file is updated to reflect changes in the web interface!
+
+## Genologics package
+Scripts in Python are much easier to write with the [SciLifeLab Genologics package](https://github.com/SciLifeLab/genologics). This was installed through `./pip install genologics` (not `./conda install genologics` as it doesn't exist in the conda repos) in the Miniconda environment `/opt/gls/clarity/miniconda3/bin`.
+
+The config file for this package is found at `/etc/genologics.conf`, owned by root but readable for other users.
