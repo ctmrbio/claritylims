@@ -61,3 +61,6 @@ Make sure this file is updated to reflect changes in the web interface!
 Scripts in Python are much easier to write with the [SciLifeLab Genologics package](https://github.com/SciLifeLab/genologics). This was installed through `./pip install genologics` (not `./conda install genologics` as it doesn't exist in the conda repos) in the Miniconda environment `/opt/gls/clarity/miniconda3/bin`.
 
 The config file for this package is found at `/etc/genologics.conf`, owned by root but readable for other users.
+
+## More information
+More information about the LIMS system including details on the Miniconda installation and starting the server may be found [here](https://github.com/ctmrbio/wiki/wiki/CTMR-LIMS-(PROD-and-STAGE)).
