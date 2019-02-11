@@ -25,8 +25,6 @@ def get_field_style(field, threshold):
             style = xlwt.Style.easyxf('pattern: pattern solid, fore_colour red;')
     return style
 
-
-
 def main(lims, args, epp_logger):
     p = Process(lims, id = args.pid)
 
@@ -36,11 +34,9 @@ def main(lims, args, epp_logger):
         new_sheet.write(0, col, heading)
     
     for i, artifact in enumerate(p.all_inputs(unique=True)):
-        sample_name = "placeholder name"
-        container = "placeholder container"
-        well = "Z:99"
-    47          # Input Well, Input Container
-    48          i_w, i_c = i_a.location[1], i_a.location[0]
+        sample_name = artifact.name
+        container = artifact.location[0].name
+        well = artifact.location[1]
         conc_hs = get_udf_if_exists(artifact, "QuantIt HS Concentration")
         conc_br = get_udf_if_exists(artifact, "QuantIt BR Concentration")
         conc_qb = get_udf_if_exists(artifact, "Qubit Concentration")
@@ -54,19 +50,13 @@ def main(lims, args, epp_logger):
 if __name__ == "__main__":
     # Initialize parser with standard arguments and description
     parser = ArgumentParser(description=DESC)
-    parser.add_argument('--pid',
+    parser.add_argument('--pid', required=True,
                         help='Lims id for current Process')
-    parser.add_argument('-f', '--outputFilename', required=True,
+    parser.add_argument('--outputFilename', required=True,
                         help='lims ID of the new file')
     parser.add_argument('--log', default=sys.stdout,
                         help=('File name for standard log file, '
                               'for runtime information and problems.'))
-    parser.add_argument('--aggregate', action='store_true',
-                        help=("Use this tag if your process is aggregating "
-                              "results. The default behaviour assumes it is "
-                              "the output artifact of type analyte that is "
-                              "modified while this tag changes this to using "
-                              "input artifacts instead"))
     parser.add_argument('-t', '--threshold', default=4,
                         help='threshold for red text')
 
