@@ -10,7 +10,10 @@ __date__ = "2018"
 __doc__ = """
 Assign the QC flags to samples based on the uploaded concentration.
 Written as a learning exercise and to replace the in-built Assign QC Flags
-script which does not work in LIMS version 5.0.4."""
+script which does not work in LIMS version 5.0.4.
+Note that this script is fairly restricted in that it can only take
+one mandatory condition and one optional condition; more than that will have
+to be manually programmed in."""
 
 HOSTNAME = "https://ctmr-lims.scilifelab.se"
 VERSION = "v2"
@@ -107,6 +110,26 @@ def run_put_request(username, password, artifactsURI, outputFileLuid, xml_data):
     
     return curl_buffer.getvalue()
 
+def determine_and_set_qc_flags_2(username, password, artifactsURI, outputFileLuids, source_field, operator, threshold, source_field_2, operator_2, threshold_2):
+    threshold = float(threshold)
+    threshold_2 = float(threshold_2)
+
+    for luid in outputFileLuids:
+        xml = extract_xml(username, password, artifactsURI, luid)
+        concentration = extract_udf_from_xml(xml, source_field)
+        concentration_2 = extract_udf_from_xml(xml, source_field_2)
+        if concentration:
+            concentration = float(concentration)
+        qc_flag = determine_qc_flag(concentration, operator, threshold)
+        qc_flag_final = 'PASSED'
+        if concentration_2:
+            concentration_2 = float(concentration_2)
+            qc_flag_2 = determine_qc_flag(concentration_2, operator_2, threshold_2)
+            if not (qc_flag=='PASSED' and qc_flag_2=='PASSED'):
+                qc_flag_final = 'FAILED'
+        modified_xml = update_qc_flag(xml, qc_flag_final)
+        run_put_request(username, password, artifactsURI, luid, modified_xml)
+
 def determine_and_set_qc_flags(username, password, artifactsURI, outputFileLuids, source_field, operator, threshold):
     threshold = float(threshold)
     for luid in outputFileLuids:
@@ -125,6 +148,9 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--operator', required=True, help='comparison operator')
     parser.add_argument('-t', '--threshold', required=True, help='concentration threshold')
     parser.add_argument('-s', '--sourceField', required=True, help='source data field')
+    parser.add_argument('-o2', '--operator2', help='optional, second comparison operator')
+    parser.add_argument('-t2', '--threshold2', help='optional, second concentration threshold')
+    parser.add_argument('-s2', '--sourceField2', help='optional, second source data field')
     parser.add_argument('-a', '--artifactsURI', required=True, help='artifacts uri')
     parser.add_argument('-x', '--outputFileLuids', required=True, help='output file luids')
 
@@ -137,7 +163,10 @@ if __name__ == "__main__":
 
     outputFileLuids = args.outputFileLuids.split(' ')
 
-    determine_and_set_qc_flags(args.username, args.password, args.artifactsURI, outputFileLuids, args.sourceField, args.operator, args.threshold)
+    if args.sourceField2 and args.operator2 and args.threshold2:
+        determine_and_set_qc_flags_2(args.username, args.password, args.artifactsURI, outputFileLuids, args.sourceField, args.operator, args.threshold, args.sourceField2, args.operator2, args.threshold2)
+    else:
+        determine_and_set_qc_flags(args.username, args.password, args.artifactsURI, outputFileLuids, args.sourceField, args.operator, args.threshold)
 
 """ Example XML of a relevant artifact:
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
