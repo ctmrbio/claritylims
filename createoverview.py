@@ -1,13 +1,10 @@
 DESC = """Create an overview excel file on the Aggregate QC step""" 
 
 from argparse import ArgumentParser
-
-import genologics
-from genologics.lims import Lims
 from genologics.config import BASEURI, USERNAME, PASSWORD
-
 from genologics.entities import Process
-
+from genologics.lims import Lims
+import genologics
 import logging
 import sys
 import xlwt
@@ -48,7 +45,6 @@ def main(lims, args, epp_logger):
     new_workbook.save(args.outputFilename)
 
 if __name__ == "__main__":
-    # Initialize parser with standard arguments and description
     parser = ArgumentParser(description=DESC)
     parser.add_argument('--pid', required=True,
                         help='Lims id for current Process')
