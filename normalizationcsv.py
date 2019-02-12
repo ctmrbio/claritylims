@@ -1,46 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from argparse import ArgumentParser
+from genologics.config import BASEURI, USERNAME, PASSWORD
+from genologics.entities import Process
+from genologics.lims import Lims
 import csv
-import io
-from lxml import etree
-import argparse
-import glsapiutil3
-import pycurl
-import re
-import requests
+import genologics
 
 __author__ = "CTMR, Kim Wong"
-__date__ = "2018"
+__date__ = "2019"
 __doc__ = """
 Using the input sample "Concentration (nM)" UDF, plus the step UDFs
 "Target Concentration (nM)" and "Target Volume (uL)", this script
-creates a CSV file for input on the Tecan 
-Take the default output file from a Tecan Spark and convert it to a
-CSV file which can be easily parsed by the built-in parseCSV script
-for concentration upload.
-Converts >Max to 99.9 and <Min to 0.0.
-
-A file looking like this:
-A1,1.1234,NoCalc
-B1,2.3456,NoCalc
-C1,1.1234,NoCalc
-D1,>Max,NoCalc
-E1,1.1234,NoCalc
-
-Will be converted to a file looking like this:
-SampleID Concentration
-Test Container_A1,1.1234
-Test Container_B1,2.3456
-Test Container_D1,99.9
-Test Container_E1,1.1234
+creates a CSV file for input on the Tecan for normalization in the
+format:
 """
-
-HOSTNAME = "https://ctmr-lims-prod.scilifelab.se"
-VERSION = "v2"
-BASE_URI = HOSTNAME + "/api/" + VERSION + "/"
-
-well_list = []
-luid_list = []
 
 def calculate_sample_required(conc1, conc2, vol2):
     """Classic C1V1 = C2V2. Calculates V1.
@@ -48,12 +22,17 @@ def calculate_sample_required(conc1, conc2, vol2):
     """
     return (conc2 * vol2) / conc1
 
-def calculate_volumes_required(sample_conc, target_concentration, target_volume):
+def calculate_volumes_required(sample_conc, target_concentration, target_volume, threshold_conc_no_normalization, normalize_low_volumes=False):
     """Returns a tuple of the sample volume (s) and water volume (w)
     which should be input into the robot. All values should be floats.
     """
+    if sample_conc < threshold_conc_no_normalization and not normalize_low_volumes:
+        # don't normalize the sample if the concentration is too low
+        return (0, 0)
+
     sample_required = calculate_sample_required(sample_conc, target_concentration, target_volume)
     water_required = target_volume - sample_required
+    too_low_volume = 1
     # firstly, is the sample concentration is too low:
     if sample_required > target_volume:
         s = target_volume
@@ -75,80 +54,50 @@ def calculate_volumes_required(sample_conc, target_concentration, target_volume)
         w = water_required
     return (s, w)
 
-def extract_xml(username, password, artifactsURI, outputFileLuid):
-    """Extracts the individual XML structures from the given
-    artifact outputFileLuid.
-    """
-    url = artifactsURI + outputFileLuid
+def get_udf_if_exists(artifact, udf, default=""):
+    if (udf in artifact.udf):
+        return artifact.udf[udf]
+    else:
+        return default
 
-    c = pycurl.Curl()
-    c.setopt(c.USERPWD, "%s:%s" % (username, password))
-    c.setopt(c.URL, url)
-    curl_buffer = StringIO()
-    c.setopt(c.WRITEFUNCTION, curl_buffer.write)
-    c.perform()
-    c.close()
-    xml = etree.fromstring(curl_buffer.getvalue())
-    return xml
+def main(lims, args, epp_logger):
+    p = Process(lims, id = args.pid)
+    target_concentration = float(args.targetConcentration)
+    target_volume = float(args.targetVolume)
+    threshold_conc_no_normalize = float(args.thresholdConcNoNormalize)
 
-def extract_udf_from_xml(xml, udf_name):
-    """Extracts a UDF from an XML element.
-    TODO: implement different type handling
-    """
-    # a bit hacky, but xml.findall('udf:field', xml.nsmap) as in this
-    # link doesn't seem to work, so...
-    #https://stackoverflow.com/questions/14853243/parsing-xml-with-namespace-in-python-via-elementtree
-    tags = xml.findall('{' + xml.nsmap['udf'] + '}field')
-    if len(tags) == 0:
-        return None
-    for tag in tags:
-        tag_attribs = tag.attrib
-        udf_type = tag_attribs['type']
-        udf_name_ = tag_attribs['name']
-        if udf_name_ == udf_name:
-            return tag.text
-
-def create_normalisation_csv(username, password, artifacts_uri, output_file_luids, new_csv_filename, log_filename, target_concentration, target_volume):
-    target_concentration = float(target_concentration)
-    target_volume = float(target_volume)
-
-    with open(new_csv_filename, 'w', newline='') as csvfile:
+    with open(args.newCsvFilename, 'w', newline='') as csvfile:
         pass
 
-    for luid in output_file_luids:
-        xml = extract_xml(username, password, artifacts_uri, luid)
-        concentration = extract_udf_from_xml(xml, "Concentration")
+    for i, artifact in enumerate(p.all_outputs(unique=True)):
+        if artifact.type != "Analyte":
+            # only work on analytes (not result files)
+            continue
+        concentration = get_udf_if_exists(artifact, "Concentration (nM)", default=None)
         if concentration:
             concentration = float(concentration)
-            sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume)
+            sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume, threshold_conc_no_normalize, args.normalizeLowVolumes)
         else:
-            raise RuntimeError("Could not find UDF 'Concentration' of sample '%s'" % luid)
-        well = "A1" # temporary lol
-        with open(new_csv_filename, 'a') as f:
-            csv_writer = csv.writer(csvfile, delimiter=' ')
+            raise RuntimeError("Could not find UDF 'Concentration' of sample '%s'" % artifact.name)
+        well = artifact.location[1]
+        with open(args.newCsvFilename, 'a') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter=',')
             csv_writer.writerow([well, water_required, sample_required])
 
 if __name__ == "__main__":
     """See __doc__ at the top of this file for a description."""
-    parser = argparse.ArgumentParser(description='Convert Tecan Spark output file into LIMS-friendly CSV and upload the well concentrations.')
-    parser.add_argument('-u', '--username', required=True, help='username')
-    parser.add_argument('-p', '--password', required=True, help='password')
-    parser.add_argument('-a', '--artifactsURI', required=True, help='artifacts uri')
-    parser.add_argument('-x', '--outputFileLuids', required=True, help='output file luids')
-    parser.add_argument('-f', '--newCSVFilename', required=True, help='limsid of the csv file to write to')
-    parser.add_argument('-l', '--logFilename', required=True, help='limsid of the log file to write to')
-    parser.add_argument('-c2', '--targetConcentration', required=True, help='target concentration')
-    parser.add_argument('-v2', '--targetVolume', required=True, help='target volume')
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--pid', required=True, help='Lims id for current Process')
+    parser.add_argument('--newCsvFilename', required=True, help='limsid of the csv file to write to')
+    parser.add_argument('--targetConcentration', required=True, help='target concentration')
+    parser.add_argument('--targetVolume', required=True, help='target volume')
+    parser.add_argument('--thresholdConcNoNormalize', default=1.0, help='the volume which all samples should be over for them to be normalized (otherwise they are ignored and 0 sample and 0 water is taken from them)')
+    parser.add_argument('--normalizeLowVolumes', default=False, help='a flag to determine whether samples with concentrations under the threshold should be normalized anyway')
 
     args = parser.parse_args()
 
-    api = glsapiutil3.glsapiutil3()
-    api.setHostname(HOSTNAME)
-    api.setVersion(VERSION)
-    api.setup(args.username, args.password)
+    lims = Lims(BASEURI, USERNAME, PASSWORD)
+    lims.check_version()
 
-    outputFileLuids = args.outputFileLuids.split(' ')
-
-    create_normalisation_csv(args.username, args.password, args.artifactsURI, outputFileLuids, args.newCSVFilename, args.logFilename, args.targetConcentration, args.targetVolume)
-    )
+    main(lims, args, None)
     print("Creation successful!")
