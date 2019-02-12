@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import io
 from lxml import etree
 import argparse
 import glsapiutil3
+import io
 import pycurl
 import re
 import requests
