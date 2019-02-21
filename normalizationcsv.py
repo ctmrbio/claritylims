@@ -74,7 +74,9 @@ def main(lims, args, epp_logger):
             # only work on analytes (not result files)
             continue
         concentration = get_udf_if_exists(artifact, "Concentration (nM)", default=None)
-        if concentration:
+        if concentration == 0.0: # hack because this doesn't pass "if concentration:" lol
+            sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume, threshold_conc_no_normalize, args.normalizeLowVolumes)
+        elif concentration:
             concentration = float(concentration)
             sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume, threshold_conc_no_normalize, args.normalizeLowVolumes)
         else:
