@@ -13,7 +13,7 @@ concentration UDF on the samples in the step.
 Usage:
     bash -c "python /opt/gls/clarity/customextensions/sparkoutput.py 
     --pid {processLuid}
-    --sparkOutput '{compoundOutputFileLuidN}'
+    --sparkOutputFile 'Spark HighSens File'
     --concentrationUdf 'QuantIt HS Concentration'"
 """
 
