@@ -30,8 +30,7 @@ def get_spark_file(process, filename):
             break
     return content
 
-def is_well(string):
-    well_re = re.compile("[A-Z][0-9]{1,2}")
+def is_well(string, well_re):
     return well_re.match(string)
 
 def find_input_in_well(well, p):
@@ -68,8 +67,10 @@ def main(lims, args, logger):
     workbook = xlrd.open_workbook(file_contents=sparkfile.read())
     sheet = workbook.sheet_by_index(0)
 
+    well_re = re.compile("[A-Z][0-9]{1,2}")
+
     for row_i in range(0, sheet.nrows):
-        if is_well(sheet.cell(row_i, 0).value):
+        if is_well(sheet.cell(row_i, 0).value, well_re):
             well = sheet.cell(row_i, 0).value
             artifact = find_input_in_well(well, p)
             if not artifact:
