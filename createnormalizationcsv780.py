@@ -73,7 +73,7 @@ def main(lims, args, epp_logger):
         if artifact.type != "Analyte":
             # only work on analytes (not result files)
             continue
-        concentration = get_udf_if_exists(artifact, "Concentration (nM)", default=None)
+        concentration = get_udf_if_exists(artifact, args.concentrationUDF, default=None)
         if concentration == 0.0: # hack because this doesn't pass "if concentration:" lol
             sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume, threshold_conc_no_normalize, args.normalizeLowVolumes)
         elif concentration:
@@ -91,6 +91,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--pid', required=True, help='Lims id for current Process')
     parser.add_argument('--newCsvFilename', required=True, help='limsid of the csv file to write to')
+    parser.add_argument('--concentrationUDF', default='Concentration (nM)', help='The name of the UDF to read the concentrations from')
     parser.add_argument('--targetConcentration', required=True, help='target concentration')
     parser.add_argument('--targetVolume', required=True, help='target volume')
     parser.add_argument('--thresholdConcNoNormalize', default=1.0, help='the volume which all samples should be over for them to be normalized (otherwise they are ignored and 0 sample and 0 water is taken from them)')
