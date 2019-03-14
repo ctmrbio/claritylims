@@ -11,7 +11,7 @@ __doc__ = """
 Takes an output file from the Tecan Spark and sets the relevant
 concentration UDF on the samples in the step.
 Usage:
-    bash -c "python /opt/gls/clarity/customextensions/sparkoutput.py 
+    bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/sparkoutput.py 
     --pid {processLuid}
     --sparkOutputFile 'Spark HighSens File'
     --concentrationUdf 'QuantIt HS Concentration'

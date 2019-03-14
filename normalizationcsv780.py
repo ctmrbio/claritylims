@@ -14,7 +14,29 @@ Using the input sample "Concentration (nM)" UDF, plus the step UDFs
 "Target Concentration (nM)" and "Target Volume (uL)", this script
 creates a CSV file for input on the Tecan for normalization in the
 format:
+
+A1  0;0 10;0
+B1  7;6 2;4
+C1  0;0 0;0
+D1  33;5    6;5
+E1  35;1    4;9
+[...]
+
+Usage:
+    bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/normalizationcsv780.py 
+    --pid {processLuid}
+    --sparkOutputFile 'Spark HighSens File'
+    --concentrationUdf 'QuantIt HS Concentration'
+   [--convertToNm
+    --fragmentSize '620bp'
+    --concentrationUdfNm 'QuantIt HS Concentration (nM)']
+    "
 """
+
+- [ ] Tecan wants 0.01 instead of 0 when taking the negative control (if it's 0, it takes none of the samples; in the other case, it takes everything) -- do this in the Create Fluent Input File script!
+- [ ] Also, the Fluent input file should list all of the wells of the plate, even if they're empty!
+- [ ] The Fluent input file should be column-wise (A1, B1, C1, D1)
+
 
 def calculate_sample_required(conc1, conc2, vol2):
     """Classic C1V1 = C2V2. Calculates V1.
