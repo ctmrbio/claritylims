@@ -49,7 +49,6 @@ def determine_qc_flag(concentration, operator, threshold):
 
 def parse_qc_condition(qc_condition):
     # should be formatted as >4.0 or <=3 etc
-    parser.add_argument('--qcPassCondition', default='>0', help='The condition for passing QC. e.g. <10.4')
     match = re.search(r'([<>]=?)\s?(\d+.?\d*)', qc_condition)
     if match:
         operator = match.group(1)
@@ -94,8 +93,8 @@ def choose_concentration(output, args):
     conc_chosen = output.udf.get(args.concUdfChosen)
     if conc_hs is None: # conc_hs is mandatory
         raise(RuntimeError("Error! Sample '%s' is missing UDF '%s'!" % (output.name, args.concUdfHS)))
-    elif conc_chosen is None: # conc_chosen is mandatory
-        raise(RuntimeError("Error! Sample '%s' is missing UDF '%s'!" % (output.name, args.concUdfChosen)))
+#    elif conc_chosen is None: # conc_chosen is mandatory
+#        raise(RuntimeError("Error! Sample '%s' is missing UDF '%s'!" % (output.name, args.concUdfChosen)))
 
     if conc_qb is not None:
         conc_selected = conc_qb
@@ -168,7 +167,7 @@ if __name__ == "__main__":
     parser.add_argument('--concUdfBR', default='QuantIt BR Concentration', help='Name of the BroadRange concentration UDF')
     parser.add_argument('--concUdfQB', default='Qubit Concentration', help='Name of the Qubit concentration UDF')
     parser.add_argument('--concUdfChosen', default='Concentration', help='Name of the concentration UDF to be set as the chosen concentration')
-    parser.add_argument('--qcPassCondition', required=True, default='>0', help='The condition for passing QC. e.g. <10.4')
+    parser.add_argument('--qcPassCondition', required=True, help='The condition for passing QC. e.g. <10.4')
     parser.add_argument('--qcPassCondition2', help='An optional second condition for passing QC. e.g. <10.4')
 
     args = parser.parse_args()
