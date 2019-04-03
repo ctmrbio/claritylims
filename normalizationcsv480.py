@@ -27,25 +27,23 @@ concentration.
 Usage:
     bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/normalizationcsv480.py 
     --pid {processLuid}
-    --newCsvFilename 'Fluent File (download me!)'
+    --newCsvFilename '{compoundOutputFileLuid3}'
    [--concUdf 'Concentration']
     "
 """
 
 def get_udf_if_exists(artifact, udf, default=""):
-    if (udf in artifact.udf):
+    if udf in artifact.udf:
         return artifact.udf[udf]
     else:
         return default
 
-row_letters = "ABCDEFGH"
-well_re = re.compile("([A-Z]):*([0-9]{1,2})")
-
-def sort_samples_columnwise(output):
+def sort_samples_columnwise(output, well_re):
     """A1 -> 0, B1 -> 1, A2 -> 8, B2 -> 9
         Column number is worth x * 8
         Row letter is worth +y
     """
+    row_letters = "ABCDEFGH"
     match = re.search(well_re, output.location[1])
     if not match:
         raise(RuntimeError("No valid well position found for output '%s'!" % output.name))
@@ -60,6 +58,7 @@ def find_output_artifact(name, p):
     for i, artifact in enumerate(p.all_outputs(unique=True)):
         if artifact.name == name:
             return artifact
+    raise(RuntimeError("Could not find output artifact for sample '%s'!" % name))
 
 def main(lims, args, epp_logger):
     p = Process(lims, id=args.pid)
@@ -68,24 +67,24 @@ def main(lims, args, epp_logger):
         pass
 
     # the well location information is on the input samples,
+    well_re = re.compile("([A-Z]):*([0-9]{1,2})")
     samples = p.all_inputs(unique=True)
-    samples.sort(key=sort_samples_columnwise)
+    samples.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
 
-    # but the concentration is on the output files
-    outputs = [find_output_artifact(s.name, p) for s in samples]
-
-    for i, output in enumerate(outputs):
-        concentration = get_udf_if_exists(output, 'QuantIt HS Concentration', default=None)
-        print(concentration)
+#    outputs = [find_output_artifact(s.name, p) for s in samples] # this might be required in the WGS step
+    for i, output in enumerate(samples):
+#    for i, output in enumerate(outputs):
         concentration = get_udf_if_exists(output, args.concUdf, default=None)
-        print(concentration)
         if concentration is not None:
             concentration = float(concentration)
         else:
             raise RuntimeError("Could not find UDF '%s' of sample '%s'" % (args.concUdf, output.name))
 
+        if concentration == 0.0:
+            concentration = 0.01
+
         well = samples[i].location[1].split(':')
-        well = well.join('')
+        well = ''.join(well)
 
         with open(args.newCsvFilename, 'a') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter=';')
