@@ -27,6 +27,7 @@ Usage:
     bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/normalizationcsv780.py 
     --pid '{processLuid}'
     --newCsvFilename '{compoundOutputFileLuid3}'
+   [--concentrationUDF 'Concentration (nM)']
     --targetConcentration '{udf:Target Concentration (nM)}'
     --targetVolume '{udf:Target Volume (ul)}'
    [--thresholdConcNoNormalize '1.0']
