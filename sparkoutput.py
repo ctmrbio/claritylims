@@ -23,7 +23,7 @@ Usage:
 
 def format_fragment_size(fragment_size):
     # can either be '620bp' or '620' or maybe even '620 bp'
-    match = re.search(r'([0-9]{2,4})\s*bp', fragment_size)
+    match = re.search(r'([0-9]{2,4})\s*(bp)?', fragment_size)
     if match:
         return float(match.group(1))
     raise(RuntimeError("Invalid fragment size '%s'! Please specify the fragment size in the format '620' or '620bp'" % fragment_size))
@@ -52,6 +52,14 @@ def find_input_in_well(well, p):
             if artifact_well == well:
                 return artifact
 
+def find_output_in_well(well, p):
+    for i, artifact in enumerate(p.all_outputs(unique=True)):
+        if artifact.location[1] is not None:
+            artifact_well = artifact.location[1]
+            artifact_well = "".join(artifact_well.split(":"))
+            if artifact_well == well:
+                return artifact
+
 def find_output_artifact(name, p):
     for i, artifact in enumerate(p.all_outputs(unique=True)):
         if artifact.name == name:
@@ -63,6 +71,8 @@ def format_concentration(concentration):
             concentration = 0.0
         elif concentration == ">Max":
             concentration = 99.9
+        else:
+            concentration = float(concentration)
     elif type(concentration) == int:
         concentration = float(concentration)
     elif type(concentration) != float:
@@ -71,7 +81,8 @@ def format_concentration(concentration):
 
 def convert_to_nm(concentration, fragment_size):
     # convert from ng/ul to nM
-    return (concentration * 1538.4615) / fragment_size
+    basepair_mw = 660
+    return (concentration * 1000000) / (fragment_size * basepair_mw)
 
 def main(lims, args, logger):
     p = Process(lims, id=args.pid)
@@ -86,25 +97,36 @@ def main(lims, args, logger):
     if args.convertToNm:
         fragment_size = format_fragment_size(args.fragmentSize)
 
+    outputs = []
+
     for row_i in range(0, sheet.nrows):
         if is_well(sheet.cell(row_i, 0).value, well_re):
             well = sheet.cell(row_i, 0).value
-            artifact = find_input_in_well(well, p)
+            if args.wellFromOutput:
+                artifact = find_output_in_well(well, p)
+            else:
+                artifact = find_input_in_well(well, p)
             if not artifact:
                 raise(RuntimeError("Error! Cannot find sample at well position %s, row %s" % (well, row_i)))
 
-            concentration = sheet.cell(row_i, 2).value
+            if sheet.ncols > 2: # some files may be missing the "NoCalc" column
+                concentration = sheet.cell(row_i, 2).value
+            else:
+                concentration = sheet.cell(row_i, 1).value
+
             if concentration == "NoCalc":
                 concentration = sheet.cell(row_i, 1).value
             concentration = format_concentration(concentration)
 
-
             output = find_output_artifact(artifact.name, p)
+            outputs.append(output)
             output.udf[args.concentrationUdf] = concentration
             if args.convertToNm:
                 concentration_nm = convert_to_nm(concentration, fragment_size)
                 output.udf[args.concentrationUdfNm] = concentration_nm
-            output.put()
+
+    for out in outputs:
+        out.put()
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=__doc__)
@@ -114,7 +136,8 @@ if __name__ == "__main__":
     # for setting an additional nM concentration UDF, e.g. 'QuantIt HS Concentration (nM)'
     parser.add_argument('--convertToNm', default=False, action='store_true', help='Should the parsed concentrations be converted from ng/ul to nM or not?')
     parser.add_argument('--fragmentSize', default='620bp', help='The average fragment size of the DNA, if converting to nM')
-    parser.add_argument('--concentrationUdfNm', help='The nM concentration UDF to set')
+    parser.add_argument('--concentrationUdfNm', default='QuantIt HS Concentration (nM)', help='The nM concentration UDF to set')
+    parser.add_argument('--wellFromOutput', default=False, action='store_true', help='Should the wells on the samples be found in the inputs or the outputs? The initial WGS QC step requires them to be read from the outputs, since the inputs are usually placed into new wells.')
 
     args = parser.parse_args()
     lims = Lims(BASEURI, USERNAME, PASSWORD)
