@@ -6,6 +6,7 @@ from genologics.entities import Process
 from genologics.lims import Lims
 import csv
 import genologics
+import re
 
 __author__ = "CTMR, Kim Wong"
 __date__ = "2019"
@@ -24,37 +25,36 @@ E1  35;1    4;9
 
 Usage:
     bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/normalizationcsv780.py 
-    --pid {processLuid}
-    --sparkOutputFile 'Spark HighSens File'
-    --concentrationUdf 'QuantIt HS Concentration'
-   [--convertToNm
-    --fragmentSize '620bp'
-    --concentrationUdfNm 'QuantIt HS Concentration (nM)']
+    --pid '{processLuid}'
+    --newCsvFilename '{compoundOutputFileLuid3}'
+    --targetConcentration '{udf:Target Concentration (nM)}'
+    --targetVolume '{udf:Target Volume (ul)}'
+   [--thresholdConcNoNormalize '1.0']
     "
 """
-
-- [ ] Tecan wants 0.01 instead of 0 when taking the negative control (if it's 0, it takes none of the samples; in the other case, it takes everything) -- do this in the Create Fluent Input File script!
-- [ ] Also, the Fluent input file should list all of the wells of the plate, even if they're empty!
-- [ ] The Fluent input file should be column-wise (A1, B1, C1, D1)
-
 
 def calculate_sample_required(conc1, conc2, vol2):
     """Classic C1V1 = C2V2. Calculates V1.
     All arguments should be floats.
     """
+    if conc1 == 0.0:
+        conc1 = 0.000001 # don't want to divide by zero :)
     return (conc2 * vol2) / conc1
 
-def calculate_volumes_required(sample_conc, target_concentration, target_volume, threshold_conc_no_normalization, normalize_low_volumes=False):
+def calculate_volumes_required(sample_conc, target_concentration, target_volume, threshold_conc_no_normalization, is_control=False):
     """Returns a tuple of the sample volume (s) and water volume (w)
     which should be input into the robot. All values should be floats.
     """
-    if sample_conc < threshold_conc_no_normalization and not normalize_low_volumes:
-        # don't normalize the sample if the concentration is too low
-        return (0, 0)
+    if sample_conc < threshold_conc_no_normalization and not is_control:
+        # Don't normalize the sample if the concentration is too low and it isn't a control.
+        # If the threshold is 0, then all samples will be normalized.
+        # Control samples are normalized even if their volumes are too low (then all of
+        # the sample is taken (i.e. target_volume))
+        return (0.0, 0.0)
 
     sample_required = calculate_sample_required(sample_conc, target_concentration, target_volume)
     water_required = target_volume - sample_required
-    too_low_volume = 1
+    too_low_volume = 1.5 # the volume which is too low for pipetting
     # firstly, is the sample concentration is too low:
     if sample_required > target_volume:
         s = target_volume
@@ -76,11 +76,41 @@ def calculate_volumes_required(sample_conc, target_concentration, target_volume,
         w = water_required
     return (s, w)
 
-def get_udf_if_exists(artifact, udf, default=""):
-    if (udf in artifact.udf):
-        return artifact.udf[udf]
+def sort_samples_columnwise(output, well_re):
+    """A1 -> 0, B1 -> 1, A2 -> 8, B2 -> 9
+        Column number is worth x * 8
+        Row letter is worth +y
+    """
+    row_letters = "ABCDEFGH"
+    match = re.search(well_re, output.location[1])
+    if not match:
+        raise(RuntimeError("No valid well position found for output '%s'!" % output.name))
+    row = match.group(1)
+    col = match.group(2)
+    row_index = row_letters.index(row)
+    col_value = (int(col) - 1) * 8
+
+    return col_value + row_index
+
+def get_udf_if_exists(sample, udf, default=""):
+    if (udf in sample.udf):
+        return sample.udf[udf]
     else:
         return default
+
+control_re = re.compile("neg|pos", re.IGNORECASE)
+def is_control(sample_name):
+    """Try to deduce if the sample is a control or not from the sample name.
+    Just checks for 'neg' or 'pos' in the sample name, which could possibly
+    return false positives...
+    """
+    match = re.search(control_re, sample_name)
+    return match
+
+def format_volume(volume, decimal_sep=';'):
+    volume_string = "{:.2f}".format(volume) # format to 2 decimal places
+    volume_string = volume_string.replace('.', decimal_sep)
+    return volume_string
 
 def main(lims, args, epp_logger):
     p = Process(lims, id = args.pid)
@@ -91,21 +121,26 @@ def main(lims, args, epp_logger):
     with open(args.newCsvFilename, 'w', newline='') as csvfile:
         pass
 
-    for i, artifact in enumerate(p.all_outputs(unique=True)):
-        if artifact.type != "Analyte":
+    well_re = re.compile("([A-Z]):*([0-9]{1,2})")
+    samples = p.all_inputs(unique=True) 
+    samples.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
+    for i, sample in enumerate(samples):
+        if sample.type != "Analyte":
             # only work on analytes (not result files)
             continue
-        concentration = get_udf_if_exists(artifact, args.concentrationUDF, default=None)
-        if concentration == 0.0: # hack because this doesn't pass "if concentration:" lol
-            sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume, threshold_conc_no_normalize, args.normalizeLowVolumes)
-        elif concentration:
+        concentration = get_udf_if_exists(sample, args.concentrationUDF, default=None)
+        if concentration is not None:
             concentration = float(concentration)
-            sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume, threshold_conc_no_normalize, args.normalizeLowVolumes)
+            sample_required, water_required = calculate_volumes_required(concentration, target_concentration, target_volume, threshold_conc_no_normalize, is_control(sample.name))
+            sample_required = format_volume(sample_required)
+            water_required = format_volume(water_required)
         else:
-            raise RuntimeError("Could not find UDF 'Concentration' of sample '%s'" % artifact.name)
-        well = artifact.location[1]
+            raise RuntimeError("Could not find UDF 'Concentration' of sample '%s'" % sample.name)
+        well = sample.location[1].split(':')
+        well = ''.join(well)
+
         with open(args.newCsvFilename, 'a') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter=',')
+            csv_writer = csv.writer(csvfile, delimiter='\t')
             csv_writer.writerow([well, water_required, sample_required])
 
 if __name__ == "__main__":
@@ -117,7 +152,6 @@ if __name__ == "__main__":
     parser.add_argument('--targetConcentration', required=True, help='target concentration')
     parser.add_argument('--targetVolume', required=True, help='target volume')
     parser.add_argument('--thresholdConcNoNormalize', default=1.0, help='the volume which all samples should be over for them to be normalized (otherwise they are ignored and 0 sample and 0 water is taken from them)')
-    parser.add_argument('--normalizeLowVolumes', default=False, help='a flag to determine whether samples with concentrations under the threshold should be normalized anyway')
 
     args = parser.parse_args()
 
