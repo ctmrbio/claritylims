@@ -6,8 +6,30 @@ from genologics.entities import Process
 from genologics.lims import Lims
 import genologics
 import logging
+import re
 import sys
 import xlwt
+
+fields = {
+    "Sample Name": None,
+    "Original DNA Plate LIMS ID": None,
+    "Container Name": None,
+    "Container ID": None,
+    "Well": None,
+    "Project": None,
+    "Sample Origin": None,
+    "Sample Buffer": None,
+    "Indexes": None,
+    "PCR Method": None,
+    "QuantIt HS Concentration": None,
+    "QuantIt BR Concentration": None,
+    "Qubit Concentration": None,
+    "Chosen Concentration": None,
+    "QuantIt HS Concentration (nM)": None,
+    "QuantIt BR Concentration (nM)": None,
+    "Qubit Concentration (nM)": None,
+    "Chosen Concentration (nM)": None,
+}
 
 def get_udf_if_exists(artifact, udf):
     if (udf in artifact.udf):
@@ -22,39 +44,71 @@ def get_field_style(field, threshold):
             style = xlwt.Style.easyxf('pattern: pattern solid, fore_colour red;')
     return style
 
+def sort_samples_columnwise(output, well_re):
+    """A1 -> 0, B1 -> 1, A2 -> 8, B2 -> 9
+        Column number is worth x * 8
+        Row letter is worth +y
+    """
+    row_letters = "ABCDEFGH"
+    match = re.search(well_re, output.location[1])
+    if not match:
+        raise(RuntimeError("No valid well position found for output '%s'!" % output.name))
+    row = match.group(1)
+    col = match.group(2)
+    row_index = row_letters.index(row)
+    col_value = (int(col) - 1) * 8
+
+    return col_value + row_index
+
 def main(lims, args, epp_logger):
     p = Process(lims, id = args.pid)
 
     new_workbook = xlwt.Workbook()
     new_sheet = new_workbook.add_sheet('Sheet 1')
-    for col, heading in enumerate(["Sample name", "Container", "Well", "QuantIt HS Concentration", "QuantIt BR Concentration", "Qubit Concentration", "Chosen Concentration"]):
+    for col, heading in enumerate(fields.keys()):
         new_sheet.write(0, col, heading)
     
-    for i, artifact in enumerate(p.all_inputs(unique=True)):
-        sample_name = artifact.name
-        container = artifact.location[0].name
-        well = artifact.location[1]
-        conc_hs = get_udf_if_exists(artifact, "QuantIt HS Concentration")
-        conc_br = get_udf_if_exists(artifact, "QuantIt BR Concentration")
-        conc_qb = get_udf_if_exists(artifact, "Qubit Concentration")
-        conc_chosen = get_udf_if_exists(artifact, "Concentration")
-        for col, field in enumerate([sample_name, container, well, conc_hs, conc_br, conc_qb, conc_chosen]):
-            style = get_field_style(field, float(args.threshold))
+    well_re = re.compile("([A-Z]):*([0-9]{1,2})")
+    artifacts = p.all_inputs(unique=True)
+    artifacts.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
+
+    for i, artifact in enumerate(artifacts):
+        sample = artifact.samples[0] # the original, submitted sample
+        fields["Sample Name"] = artifact.name
+        fields["Original DNA Plate LIMS ID"] = ""
+        fields["Container Name"] = artifact.location[0].name
+        fields["Well"] = artifact.location[1]
+        fields["Project"] = sample.project.name
+        fields["Sample Origin"] = get_udf_if_exists(sample, "Sample Origin")
+        fields["Sample Buffer"] = get_udf_if_exists(sample, "Sample Buffer")
+        fields["Indexes"] = artifact.reagent_labels
+        fields["PCR Method"] = ""
+        fields["QuantIt HS Concentration"] = get_udf_if_exists(artifact, "QuantIt HS Concentration")
+        fields["QuantIt BR Concentration"] = get_udf_if_exists(artifact, "QuantIt BR Concentration")
+        fields["Qubit Concentration"] = get_udf_if_exists(artifact, "Qubit Concentration")
+        fields["Chosen Concentration"] = get_udf_if_exists(artifact, "Concentration")
+        fields["QuantIt HS Concentration (nM)"] = get_udf_if_exists(artifact, "QuantIt HS Concentration (nM)")
+        fields["QuantIt BR Concentration (nM)"] = get_udf_if_exists(artifact, "QuantIt BR Concentration (nM)")
+        fields["Qubit Concentration (nM)"] = get_udf_if_exists(artifact, "Qubit Concentration (nM)")
+        fields["Chosen Concentration (nM)"] = get_udf_if_exists(artifact, "Concentration (nM)")
+        #for col, field in enumerate([sample_name, container, well, conc_hs, conc_br, conc_qb, conc_chosen]):
+        for col, field in enumerate(fields.values()):
+            style = get_field_style(field, float(args.redTextConcThreshold))
             new_sheet.write(i + 1, col, field, style)
 
-    new_workbook.save(args.outputFilename)
+    new_workbook.save(args.outputFile)
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=DESC)
     parser.add_argument('--pid', required=True,
-                        help='Lims id for current Process')
-    parser.add_argument('--outputFilename', required=True,
-                        help='lims ID of the new file')
+                        help='LIMS id for current Process')
+    parser.add_argument('--outputFile', required=True,
+                        help='LIMS ID of the new file')
     parser.add_argument('--log', default=sys.stdout,
                         help=('File name for standard log file, '
                               'for runtime information and problems.'))
-    parser.add_argument('-t', '--threshold', default=4,
-                        help='threshold for red text')
+    parser.add_argument('--redTextConcThreshold', default=4.0,
+                        help='Threshold concentration for red text')
 
     args = parser.parse_args()
 
