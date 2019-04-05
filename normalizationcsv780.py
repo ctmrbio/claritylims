@@ -31,6 +31,7 @@ Usage:
     --targetConcentration '{udf:Target Concentration (nM)}'
     --targetVolume '{udf:Target Volume (ul)}'
    [--thresholdConcNoNormalize '1.0']
+   [--concOnOutput]
     "
 """
 
@@ -77,15 +78,15 @@ def calculate_volumes_required(sample_conc, target_concentration, target_volume,
         w = water_required
     return (s, w)
 
-def sort_samples_columnwise(output, well_re):
+def sort_samples_columnwise(sample, well_re):
     """A1 -> 0, B1 -> 1, A2 -> 8, B2 -> 9
         Column number is worth x * 8
         Row letter is worth +y
     """
     row_letters = "ABCDEFGH"
-    match = re.search(well_re, output.location[1])
+    match = re.search(well_re, sample.location[1])
     if not match:
-        raise(RuntimeError("No valid well position found for output '%s'!" % output.name))
+        raise(RuntimeError("No valid well position found for sample '%s'!" % sample.name))
     row = match.group(1)
     col = match.group(2)
     row_index = row_letters.index(row)
@@ -98,6 +99,12 @@ def get_udf_if_exists(sample, udf, default=""):
         return sample.udf[udf]
     else:
         return default
+
+def find_output_artifact(name, p):
+    for i, artifact in enumerate(p.all_outputs(unique=True)):
+        if artifact.name == name:
+            return artifact
+    raise(RuntimeError("Could not find output artifact for sample '%s'!" % name))
 
 control_re = re.compile("neg|pos", re.IGNORECASE)
 def is_control(sample_name):
@@ -122,12 +129,22 @@ def main(lims, args, epp_logger):
     with open(args.newCsvFilename, 'w', newline='') as csvfile:
         pass
 
+    samples_in = p.all_inputs(unique=True) 
+
     well_re = re.compile("([A-Z]):*([0-9]{1,2})")
-    samples = p.all_inputs(unique=True) 
-    samples.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
+    samples_in.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
+
+    if args.concOnOutput:
+        samples = [find_output_artifact(s.name, p) for s in samples_in] # required for the WGS step
+    else:
+        samples = samples_in
+
+    print(samples)
+
     for i, sample in enumerate(samples):
-        if sample.type != "Analyte":
-            # only work on analytes (not result files)
+        if not args.concOnOutput and sample.type != "Analyte":
+            # if 16S, only work on analytes (not result files)
+            # but WGS should work on result files
             continue
         concentration = get_udf_if_exists(sample, args.concentrationUDF, default=None)
         if concentration is not None:
@@ -136,8 +153,8 @@ def main(lims, args, epp_logger):
             sample_required = format_volume(sample_required)
             water_required = format_volume(water_required)
         else:
-            raise RuntimeError("Could not find UDF 'Concentration' of sample '%s'" % sample.name)
-        well = sample.location[1].split(':')
+            raise RuntimeError("Could not find UDF '%s' of sample '%s'" % (args.concentrationUDF, sample.name))
+        well = samples_in[i].location[1].split(':')
         well = ''.join(well)
 
         with open(args.newCsvFilename, 'a') as csvfile:
@@ -153,6 +170,7 @@ if __name__ == "__main__":
     parser.add_argument('--targetConcentration', required=True, help='target concentration')
     parser.add_argument('--targetVolume', required=True, help='target volume')
     parser.add_argument('--thresholdConcNoNormalize', default=1.0, help='the volume which all samples should be over for them to be normalized (otherwise they are ignored and 0 sample and 0 water is taken from them)')
+    parser.add_argument('--concOnOutput', default=False, action='store_true', help='The initial WGS QC step writes the concentrations to the outputs, whereas the normal aggregation steps have them on the input.')
 
     args = parser.parse_args()
 

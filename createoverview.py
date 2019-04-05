@@ -60,6 +60,12 @@ def sort_samples_columnwise(output, well_re):
 
     return col_value + row_index
 
+def find_output_artifact(name, p):
+    for i, artifact in enumerate(p.all_outputs(unique=True)):
+        if artifact.name == name:
+            return artifact
+    raise(RuntimeError("Could not find output artifact for sample '%s'!" % name))
+
 def main(lims, args, epp_logger):
     p = Process(lims, id = args.pid)
 
@@ -72,6 +78,9 @@ def main(lims, args, epp_logger):
     artifacts = p.all_inputs(unique=True)
     artifacts.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
 
+    if args.udfsOnOutput:
+        outputs = [find_output_artifact(s.name, p) for s in artifacts] # required for the WGS step
+
     for i, artifact in enumerate(artifacts):
         sample = artifact.samples[0] # the original, submitted sample
         fields["Sample Name"] = artifact.name
@@ -83,14 +92,18 @@ def main(lims, args, epp_logger):
         fields["Sample Buffer"] = get_udf_if_exists(sample, "Sample Buffer")
         fields["Indexes"] = artifact.reagent_labels
         fields["PCR Method"] = ""
-        fields["QuantIt HS Concentration"] = get_udf_if_exists(artifact, "QuantIt HS Concentration")
-        fields["QuantIt BR Concentration"] = get_udf_if_exists(artifact, "QuantIt BR Concentration")
-        fields["Qubit Concentration"] = get_udf_if_exists(artifact, "Qubit Concentration")
-        fields["Chosen Concentration"] = get_udf_if_exists(artifact, "Concentration")
-        fields["QuantIt HS Concentration (nM)"] = get_udf_if_exists(artifact, "QuantIt HS Concentration (nM)")
-        fields["QuantIt BR Concentration (nM)"] = get_udf_if_exists(artifact, "QuantIt BR Concentration (nM)")
-        fields["Qubit Concentration (nM)"] = get_udf_if_exists(artifact, "Qubit Concentration (nM)")
-        fields["Chosen Concentration (nM)"] = get_udf_if_exists(artifact, "Concentration (nM)")
+        if args.udfsOnOutput:
+            udf_sample = outputs[i] # use the equivalent output of the sample to find the UDF measurement
+        else:
+            udf_sample = artifact
+        fields["QuantIt HS Concentration"] = get_udf_if_exists(udf_sample, "QuantIt HS Concentration")
+        fields["QuantIt BR Concentration"] = get_udf_if_exists(udf_sample, "QuantIt BR Concentration")
+        fields["Qubit Concentration"] = get_udf_if_exists(udf_sample, "Qubit Concentration")
+        fields["Chosen Concentration"] = get_udf_if_exists(udf_sample, "Concentration")
+        fields["QuantIt HS Concentration (nM)"] = get_udf_if_exists(udf_sample, "QuantIt HS Concentration (nM)")
+        fields["QuantIt BR Concentration (nM)"] = get_udf_if_exists(udf_sample, "QuantIt BR Concentration (nM)")
+        fields["Qubit Concentration (nM)"] = get_udf_if_exists(udf_sample, "Qubit Concentration (nM)")
+        fields["Chosen Concentration (nM)"] = get_udf_if_exists(udf_sample, "Concentration (nM)")
         #for col, field in enumerate([sample_name, container, well, conc_hs, conc_br, conc_qb, conc_chosen]):
         for col, field in enumerate(fields.values()):
             style = get_field_style(field, float(args.redTextConcThreshold))
@@ -109,6 +122,7 @@ if __name__ == "__main__":
                               'for runtime information and problems.'))
     parser.add_argument('--redTextConcThreshold', default=4.0,
                         help='Threshold concentration for red text')
+    parser.add_argument('--udfsOnOutput', default=False, action='store_true', help='The final WGS QC step writes the concentrations to the outputs, whereas the normal aggregation steps have them on the input.')
 
     args = parser.parse_args()
 

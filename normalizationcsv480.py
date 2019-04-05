@@ -29,6 +29,7 @@ Usage:
     --pid {processLuid}
     --newCsvFilename '{compoundOutputFileLuid3}'
    [--concUdf 'Concentration']
+   [--concOnOutput]
     "
 """
 
@@ -38,15 +39,15 @@ def get_udf_if_exists(artifact, udf, default=""):
     else:
         return default
 
-def sort_samples_columnwise(output, well_re):
+def sort_samples_columnwise(sample, well_re):
     """A1 -> 0, B1 -> 1, A2 -> 8, B2 -> 9
         Column number is worth x * 8
         Row letter is worth +y
     """
     row_letters = "ABCDEFGH"
-    match = re.search(well_re, output.location[1])
+    match = re.search(well_re, sample.location[1])
     if not match:
-        raise(RuntimeError("No valid well position found for output '%s'!" % output.name))
+        raise(RuntimeError("No valid well position found for sample '%s'!" % sample.name))
     row = match.group(1)
     col = match.group(2)
     row_index = row_letters.index(row)
@@ -68,22 +69,25 @@ def main(lims, args, epp_logger):
 
     # the well location information is on the input samples,
     well_re = re.compile("([A-Z]):*([0-9]{1,2})")
-    samples = p.all_inputs(unique=True)
-    samples.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
+    samples_in = p.all_inputs(unique=True)
+    samples_in.sort(key=lambda sample: sort_samples_columnwise(sample, well_re)) # wrap the call in a lambda to be able to pass in the regex
 
-#    outputs = [find_output_artifact(s.name, p) for s in samples] # this might be required in the WGS step
-    for i, output in enumerate(samples):
-#    for i, output in enumerate(outputs):
-        concentration = get_udf_if_exists(output, args.concUdf, default=None)
+    if args.concOnOutput:
+        samples = [find_output_artifact(s.name, p) for s in samples_in] # required in the WGS step
+    else:
+        samples = samples_in
+
+    for i, sample in enumerate(samples):
+        concentration = get_udf_if_exists(sample, args.concUdf, default=None)
         if concentration is not None:
             concentration = float(concentration)
         else:
-            raise RuntimeError("Could not find UDF '%s' of sample '%s'" % (args.concUdf, output.name))
+            raise RuntimeError("Could not find UDF '%s' of sample '%s'" % (args.concUdf, sample.name))
 
         if concentration == 0.0:
             concentration = 0.01
 
-        well = samples[i].location[1].split(':')
+        well = samples_in[i].location[1].split(':')
         well = ''.join(well)
 
         with open(args.newCsvFilename, 'a') as csvfile:
@@ -96,6 +100,7 @@ if __name__ == "__main__":
     parser.add_argument('--pid', required=True, help='Lims id for current Process')
     parser.add_argument('--newCsvFilename', required=True, help='LIMS name of the normalization CSV file to be created')
     parser.add_argument('--concUdf', default="Concentration", help='Name of the concentration UDF')
+    parser.add_argument('--concOnOutput', default=False, action='store_true', help='The initial WGS QC step writes the concentrations to the outputs, whereas the normal aggregation steps have them on the input.')
 
     args = parser.parse_args()
 
