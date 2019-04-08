@@ -37,11 +37,13 @@ def get_udf_if_exists(artifact, udf):
     else:
         return ""
 
-def get_field_style(field, threshold):
+def get_field_style(field, red_threshold, orange_threshold):
     style = xlwt.XFStyle()
     if type(field) == int or type(field) == float:
-        if float(field) < threshold:
+        if float(field) < red_threshold:
             style = xlwt.Style.easyxf('pattern: pattern solid, fore_colour red;')
+        elif float(field) < orange_threshold:
+            style = xlwt.Style.easyxf('pattern: pattern solid, fore_colour orange;')
     return style
 
 def sort_samples_columnwise(output, well_re):
@@ -106,7 +108,7 @@ def main(lims, args, epp_logger):
         fields["Chosen Concentration (nM)"] = get_udf_if_exists(udf_sample, "Concentration (nM)")
         #for col, field in enumerate([sample_name, container, well, conc_hs, conc_br, conc_qb, conc_chosen]):
         for col, field in enumerate(fields.values()):
-            style = get_field_style(field, float(args.redTextConcThreshold))
+            style = get_field_style(field, float(args.redTextConcThreshold), float(args.orangeTextConcThreshold))
             new_sheet.write(i + 1, col, field, style)
 
     new_workbook.save(args.outputFile)
@@ -120,8 +122,8 @@ if __name__ == "__main__":
     parser.add_argument('--log', default=sys.stdout,
                         help=('File name for standard log file, '
                               'for runtime information and problems.'))
-    parser.add_argument('--redTextConcThreshold', default=4.0,
-                        help='Threshold concentration for red text')
+    parser.add_argument('--redTextConcThreshold', default=1.0, help='Under this threshold concentration is red text')
+    parser.add_argument('--orangeTextConcThreshold', default=4.0, help='Under this threshold concentration is orange text')
     parser.add_argument('--udfsOnOutput', default=False, action='store_true', help='The final WGS QC step writes the concentrations to the outputs, whereas the normal aggregation steps have them on the input.')
 
     args = parser.parse_args()
