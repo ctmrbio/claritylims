@@ -87,9 +87,16 @@ def main(lims, args, epp_logger):
         sample = artifact.samples[0] # the original, submitted sample
         fields["Sample Name"] = artifact.name
         fields["Original DNA Plate LIMS ID"] = ""
-        fields["Container Name"] = artifact.location[0].name
-        fields["Well"] = artifact.location[1]
-        fields["Project"] = sample.project.name
+        if artifiact.location:
+            fields["Container Name"] = artifact.location[0].name
+            fields["Well"] = artifact.location[1]
+        else:
+            fields["Container Name"] = "Unknown Container"
+            fields["Well"] = "Unknown Well"
+        if sample.project:
+            fields["Project"] = sample.project.name
+        else:
+            fields["Project"] = ""
         fields["Sample Origin"] = get_udf_if_exists(sample, "Sample Origin")
         fields["Sample Buffer"] = get_udf_if_exists(sample, "Sample Buffer")
         fields["Indexes"] = artifact.reagent_labels
