@@ -115,7 +115,7 @@ def is_control(sample_name):
     match = re.search(control_re, sample_name)
     return match
 
-def format_volume(volume, decimal_sep=';'):
+def format_volume(volume, decimal_sep='.'):
     volume_string = "{:.2f}".format(volume) # format to 2 decimal places
     volume_string = volume_string.replace('.', decimal_sep)
     return volume_string
