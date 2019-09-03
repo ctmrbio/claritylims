@@ -87,7 +87,7 @@ def main(lims, args, epp_logger):
         sample = artifact.samples[0] # the original, submitted sample
         fields["Sample Name"] = artifact.name
         fields["Original DNA Plate LIMS ID"] = ""
-        if artifiact.location:
+        if artifact.location:
             fields["Container Name"] = artifact.location[0].name
             fields["Well"] = artifact.location[1]
         else:
