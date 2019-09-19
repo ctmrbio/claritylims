@@ -86,7 +86,7 @@ def convert_to_nm(concentration, fragment_size):
     basepair_mw = 660
     return (concentration * 1000000) / (fragment_size * basepair_mw)
 
-def main(lims, args, logging):
+def main(lims, args, logger):
     p = Process(lims, id=args.pid)
     
     # Precompute lookup dictionaries for output artifacts and input_output_maps
