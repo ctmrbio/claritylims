@@ -1,4 +1,6 @@
 from argparse import ArgumentParser
+import logging
+
 from genologics.config import BASEURI, USERNAME, PASSWORD
 from genologics.entities import Process
 from genologics.lims import Lims
@@ -20,6 +22,11 @@ Usage:
     --concentrationUdfNm 'QuantIt HS Concentration (nM)']
     "
 """
+
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s %(levelname)s:%(message)s"
+)
 
 def format_fragment_size(fragment_size):
     # can either be '620bp' or '620' or maybe even '620 bp'
@@ -60,11 +67,6 @@ def find_output_in_well(well, p):
             if artifact_well == well:
                 return artifact
 
-def find_output_artifact(name, p):
-    for i, artifact in enumerate(p.all_outputs(unique=True)):
-        if artifact.name == name:
-            return artifact
-
 def format_concentration(concentration):
     if type(concentration) == str:
         if concentration == "<Min":
@@ -84,8 +86,18 @@ def convert_to_nm(concentration, fragment_size):
     basepair_mw = 660
     return (concentration * 1000000) / (fragment_size * basepair_mw)
 
-def main(lims, args, logger):
+def main(lims, args, logging):
     p = Process(lims, id=args.pid)
+    
+    # Precompute lookup dictionaries for output artifacts and input_output_maps
+    output_artifacts = {artifact.id: artifact for artifact in p.all_outputs(unique=True)}
+    input_output_map = {}
+    for input_, output_ in p.input_output_maps:
+        if output_["output-generation-type"] == "PerInput": 
+            input_output_map[input_["limsid"]] = output_["limsid"]
+    logger.info("output_artifacts: %s", output_artifacts)
+    logger.info("input_output_map: %s", input_output_map)
+
     sparkfile = get_spark_file(p, args.sparkOutputFilename)
     if not sparkfile:
         raise(RuntimeError("Cannot find the Spark output file, are you sure it has been uploaded?"))
@@ -96,7 +108,6 @@ def main(lims, args, logger):
     well_re = re.compile("[A-Z][0-9]{1,2}")
     if args.convertToNm:
         fragment_size = format_fragment_size(args.fragmentSize)
-
     outputs = []
 
     for row_i in range(0, sheet.nrows):
@@ -108,6 +119,7 @@ def main(lims, args, logger):
                 artifact = find_input_in_well(well, p)
             if not artifact:
                 raise(RuntimeError("Error! Cannot find sample at well position %s, row %s" % (well, row_i)))
+            logger.info("Input artifact: %s", artifact)
 
             if sheet.ncols > 2: # some files may be missing the "NoCalc" column
                 concentration = sheet.cell(row_i, 2).value
@@ -117,10 +129,15 @@ def main(lims, args, logger):
             if concentration == "NoCalc":
                 concentration = sheet.cell(row_i, 1).value
             concentration = format_concentration(concentration)
+            logger.info("concentration: %s", concentration)
+            
+            # Find output artifact
+            output = output_artifacts[input_output_map[artifact.id]]
+            logger.info("Output artifact: %s", output)
 
-            output = find_output_artifact(artifact.name, p)
-            outputs.append(output)
             output.udf[args.concentrationUdf] = concentration
+            outputs.append(output)
+
             if args.convertToNm:
                 concentration_nm = convert_to_nm(concentration, fragment_size)
                 output.udf[args.concentrationUdfNm] = concentration_nm
@@ -141,6 +158,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     lims = Lims(BASEURI, USERNAME, PASSWORD)
+    logger = logging.getLogger(__name__)
 
-    main(lims, args, None)
+    main(lims, args, logger)
     print("Successful assignment!")
