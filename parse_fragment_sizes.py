@@ -76,15 +76,31 @@ def main(lims, args, logger):
     if not tapestation_file:
         raise(RuntimeError("Cannot find the TapeStation csv file, are you sure it has been uploaded?"))
 
+    # Precompute lookup dictionary for output artifacts
+    output_artifacts = {artifact.id: artifact for artifact in p.all_outputs(unique=True)}
+    input_output_map = {}
+    for input_, output_ in p.input_output_maps:
+        if output_["output-generation-type"] == "PerInput": 
+            input_output_map[input_["limsid"]] = output_["limsid"]
+    logger.info("output_artifacts: %s", output_artifacts)
+    logger.info("input_output_map: %s", input_output_map)
+
+
     outputs = []
     measured_peaks = parse_tapestation_csv(args.tapestation_csv, args.min_fragsize, args.max_fragsize)
     for well, peaks in measured_peaks:
-        # Do something with the identified peaks
-        # Put the modified things in `outputs`
-        pass
+        fragment_size = -1
+        if len(peaks) == 1:
+            fragment_size = peaks[0].Size
+
+        # TODO:
+        # Find the artifact to modify
+        # Modify the relevant UDF
+        # Add it to outputs
 
     for out in outputs:
         out.put()
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description=__doc__)
