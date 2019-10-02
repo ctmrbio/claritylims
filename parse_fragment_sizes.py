@@ -81,6 +81,7 @@ def main(lims, args, logger):
     for well, peaks in measured_peaks:
         # Do something with the identified peaks
         # Put the modified things in `outputs`
+        pass
 
     for out in outputs:
         out.put()
