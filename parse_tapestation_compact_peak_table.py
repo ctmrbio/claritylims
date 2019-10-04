@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 __doc__ = """
-Parse measured fragment size. 
+Parse peaks from Compact Peak Table (csv) from TapeStation.
 
-Usage:
+Usage in Clarity LIMS:
     bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/parse_fragment_size.py
     --pid {processLuid}
     --tapestation-csv 'TapeStation CSV File'
