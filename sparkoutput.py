@@ -20,6 +20,7 @@ Usage:
    [--convertToNm
     --fragmentSize '620bp'
     --concentrationUdfNm 'QuantIt HS Concentration (nM)']
+    2> {compoundOutputFileLuid1}
     "
 """
 
