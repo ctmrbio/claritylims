@@ -3,10 +3,11 @@ __doc__ = """
 Parse peaks from Compact Peak Table (csv) from TapeStation.
 
 Usage in Clarity LIMS:
-    bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/parse_fragment_size.py
+    bash -c "/opt/gls/clarity/miniconda3/bin/python /opt/gls/clarity/customextensions/parse_tapestation_compact_peak_table.py
     --pid {processLuid}
-    --tapestation-csv 'TapeStation CSV File'
-    --udf-fragsize 'Fragment size'
+    --tapestation-csv 'TapeStation Compact Peak Table'
+    --udf-fragsize 'Average Fragment Size (bp)'
+    2> {compoundOutfileLuid3}
     "
 """
 __author__ = "CTMR, Fredrik Boulund"
@@ -47,35 +48,43 @@ def parse_tapestation_csv(tapestation_csv, min_fragsize, max_fragsize):
     ignored_sample_descriptions = {"Ladder"}
     Peak = namedtuple("Peak", ["Well", "Sample", "Size", "Percent", "Observations"])
     measured_peaks = defaultdict(list)
-    with open(tapestation_csv) as csv_file:
-        reader = csv.DictReader(csv_file)
-        for line in reader:
-            if line["Observations"] in ignored_observations:
-                continue
-            if line["Sample Description"] in ignored_sample_descriptions:
-                continue
-            if not line["Size [bp]"]:
-                fragment_size = 0
-            else:
-                fragment_size = int(line["Size [bp]"])
-            if not line["% Integrated Area"]:
-                integrated_area = 0
-            else:
-                integrated_area = float(line["% Integrated Area"])
-            try:
-                peak = Peak(
-                    line["Well"],
-                    line["Sample Description"], 
-                    fragment_size,
-                    integrated_area,
-                    line["Observations"])
-            except KeyError:
-                raise(RuntimeError("Could not parse line: {}".format(line)))
-            except ValueError:
-                raise(RuntimeError("Could not parse line: {}".format(line)))
-            if peak.Size > min_fragsize and peak.Size < max_fragsize:
-                measured_peaks[peak.Well].append(peak)
+    reader = csv.DictReader(tapestation_csv, delimiter=',')
+    for line in reader:
+        if line["Observations"] in ignored_observations:
+            continue
+        if line["Sample Description"] in ignored_sample_descriptions:
+            continue
+        if not line["Size [bp]"]:
+            fragment_size = 0
+        else:
+            fragment_size = int(line["Size [bp]"])
+        if not line["% Integrated Area"]:
+            integrated_area = 0
+        else:
+            integrated_area = float(line["% Integrated Area"])
+        try:
+            peak = Peak(
+                line["Well"],
+                line["Sample Description"], 
+                fragment_size,
+                integrated_area,
+                line["Observations"])
+        except KeyError:
+            raise(RuntimeError("Could not parse line: {}".format(line)))
+        except ValueError:
+            raise(RuntimeError("Could not parse line: {}".format(line)))
+        if peak.Size > min_fragsize and peak.Size < max_fragsize:
+            measured_peaks[peak.Well].append(peak)
     return measured_peaks
+
+
+def find_input_in_well(well, p):
+    for i, artifact in enumerate(p.all_inputs(unique=True)):
+        if artifact.type == "Analyte":
+            artifact_well = artifact.location[1]
+            artifact_well = "".join(artifact_well.split(":"))
+            if artifact_well == well:
+                return artifact
 
 
 def is_well(string, well_re=re.compile(r'[A-Z][0-9]{1,2}')):
@@ -83,35 +92,45 @@ def is_well(string, well_re=re.compile(r'[A-Z][0-9]{1,2}')):
 
 
 def main(lims, args, logger):
-    #p = Process(lims, id=args.pid)
+    p = Process(lims, id=args.pid)
+    logger.debug(p)
     
-    #tapestation_file = get_tapestation_file(p, args.tapestation_csv)
-    #if not tapestation_file:
-    #    raise(RuntimeError("Cannot find the TapeStation csv file, are you sure it has been uploaded?"))
-
     # Precompute lookup dictionary for output artifacts
-    #output_artifacts = {artifact.id: artifact for artifact in p.all_outputs(unique=True)}
-    #input_output_map = {}
-    #for input_, output_ in p.input_output_maps:
-    #    if output_["output-generation-type"] == "PerInput": 
-    #        input_output_map[input_["limsid"]] = output_["limsid"]
-    #logger.info("output_artifacts: %s", output_artifacts)
-    #logger.info("input_output_map: %s", input_output_map)
+    output_artifacts = {artifact.id: artifact for artifact in p.all_outputs(unique=True)}
+    logger.debug(output_artifacts)
+    logger.debug(p.input_output_maps)
+    input_output_map = {}
+    for input_, output_ in p.input_output_maps:
+        if output_["output-generation-type"] == "PerInput": 
+            input_output_map[input_["limsid"]] = output_["limsid"]
+    logger.debug("output_artifacts: %s", output_artifacts)
+    logger.debug("input_output_map: %s", input_output_map)
 
+
+    tapestation_file = get_tapestation_file(p, args.tapestation_csv)
+    if not tapestation_file:
+        raise(RuntimeError("Cannot find the TapeStation csv file, are you sure it has been uploaded?"))
+    logger.debug(tapestation_file)
 
     outputs = []
-    measured_peaks = parse_tapestation_csv(args.tapestation_csv, args.min_fragsize, args.max_fragsize)
+    measured_peaks = parse_tapestation_csv(tapestation_file.splitlines(), args.min_fragsize, args.max_fragsize)
     for well, peaks in measured_peaks.items():
         fragment_size = -1
         if len(peaks) == 1:
             fragment_size = peaks[0].Size
-        print(well, peaks, fragment_size)
+        logger.debug([well, peaks, fragment_size])
 
-        # TODO:
-        # Find the artifact to modify
-        # Modify the relevant UDF
-        # Add it to outputs
+        # Find input artifact, this has well information
+        artifact = find_input_in_well(well, p)
 
+        # Find output artifact, this has the UDF where we store the peak size
+        output = output_artifacts[input_output_map[artifact.id]]
+        logger.debug("Output artifact: %s", output)
+
+        logger.debug("Modifying UDF '%s' of artifact '%s'", args.udf_fragsize, artifact)
+        output.udf[args.udf_fragsize] = fragment_size
+        outputs.append(output)
+    
     for out in outputs:
         out.put()
 
