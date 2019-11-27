@@ -17,6 +17,7 @@ from collections import defaultdict, namedtuple
 import logging
 import csv
 import re
+from sys import stderr
 
 from genologics.config import BASEURI, USERNAME, PASSWORD
 from genologics.entities import Process
@@ -24,7 +25,7 @@ from genologics.lims import Lims
 
 
 logging.basicConfig(
-    level=logging.INFO, 
+    level=logging.DEBUG, 
     format="%(asctime)s %(levelname)s:%(message)s"
 )
 
@@ -84,7 +85,10 @@ def find_input_in_well(well, p):
             artifact_well = artifact.location[1]
             artifact_well = "".join(artifact_well.split(":"))
             if artifact_well == well:
-                return artifact
+                if artifact:
+                    return artifact
+                else:
+                    logger.error("Artifact %s, %s is invalid: %s", well, p, artifact)
 
 
 def is_well(string, well_re=re.compile(r'[A-Z][0-9]{1,2}')):
@@ -92,6 +96,7 @@ def is_well(string, well_re=re.compile(r'[A-Z][0-9]{1,2}')):
 
 
 def main(lims, args, logger):
+    logger.debug("Getting Process with ID %s", args.pid)
     p = Process(lims, id=args.pid)
     logger.debug(p)
     
