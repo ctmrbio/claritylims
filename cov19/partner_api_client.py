@@ -1,29 +1,31 @@
 
 from datetime import datetime
+from luhn import verify as mod10verify
+from luhn import generate as mod10generate
 import requests
 from requests import ConnectionError, Timeout
-import retry
+from retry import retry
 import re
 
 # TODO Figure out logging given how Clarity works.
 
 
-class TestPartnerSampleInformation(object):
+class PartnerAPISampleInformation(object):
 
     def __init__(self, referral_code, lab_referral, arrival_date, result_date, comment, cov19_result):
 
         # REVIEW Discussion point. Not all values here are required, but I see no reason not
         #        to send them, since I do thing we should have them for all cases.
 
-        super().__init__()
-
-        if not isinstance(str, referral_code) and not len(referral_code) == 10:
+        if not isinstance(referral_code, str) and not len(referral_code) == 10:
             raise AssertionError(
                 "referral_code needs to be 10 digit number string.")
 
-        if not (int(referral_code[:-1]) % 10 == int(referral_code[-1])):
-            raise AssertionError("Check code digit {} (last digit) did not match mod10 requierment" +
-                                 "in referral code: {}".format(referral_code[-1], referral_code))
+        if not mod10verify(referral_code):
+            raise AssertionError("Check code digit {} (last digit) did not match mod10 requirement"
+                                 "in referral code: {}. Expected: {}".format(referral_code[-1],
+                                                                             referral_code,
+                                                                             mod10generate(referral_code[:-1])))
 
         self.referral_code = referral_code
 
@@ -34,7 +36,7 @@ class TestPartnerSampleInformation(object):
         # REVIEW When reviewing verify against docs that
         #        this regex is actually correct.
         allowed_chars_regex = re.compile(r"[^A-Za-z0-9\s\.-]")
-        if not bool(re.search(lab_referral)):
+        if bool(re.search(allowed_chars_regex, lab_referral)):
             raise AssertionError(
                 "lab_referral can only contain A-Z, a-z, 0-9, white spaces, and -.")
 
@@ -73,12 +75,11 @@ class FailedInContactingTestPartner(Exception):
     pass
 
 
-class TestPartnerClient(object):
+class PartnerAPIClient(object):
     # This is valid for v.6 for the parters API
 
     def __init__(self, config):
         # TODO Figure out how to configure this, given Claritys normal setup
-        super().__init__()
         self._url = config.get("test_partner_url")
         self._user = config.get("test_partner_user")
         self._password = config.get("test_partner_password")
@@ -90,7 +91,7 @@ class TestPartnerClient(object):
     @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
     def send_single_sample_result(self, test_partner_sample_info):
 
-        if not isinstance(TestPartnerSampleInformation):
+        if not isinstance(test_partner_sample_info, PartnerAPISampleInformation):
             raise AssertionError(
                 "Expected type of test_partner_sample_info is TestPartnerSampleInformation")
 
@@ -102,8 +103,8 @@ class TestPartnerClient(object):
             self._url, header=headers, data=parameters)
 
         if not response.status_code == 200:
-            raise FailedInContactingTestPartner("Did not get a 200 response from test partner. " +
-                                                "Response status code was: {}" +
+            raise FailedInContactingTestPartner("Did not get a 200 response from test partner. "
+                                                "Response status code was: {}"
                                                 "and response text: {}".format(response.status_code, response.text))
 
         # Example of successful API call response
