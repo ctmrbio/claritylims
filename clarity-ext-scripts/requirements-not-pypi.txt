@@ -1,0 +1,5 @@
+# Both clarity-ext and SNP&SEQs patched version of genologics is maintained on github:
+
+-e git://github.com/molmed/genologics@master#egg=genologics
+-e git://github.com/molmed/clarity-ext@master#egg=clarity_ext
+
