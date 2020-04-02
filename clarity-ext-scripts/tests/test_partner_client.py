@@ -1,5 +1,5 @@
 
-from cov19.partner_api_client import PartnerAPISampleInformation, FailedInContactingTestPartner, PartnerAPIClient
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPISampleInformation, FailedInContactingTestPartner, PartnerAPIClient
 from mock import patch
 
 
