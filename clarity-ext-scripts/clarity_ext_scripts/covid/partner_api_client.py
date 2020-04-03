@@ -85,15 +85,11 @@ class PartnerAPIClient(object):
     This is a client to enable posting data to the test partners api. It is currently valid for v.6 of the parter's API.
     """
 
-    def __init__(self, config):
-        self._url = config.get("test_partner_url")
-        self._user = config.get("test_partner_user")
-        self._password = config.get("test_partner_password")
+    def __init__(self, test_partner_url, test_partner_user, test_partner_password):
+        self._url = test_partner_url
+        self._user = test_partner_user
+        self._password = test_partner_password
 
-    # TODO decide if we want to retry or not. It depends a little bit on the
-    #      rest of the scenario. This could potentially take us into a long chain
-    #      of retries. That would mean things take a long time before failing.
-    #      Don't know what is best here.
     @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
     def send_single_sample_result(self, test_partner_sample_info):
         """
