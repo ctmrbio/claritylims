@@ -1,6 +1,6 @@
 
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPISampleInformation, FailedInContactingTestPartner, \
-    PartnerAPIClient
+    PartnerAPIClient, verify_test_partner_referral_code
 from mock import patch
 
 
@@ -39,3 +39,17 @@ comment=ett testmeddelande"""
             client = PartnerAPIClient(**config)
             res = client.send_single_sample_result(sample)
             assert res
+
+    def test_can_verify_referral_coded(self):
+        valid = ["8125520216",
+                 "7362148855",
+                 "1282544442"]
+        for v in valid:
+            assert verify_test_partner_referral_code(v)
+
+        invalid = ["8125520215",
+                   "7362148853",
+                   "1282544449"]
+
+        for i in invalid:
+            assert not verify_test_partner_referral_code(i)

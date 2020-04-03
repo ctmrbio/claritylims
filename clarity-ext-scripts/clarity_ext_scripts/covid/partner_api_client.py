@@ -19,6 +19,14 @@ VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
                          COVID_RESPONSE_NEGATIVE, COVID_RESPONSE_FAILED}
 
 
+def verify_test_partner_referral_code(code):
+    """
+    Will check if the check number of the given code is correct.
+    Return True if code is ok, else False.
+    """
+    return mod10verify(code)
+
+
 class PartnerAPISampleInformation(object):
 
     def __init__(self, referral_code, lab_referral, arrival_date, result_date, comment, cov19_result):
@@ -27,11 +35,11 @@ class PartnerAPISampleInformation(object):
                 raise AssertionError(
                     "referral_code needs to be 10 digit number string.")
 
-            if not mod10verify(referral_code):
+            if not verify_test_partner_referral_code(referral_code):
                 raise AssertionError("Check code digit {} (last digit) did not match mod10 requirement"
-                                     "in referral code: {}. Expected: {}".format(referral_code[-1],
-                                                                                 referral_code,
-                                                                                 mod10generate(referral_code[:-1])))
+                                     "in referral code: {}."
+                                     "Please verify the code is correct.".format(referral_code[-1],
+                                                                                 referral_code))
 
             self.referral_code = referral_code
 
