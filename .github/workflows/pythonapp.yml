@@ -21,7 +21,6 @@ jobs:
           python-version: 2.7
       - name: Install dependencies
         run: |
-          ./clarity-ext-scripts/install-req.sh
           ./clarity-ext-scripts/setup.sh
       - name: Test with pytest
         run: |
