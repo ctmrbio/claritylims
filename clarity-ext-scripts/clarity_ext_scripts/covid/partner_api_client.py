@@ -149,4 +149,4 @@ class PartnerAPIClient(object):
     # TODO Finish this when/if there is a batch API at the partner.
     @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
     def send_many_sample_results(self, test_partner_sample_info_list):
-        pass
+        raise NotImplementedError
