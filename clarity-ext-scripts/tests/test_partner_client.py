@@ -36,6 +36,6 @@ comment=ett testmeddelande"""
                       "test_partner_user": "api-1",
                       "test_partner_password": "1337"}
 
-            client = PartnerAPIClient(config)
+            client = PartnerAPIClient(**config)
             res = client.send_single_sample_result(sample)
             assert res
