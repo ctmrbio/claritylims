@@ -9,63 +9,66 @@ import re
 
 # TODO Figure out logging given how Clarity works.
 
+import logging
+
+log = logging.getLogger(__name__)
+
 
 class PartnerAPISampleInformation(object):
 
     def __init__(self, referral_code, lab_referral, arrival_date, result_date, comment, cov19_result):
 
-        # REVIEW Discussion point. Not all values here are required, but I see no reason not
-        #        to send them, since I do thing we should have them for all cases.
-
-        if not isinstance(referral_code, str) and not len(referral_code) == 10:
-            raise AssertionError(
-                "referral_code needs to be 10 digit number string.")
-
-        if not mod10verify(referral_code):
-            raise AssertionError("Check code digit {} (last digit) did not match mod10 requirement"
-                                 "in referral code: {}. Expected: {}".format(referral_code[-1],
-                                                                             referral_code,
-                                                                             mod10generate(referral_code[:-1])))
-
-        self.referral_code = referral_code
-
-        if len(lab_referral) > 50:
-            raise AssertionError(
-                "Cannot have more then 50 characters in lab_referral code.")
-
-        # REVIEW When reviewing verify against docs that
-        #        this regex is actually correct.
-        allowed_chars_regex = re.compile(r"[^A-Za-z0-9\s\.-]")
-        if bool(re.search(allowed_chars_regex, lab_referral)):
-            raise AssertionError(
-                "lab_referral can only contain A-Z, a-z, 0-9, white spaces, and -.")
-
-        self.lab_referral = lab_referral
-
-        def verify_date_format(date_str):
-            try:
-                datetime.strptime(date_str, '%Y%m%d')
-            except ValueError:
+        try:
+            if not isinstance(referral_code, str) and not len(referral_code) == 10:
                 raise AssertionError(
-                    "Incorrect date format on {}, should be YYYYMMDD".format(date_str))
+                    "referral_code needs to be 10 digit number string.")
 
-        verify_date_format(arrival_date)
-        self.arrival_date = arrival_date
+            if not mod10verify(referral_code):
+                raise AssertionError("Check code digit {} (last digit) did not match mod10 requirement"
+                                     "in referral code: {}. Expected: {}".format(referral_code[-1],
+                                                                                 referral_code,
+                                                                                 mod10generate(referral_code[:-1])))
 
-        verify_date_format(result_date)
-        self.result_date = result_date
+            self.referral_code = referral_code
 
-        if len(comment) > 255:
-            raise AssertionError(
-                "comments cannot have more than 255 characters")
+            if len(lab_referral) > 50:
+                raise AssertionError(
+                    "Cannot have more then 50 characters in lab_referral code.")
 
-        self.comment = comment
+            disallowed_chars_regex = re.compile(r"[^A-Za-z0-9\s\.-]")
+            if bool(re.search(disallowed_chars_regex, lab_referral)):
+                raise AssertionError(
+                    "lab_referral can only contain A-Z, a-z, 0-9, white spaces, and -.")
 
-        valid_covid_responses = ["negative", "positive", "failed"]
+            self.lab_referral = lab_referral
 
-        if cov19_result not in valid_covid_responses:
-            raise AssertionError("cov_19_result has to have one of the following values: {}".format(
-                ", ".join(valid_covid_responses)))
+            def verify_date_format(date_str):
+                try:
+                    datetime.strptime(date_str, '%Y%m%d')
+                except ValueError:
+                    raise AssertionError(
+                        "Incorrect date format on {}, should be YYYYMMDD".format(date_str))
+
+            verify_date_format(arrival_date)
+            self.arrival_date = arrival_date
+
+            verify_date_format(result_date)
+            self.result_date = result_date
+
+            if len(comment) > 255:
+                raise AssertionError(
+                    "comments cannot have more than 255 characters")
+
+            self.comment = comment
+
+            valid_covid_responses = ["negative", "positive", "failed"]
+
+            if cov19_result not in valid_covid_responses:
+                raise AssertionError("cov_19_result has to have one of the following values: {}".format(
+                    ", ".join(valid_covid_responses)))
+        except AssertionError as e:
+            log.error(e.message)
+            raise e
 
     def get_as_dict(self):
         return vars(self)
@@ -76,7 +79,7 @@ class FailedInContactingTestPartner(Exception):
 
 
 class PartnerAPIClient(object):
-    # This is valid for v.6 for the parters API
+    # This is valid for v.6 for the parter's API
 
     def __init__(self, config):
         # TODO Figure out how to configure this, given Claritys normal setup
@@ -103,9 +106,12 @@ class PartnerAPIClient(object):
             self._url, header=headers, data=parameters)
 
         if not response.status_code == 200:
-            raise FailedInContactingTestPartner("Did not get a 200 response from test partner. "
-                                                "Response status code was: {}"
-                                                "and response text: {}".format(response.status_code, response.text))
+            mess = "Did not get a 200 response from test partner. "
+            "Response status code was: {}"
+            "and response text: {}".format(
+                response.status_code, response.text)
+            log.error(mess)
+            raise FailedInContactingTestPartner(mess)
 
         # Example of successful API call response
         # success
