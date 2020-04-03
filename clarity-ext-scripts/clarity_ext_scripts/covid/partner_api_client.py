@@ -81,10 +81,11 @@ class FailedInContactingTestPartner(Exception):
 
 
 class PartnerAPIClient(object):
-    # This is valid for v.6 for the parter's API
+    """
+    This is a client to enable posting data to the test partners api. It is currently valid for v.6 of the parter's API.
+    """
 
     def __init__(self, config):
-        # TODO Figure out how to configure this, given Claritys normal setup
         self._url = config.get("test_partner_url")
         self._user = config.get("test_partner_user")
         self._password = config.get("test_partner_password")
@@ -95,6 +96,13 @@ class PartnerAPIClient(object):
     #      Don't know what is best here.
     @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
     def send_single_sample_result(self, test_partner_sample_info):
+        """
+        Send a single sample result to the test partner.
+        @param test_partner_sample_info and instance of PartnerAPISampleInformation
+        This will raise FailedInContactingTestPartner if there is any errors, with the details of the
+        failure in the exception message. On a successful upload it will return True. Please note that since this
+        actually never returns False, it is mostly useful for testing purposes.
+        """
 
         if not isinstance(test_partner_sample_info, PartnerAPISampleInformation):
             raise AssertionError(
@@ -124,13 +132,13 @@ class PartnerAPIClient(object):
         # result_date=20140310
         # comment=ett testmeddelande
         response_text_parts = response.text.split("\n")
-        if response_text_parts[0] == "success":
-            # REVIEW Should we for a True/False return for this, or something else?
-            #        Since it also raises on some failures, it might not be necessary,
-            #        if we don't expect to do anything with the results.
-            return True
-        else:
-            return False
+        if not response_text_parts[0] == "success":
+            mess = "The response from the test partner indicated some error. This was the response: {}".format(
+                response.text)
+            log.error(mess)
+            raise FailedInContactingTestPartner(mess)
+
+        return True
 
         # TODO Figure out how text response should be parsed if there is an error.
 
