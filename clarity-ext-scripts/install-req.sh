@@ -13,4 +13,7 @@ fi
 mkdir -p ~/bin
 cp ./deployment/clarity-ext ~/bin/
 
+mkdir -p ~/.config/clarity-ext/
+cp ./deployment/clarity-ext.demo.config ~/.config/clarity-ext/clarity-ext.config
+
 # Call setup.sh to install the latest code
