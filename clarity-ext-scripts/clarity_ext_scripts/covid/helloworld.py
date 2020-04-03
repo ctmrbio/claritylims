@@ -11,4 +11,4 @@ class Extension(GeneralExtension):
               self.config['covid.test_partner_password'])
 
     def integration_tests(self):
-        yield "24-1234"
+        yield "24-38707"
