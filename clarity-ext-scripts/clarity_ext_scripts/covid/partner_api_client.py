@@ -2,22 +2,26 @@
 from datetime import datetime
 from luhn import verify as mod10verify
 from luhn import generate as mod10generate
+import logging
 import requests
 from requests import ConnectionError, Timeout
 from retry import retry
 import re
 
-# TODO Figure out logging given how Clarity works.
-
-import logging
 
 log = logging.getLogger(__name__)
+
+COVID_RESPONSE_POSITIVE = "positive"
+COVID_RESPONSE_NEGATIVE = "negative"
+COVID_RESPONSE_FAILED = "failed"
+
+VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
+                         COVID_RESPONSE_NEGATIVE, COVID_RESPONSE_FAILED}
 
 
 class PartnerAPISampleInformation(object):
 
     def __init__(self, referral_code, lab_referral, arrival_date, result_date, comment, cov19_result):
-
         try:
             if not isinstance(referral_code, str) and not len(referral_code) == 10:
                 raise AssertionError(
@@ -61,11 +65,9 @@ class PartnerAPISampleInformation(object):
 
             self.comment = comment
 
-            valid_covid_responses = ["negative", "positive", "failed"]
-
-            if cov19_result not in valid_covid_responses:
+            if cov19_result not in VALID_COVID_RESPONSES:
                 raise AssertionError("cov_19_result has to have one of the following values: {}".format(
-                    ", ".join(valid_covid_responses)))
+                    ", ".join(VALID_COVID_RESPONSES)))
         except AssertionError as e:
             log.error(e.message)
             raise e
