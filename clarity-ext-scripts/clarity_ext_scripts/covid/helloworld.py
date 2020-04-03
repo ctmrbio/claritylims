@@ -3,12 +3,12 @@ from clarity_ext.extensions import GeneralExtension
 
 class Extension(GeneralExtension):
     """
-    TODO: Add description
+    A helloworld extension!
     """
     def execute(self):
-        # TODO: Add the code that should execute when you run the extension
-        pass
+        print(self.config['covid.test_partner_url'],
+              self.config['covid.test_partner_user'],
+              self.config['covid.test_partner_password'])
 
     def integration_tests(self):
-        # TODO: Replace with a valid step ID
         yield "24-1234"
