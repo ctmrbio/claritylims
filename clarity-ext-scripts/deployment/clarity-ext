@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Call this script instead of clarity-ext directly in order to
+source /opt/gls/clarity/miniconda3/bin/activate clarity-ext
+clarity-ext $@
