@@ -4,7 +4,7 @@ set -e
 # Fetches latest. This script is intended to be run in a cron job on the server
 
 # Pulls the latest version from the dev branch
-branch=0-add-submodule
+branch=dev
 
 cd claritylims
 git fetch
