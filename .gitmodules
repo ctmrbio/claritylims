@@ -1,0 +1,3 @@
+[submodule "clarity-ext-scripts/repos/clarity-ext"]
+	path = clarity-ext-scripts/repos/clarity-ext
+	url = https://github.com/Molmed/clarity-ext.git
