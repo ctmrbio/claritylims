@@ -2,6 +2,7 @@
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPISampleInformation, FailedInContactingTestPartner, \
     PartnerAPIClient, verify_test_partner_referral_code
 from mock import patch
+import pytest
 
 
 class TestPartnerAPIClient(object):
@@ -53,3 +54,26 @@ comment=ett testmeddelande"""
 
         for i in invalid:
             assert not verify_test_partner_referral_code(i)
+
+    def test_can_activate_integration_test_mode(self):
+        sample = PartnerAPISampleInformation(referral_code="1234567897", lab_referral="internal-123",
+                                             arrival_date="20200302", result_date="20200303",
+                                             comment="What an awesome sample.", cov19_result="negative")
+
+        config = {"test_partner_url": "https://example.com",
+                  "test_partner_user": "api-1",
+                  "test_partner_password": "1337",
+                  "integration_test_mode": True,
+                  "integration_test_should_fail": 2}
+
+        client = PartnerAPIClient(**config)
+
+        # Fail two times, and then work on the third try.
+        with pytest.raises(FailedInContactingTestPartner):
+            client.send_single_sample_result(sample)
+
+        with pytest.raises(FailedInContactingTestPartner):
+            client.send_single_sample_result(sample)
+
+        res = client.send_single_sample_result(sample)
+        assert res
