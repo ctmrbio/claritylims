@@ -1,5 +1,7 @@
 Contains Clarity scripts that use the clarity-ext framework at https://github.com/molmed/clarity-ext
 
+# clarity-ext
+
 Usage:
 
 * install-req.sh (only when setting up)
@@ -16,3 +18,51 @@ branch `covid` on:
     https://github.com/Molmed/genologics
 
 and make sure to `git add` these commit references in this repository.
+
+# Exporting configuration:
+
+There's a helper script for exporting in the ./deployment directory:
+
+## Get dependencies
+
+First call
+
+    ./get-slice-tool.sh <server>
+
+in order to get the required jar file into your ./bin directory
+
+## Add configuration
+
+Create a yaml configuration file at ~/.slices.config
+
+This configuration file should contain information on this format:
+
+    staging:
+      server: server 
+      username: username
+      password: password 
+    prod:
+      server: server 
+      username: username
+      password: password 
+
+## Create a manifest file
+
+Then you can run the slices tool like this:
+
+    python ./slices.py manifest  # Creates a new manifest file in your export directory
+
+Copy this manifest file over the file deployment/manifest.txt and remove everything that shouldn't
+be imported to production.
+
+## Create a package
+
+Run this to create a package:
+
+    python ./slices.py export
+
+This will create a new xml package in the exports directory, which can be imported into production.
+
+## Import a package
+
+PENDING

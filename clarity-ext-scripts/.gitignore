@@ -1,3 +1,5 @@
 int_tests/
 run-test/
 clarity-ext.config
+bin/
+exports/

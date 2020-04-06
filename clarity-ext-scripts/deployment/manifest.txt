@@ -1,0 +1,16 @@
+ConfigSlicerVersion=3.1.14.7
+
+# Manifest for Process Types
+ProcessTypes=\
+Test-Covid19 RNA extraction,\
+Test-Covid19 RT-PCR,\
+Test-Covid19 Report results
+
+# Manifest for Protocols
+Protocols=\
+Test-Covid19
+
+# Manifest for Workflows
+Workflows=\
+Test-Covid19,\
+
