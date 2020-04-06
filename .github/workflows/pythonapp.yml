@@ -25,4 +25,4 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest
-          pytest ./clarity-ext-scripts/
+          pytest ./clarity-ext-scripts/tests
