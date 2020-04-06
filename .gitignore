@@ -87,3 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+
+# Settings for pycharm (covid project), in order to be able to share run configurations
+.idea/*
+.idea/*/
+!.idea/runConfigurations
