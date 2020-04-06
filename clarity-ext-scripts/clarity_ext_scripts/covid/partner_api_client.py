@@ -93,10 +93,26 @@ class PartnerAPIClient(object):
     This is a client to enable posting data to the test partners api. It is currently valid for v.6 of the parter's API.
     """
 
-    def __init__(self, test_partner_url, test_partner_user, test_partner_password):
+    def __init__(self, test_partner_url, test_partner_user, test_partner_password,
+                 integration_test_mode=False, integration_test_should_fail=0):
         self._url = test_partner_url
         self._user = test_partner_user
         self._password = test_partner_password
+        if integration_test_mode:
+            self._integration_test_mode = integration_test_mode
+            self._integration_test_should_fail = integration_test_should_fail
+            self._integration_test_has_failed = 0
+        else:
+            self._integration_test_mode = False
+
+    def _integration_test(self):
+        if self._integration_test_has_failed < self._integration_test_should_fail:
+            self._integration_test_has_failed += 1
+            raise FailedInContactingTestPartner("'Fake failed' to contact test partner because integration test "
+                                                "mode is active. This is failure {} of {}.".format(
+                                                    self._integration_test_has_failed,
+                                                    self._integration_test_should_fail
+                                                ))
 
     @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
     def send_single_sample_result(self, test_partner_sample_info):
@@ -111,6 +127,13 @@ class PartnerAPIClient(object):
         if not isinstance(test_partner_sample_info, PartnerAPISampleInformation):
             raise AssertionError(
                 "Expected type of test_partner_sample_info is TestPartnerSampleInformation")
+
+        # If the client is setup in integration test mode, it might fail or return here
+        # depending one what settings have been activate.
+        # This is not for production use!
+        if self._integration_test_mode:
+            self._integration_test()
+            return True
 
         parameters = test_partner_sample_info.get_as_dict().update(
             {"user": self._user, "password": self._password})
