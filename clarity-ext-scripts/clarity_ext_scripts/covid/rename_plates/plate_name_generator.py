@@ -3,15 +3,19 @@ from clarity_ext.domain.validation import UsageError
 
 class InheritancePlateNameGenerator:
     """
-    A plate name generator that fetch the running number from the input container
+    A plate name generator that 'inherits' the running number from the input container
     and handles versioning of plates
     """
-    def running_number(self, container, context):
-        first_artifact = container.occupied[0].artifact
+    def running_number(self, output_container, context):
+        """
+        Assuming that there is a 1 to 1 match in the plate layout between source and
+        target plate, fetch running number from the matching input plate
+        """
+        first_artifact = output_container.occupied[0].artifact
         for input, output in context.artifact_service.all_aliquot_pairs():
-            if output.name == first_artifact.name and output.container.name == container.name:
+            if output.name == first_artifact.name and output.container.name == output_container.name:
                 return self._get_running_number_for(input.container.name)
-        raise UsageError('No input plate could be matched against this plate: {}'.format(container.name))
+        raise UsageError('No input plate could be matched against this plate: {}'.format(output_container.name))
 
     def _get_running_number_for(self, container_name):
         split_name = container_name.split('_')
