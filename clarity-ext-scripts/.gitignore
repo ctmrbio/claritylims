@@ -3,3 +3,4 @@ run-test/
 clarity-ext.config
 bin/
 exports/
+*.zip

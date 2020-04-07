@@ -1,16 +1,20 @@
+# Generated from https://ctmr-lims-stage.scilifelab.se/ at Tue Apr 07 10:34:51 CEST 2020
+
+# Manifest was generated with Config Slicer version 3.1.14.7
 ConfigSlicerVersion=3.1.14.7
 
 # Manifest for Process Types
 ProcessTypes=\
-Test-Covid19 RNA extraction,\
-Test-Covid19 RT-PCR,\
-Test-Covid19 Report results
+Covid19 Initial v1,\
+Covid19 RNA extraction v1,\
+Covid19 RT-PCR v1,\
+Covid19 Report results v1
 
 # Manifest for Protocols
 Protocols=\
-Test-Covid19
+Covid19 v1
 
 # Manifest for Workflows
 Workflows=\
-Test-Covid19,\
+Covid19 v1
 
