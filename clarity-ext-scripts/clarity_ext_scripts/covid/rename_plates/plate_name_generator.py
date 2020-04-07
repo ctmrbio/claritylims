@@ -33,7 +33,7 @@ class InheritancePlateNameGenerator:
         for i in range(1, max_number_versions):
             trial_name = '{}.v{}'.format(name_base, i)
             response = context.session.api.get_containers(name=trial_name)
-            if response is None:
+            if len(response) == 0:
                 return i
-        return UsageError('Max number of versions exceeded ({}). Please contact system adminstrator.'
+        raise UsageError('Max number of versions exceeded ({}). Please contact system adminstrator.'
                           .format(max_number_versions))

@@ -17,4 +17,4 @@ class Extension(RenamePlatesBase):
         return self.name_generator.running_number(container, self.context)
 
     def integration_tests(self):
-        yield "24-38714"
+        yield "24-38734"
