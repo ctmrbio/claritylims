@@ -15,6 +15,9 @@ class InheritancePlateNameGenerator:
 
     def _get_running_number_for(self, container_name):
         split_name = container_name.split('_')
+        if len(split_name) == 1:
+            raise UsageError("The input plate doesn't follow the assumed naming standard: {} "
+                             .format(container_name))
         return split_name[1]
 
     def add_version_number(self, base_name, context):

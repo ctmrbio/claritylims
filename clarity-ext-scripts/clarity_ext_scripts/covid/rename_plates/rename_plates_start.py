@@ -1,4 +1,4 @@
-from clarity_ext_scripts.covid.rename_plates_base import Extension as RenamePlatesBase
+from clarity_ext_scripts.covid.rename_plates.rename_plates_base import Extension as RenamePlatesBase
 
 
 class Extension(RenamePlatesBase):
