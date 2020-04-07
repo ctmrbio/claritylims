@@ -15,7 +15,7 @@ class ABI7500FASTResults(object):
         for r in res.results():
             print(r[u'Cт'])
 
-    Note that it the result file may contain unicode and in order to handle that,
+    Note that the result file may contain unicode and in order to handle that,
     the encoding needs to be provided for the source file, i.e. put:
 
         # -*- coding: utf-8 -*-
