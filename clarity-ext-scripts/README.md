@@ -50,7 +50,7 @@ This configuration file should contain information on this format:
 
 Then you can run the slices tool like this:
 
-    python ./slices.py manifest  # Creates a new manifest file in your export directory
+    python ./slices.py manifest staging  # Creates a new manifest file in your export directory
 
 Copy this manifest file over the file deployment/manifest.txt and remove everything that shouldn't
 be imported to production.
@@ -59,10 +59,21 @@ be imported to production.
 
 Run this to create a package:
 
-    python ./slices.py export
+    python ./slices.py export staging
 
 This will create a new xml package in the exports directory, which can be imported into production.
 
-## Import a package
+## Import a package into production
 
-PENDING
+First call this:
+
+    python ./slices.py import prod --validate
+
+Read through the results and ensure that there are no warnings or errors. If ready, call:
+
+    python ./slices.py import prod
+
+## Save the history
+
+    zip import-v1-prod.zip configslicer.log exports/*
+    scp import-v1-prod.zip glsai@ctmr-lims-stage:/opt/gls/clarity/users/glsai/deployment/history/
