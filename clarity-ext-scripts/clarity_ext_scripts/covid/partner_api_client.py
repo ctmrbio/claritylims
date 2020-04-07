@@ -36,9 +36,9 @@ class PartnerAPISampleInformation(object):
                     "referral_code needs to be 10 digit number string.")
 
             if not verify_test_partner_referral_code(referral_code):
-                raise AssertionError("Check code digit {} (last digit) did not match mod10 requirement"
+                raise AssertionError(("Check code digit {} (last digit) did not match mod10 requirement"
                                      "in referral code: {}."
-                                     "Please verify the code is correct.".format(referral_code[-1],
+                                      "Please verify the code is correct.").format(referral_code[-1],
                                                                                  referral_code))
 
             self.referral_code = referral_code
@@ -76,6 +76,9 @@ class PartnerAPISampleInformation(object):
             if cov19_result not in VALID_COVID_RESPONSES:
                 raise AssertionError("cov_19_result has to have one of the following values: {}".format(
                     ", ".join(VALID_COVID_RESPONSES)))
+
+            self.cov19_result = cov19_result
+
         except AssertionError as e:
             log.error(e.message)
             raise e
@@ -108,8 +111,8 @@ class PartnerAPIClient(object):
     def _integration_test(self):
         if self._integration_test_has_failed < self._integration_test_should_fail:
             self._integration_test_has_failed += 1
-            raise FailedInContactingTestPartner("'Fake failed' to contact test partner because integration test "
-                                                "mode is active. This is failure {} of {}.".format(
+            raise FailedInContactingTestPartner(("'Fake failed' to contact test partner because integration test "
+                                                 "mode is active. This is failure {} of {}.").format(
                                                     self._integration_test_has_failed,
                                                     self._integration_test_should_fail
                                                 ))
@@ -135,17 +138,18 @@ class PartnerAPIClient(object):
             self._integration_test()
             return True
 
-        parameters = test_partner_sample_info.get_as_dict().update(
+        parameters = test_partner_sample_info.get_as_dict()
+        parameters.update(
             {"user": self._user, "password": self._password})
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         response = requests.post(
-            self._url, header=headers, data=parameters)
+            self._url, headers=headers, data=parameters)
 
         if not response.status_code == 200:
-            mess = "Did not get a 200 response from test partner. "
-            "Response status code was: {}"
-            "and response text: {}".format(
+            mess = ("Did not get a 200 response from test partner. "
+                    "Response status code was: {} "
+                    "and response text: {}").format(
                 response.status_code, response.text)
             log.error(mess)
             raise FailedInContactingTestPartner(mess)
