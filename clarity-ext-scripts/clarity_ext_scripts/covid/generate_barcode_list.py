@@ -12,4 +12,4 @@ class Extension(GeneralExtension):
         self.context.file_service.upload_files("Print files", upload_packet)
 
     def integration_tests(self):
-        yield "24-38707"
+        yield "24-38734"
