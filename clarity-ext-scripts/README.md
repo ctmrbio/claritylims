@@ -77,3 +77,44 @@ Read through the results and ensure that there are no warnings or errors. If rea
 
     zip import-v1-prod.zip configslicer.log exports/*
     scp import-v1-prod.zip glsai@ctmr-lims-stage:/opt/gls/clarity/users/glsai/deployment/history/
+
+# Import samples format
+
+Samples are imported by uploading a CSV file to the step `Covid19 Create samples`. First, add
+a control to the step. It will not be used, it's just there because Clarity requires a sample in
+order to start a workflow.
+
+We assume that the samples are in a plate.
+
+The CSV file must have these fields:
+
+    * name: Name of the sample
+    * well: The alphanum index of the sample (e.g. A1 or A:1)
+
+Example:
+
+```
+name,well
+sample1,A1
+neg_rna,A2
+```
+
+Furthermore, the research engineer must provide the following step UDFs:
+
+    * Assign to workflow: The name of the workflow to which the samples should be added
+    * Project: The name of the project
+
+Other step UDFs are not required as they have defaults, but can be set e.g. for test purposes:
+
+    * Sample name: The format of the sample name. The user may specify the dynamic fields:
+        * {name}: The original name in the CSV
+        * {date:<python format>}: The timestamp when the test started, formatted as a string according to
+          python date and time format specifiers which are documented [here](https://strftime.org/)
+        * {index}: The index of the sample in the batch (running number)
+    * Control name: The format of the control name. Provides the same fields as Sample name.
+    * Container name: Format of the container name. Can use these fields:
+        * {name}: Sampe as for Sample name
+        * {date:<python format>}: Same as for Sample name
+    * Control mapping: A comma separated list of mappings from a pattern that matches controls in the name field in the CSV
+      and returns the value that should be added to the UDF "Control type".
+    * Container type: Defaults to 96 well plate
