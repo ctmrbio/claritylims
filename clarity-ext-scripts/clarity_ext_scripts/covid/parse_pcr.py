@@ -2,6 +2,7 @@
 
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
+from datetime import date
 
 CT_HEADER = u"Cт"
 
@@ -29,7 +30,10 @@ class Extension(GeneralExtension):
             # also add the measurement to the original sample, where it should be understood
             # as the latest measurement
             original_sample = output.sample()
-            original_sample.udf_map.force("CT", ct)
+            original_sample.udf_map.force("CT latest", ct)
+            original_sample.udf_map.force("CT updated at", date.today())
+            # LIMS ID of the source of the CT measurement
+            original_sample.udf_map.force("CT source", output.api_resource.uri)
             self.context.update(original_sample)
 
 
