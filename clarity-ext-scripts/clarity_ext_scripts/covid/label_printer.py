@@ -1,7 +1,7 @@
 import re
 
 
-class LabelPrinterService:
+class LabelPrinterService(object):
     """Defines the business rules for printing to a label printer"""
 
     HEIGHT_SHORT = 80
@@ -59,7 +59,7 @@ class LabelPrinterService:
                                  space_points=20, chars_per_line=28)
 
 
-class LabelPrintInfo:
+class LabelPrintInfo(object):
     POS_RIGHT = 1
     POS_TOP = 2
 
@@ -81,7 +81,7 @@ class LabelPrintInfo:
         self.position = position
 
 
-class ZebraLabelPrinter:
+class ZebraLabelPrinter(object):
 
     FONT_SIZES = {"A": (5, 9), "B": (7, 11), "C": (10, 18), "D": (10, 18),
                   "E": (15, 28), "F": (13, 26), "G": (40, 60), "H": (13, 21)}
