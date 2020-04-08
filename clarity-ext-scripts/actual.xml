@@ -1,0 +1,29 @@
+<stp:placements uri="https://server/api/v2/steps/24-38730/placements">
+    <step uri="https://server/api/v2/steps/24-38730" rel="steps"/>
+    <configuration uri="https://server/api/v2/configuration/protocols/602/steps/605">Covid19 RNA extraction v1</configuration>
+    <selected-containers>
+        <container uri="https://server/api/v2/containers/27-7123"/>
+    </selected-containers>
+    <output-placements>
+        <output-placement uri="https://server/api/v2/artifacts/2-231183"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231184"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231185"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231186"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231187"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231188"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231189"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231190"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231191"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231192"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231193"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231194"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231195"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231196"/>
+        <output-placement uri="https://server/api/v2/artifacts/2-231197">
+            <location>
+                <container uri="https://server/api/v2/containers/27-7123" limsid="27-7123"/>
+                <value>D:1</value>
+            </location>
+        </output-placement>
+    </output-placements>
+</stp:placements>

@@ -1,40 +1,63 @@
-import sys
-import getopt
-import xml.dom.minidom
-#import glsapiutil
-from xml.dom.minidom import parseString
+from clarity_ext.extensions import GeneralExtension
+import genologics
 
-HOSTNAME = ""
-VERSION = ""
-BASE_URI = ""
 
-DEBUG = False
-api = None
+class Extension(GeneralExtension):
+    """
+    Automatically places all samples in the source plate to the same position in a new target plate.
 
-ARTIFACTS = None
-CACHE_IDS = []
-I2OMap = {} # A mapping of inputs to their outputs
+    This script should run when entering the sample placement view
+    """
+    def execute(self):
+        for cont in self.context.input_containers:
+            from datetime import datetime
 
-def setupGlobalsFromURI( uri ):
+            new_name = "{}-{}".format(cont.name, datetime.now().isoformat())
+            #self.context.copy_container(cont, new_name, auto_place=True)
 
-	global HOSTNAME
-	global VERSION
-	global BASE_URI
+            # NOTE: We require a one-to-one mapping between inputs and outputs
+            from genologics.entities import StepPlacements, Step
+            import lxml.etree as etree
+            #import lxml.etree as etree
+            step = Step(self.context.session.api, id=self.context.session.current_step_id)
+            step.get()
+            print(">>>", step.configuration.uri)
+            placements = StepPlacements._create(self.context.session.api, step=step, configuration=step.configuration)
+            print(placements.uri)
+            with open("generated.xml", "w") as fs:
+                #fs.write(etree.tostring(placements.root, pretty_print=True))
+                print(etree.tostring(placements.root))
 
-	tokens = uri.split( "/" )
-	HOSTNAME = "/".join(tokens[0:3])
-	VERSION = tokens[4]
-	BASE_URI = "/".join(tokens[0:5]) + "/"
+            return
 
-	if DEBUG is True:
-		print HOSTNAME
-		print BASE_URI
+
+            for i, o in self.context.all_analytes:
+                #print(i.api_resource.uri, o.api_resource.uri)
+                pass
+
+            # pXML = '<?xml version="1.0" encoding="UTF-8"?>'
+            # pXML += ( '<stp:placements xmlns:stp="http://genologics.com/ri/step" uri="' + args[ "stepURI" ] +  '/placements">' )
+            # pXML += ( '<step uri="' + args[ "stepURI" ] + '"/>' )
+            # pXML += getStepConfiguration()
+            # pXML += '<selected-containers>'
+            # pXML += ( '<container uri="' + BASE_URI + 'containers/' + c96 + '"/>' )
+            # pXML += '</selected-containers><output-placements>'
+
+
+
+    def integration_tests(self):
+        yield "24-38730"
+
+exit
+
+#import sys
+#import getopt
+#import xml.dom.minidom
+##import glsapiutil
+#from xml.dom.minidom import parseString
 
 def getStepConfiguration( ):
 
-        # Fetch https://ctmr-lims-stage.scilifelab.se/api/v2/steps/24-38730/ and just return
-        # the configuration part, i.e.
-        # https://ctmr-lims-stage.scilifelab.se/api/v2/steps/24-38730/
 	response = ""
 
 	if len( args[ "stepURI" ] ) > 0:
@@ -67,51 +90,26 @@ def prepareCache():
 	mXML = api.getBatchResourceByURI( BASE_URI + "artifacts/batch/retrieve", lXML )
 	ARTIFACTS = parseString( mXML )
 
-def getArtifact( limsid ):
+# def getArtifact( limsid ):
 
-	response = None
+# 	response = None
 
-	elements = ARTIFACTS.getElementsByTagName( "art:artifact" )
-	for artifact in elements:
-		climsid = artifact.getAttribute( "limsid" )
-		if climsid == limsid:
-			response = artifact
+# 	elements = ARTIFACTS.getElementsByTagName( "art:artifact" )
+# 	for artifact in elements:
+# 		climsid = artifact.getAttribute( "limsid" )
+# 		if climsid == limsid:
+# 			response = artifact
 
-	return response
-
-def createContainer( type, name ):
-
-	response = ""
-
-	if type == '96':
-		cType = '1'
-		cTypeName = "96 well plate"
-	elif type == '384':
-		cType = '3'
-		cTypeName = "384 well plate"
-
-	xml ='<?xml version="1.0" encoding="UTF-8"?>'
-	xml += '<con:container xmlns:con="http://genologics.com/ri/container">'
-	xml += '<name>' + name + '</name>'
-	xml += '<type uri="' + BASE_URI + 'containertypes/' + cType + '" name="' + cTypeName + '"/>'
-	xml += '</con:container>'
-
-	response = api.createObject( xml, BASE_URI + "containers" )
-
-	rDOM = parseString( response )
-	Nodes = rDOM.getElementsByTagName( "con:container" )
-	if Nodes:
-		temp = Nodes[0].getAttribute( "limsid" )
-		response = temp
-
-	return response
+# 	return response
 
 def autoPlace():
 
 	global I2OMap
 
+        # DONE 1. Create a 96 well plate
 	c96 = createContainer( '96', '96 WP' )
 
+        # DONE 2. Get the xml for the process to get the iomap
 	## step one: get the process XML
 	pURI = BASE_URI + "processes/" + args[ "limsid" ]
 	pXML = api.getResourceByURI( pURI )
@@ -194,35 +192,7 @@ def autoPlace():
 		api.reportScriptStatus( args[ "stepURI" ], "WARN", msg )
 
 def main():
-
-	global api
-	global args
-
-	args = {}
-
-	opts, extraparams = getopt.getopt(sys.argv[1:], "l:u:p:s:")
-
-	for o,p in opts:
-		if o == '-l':
-			args[ "limsid" ] = p
-		elif o == '-u':
-			args[ "username" ] = p
-		elif o == '-p':
-			args[ "password" ] = p
-		elif o == '-s':
-			args[ "stepURI" ] = p
-                        # http://localhost:9080/api/v2/steps/24-38717
-
-	setupGlobalsFromURI( args[ "stepURI" ] )
-	api = glsapiutil.glsapiutil()
-	api.setHostname( HOSTNAME )
-	api.setVersion( VERSION )
-	api.setup( args[ "username" ], args[ "password" ] )
-
-	## at this point, we have the parameters the EPP plugin passed, and we have network plumbing
-	## so let's get this show on the road!
-
 	autoPlace()
 
-# if __name__ == "__main__":
-# 	main()
+if __name__ == "__main__":
+	main()
