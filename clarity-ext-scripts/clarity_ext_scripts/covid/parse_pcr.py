@@ -22,8 +22,6 @@ class Extension(GeneralExtension):
                             target_name, output.well.alpha_num_key, file_name, output.name))
 
             ct = entry[ct_col]
-            # TODO: What should we do if its undetermined?
-            ct = -1 if ct == "Undetermined" else ct
             output.udf_map.force("CT", ct)
             self.context.update(output)
 
