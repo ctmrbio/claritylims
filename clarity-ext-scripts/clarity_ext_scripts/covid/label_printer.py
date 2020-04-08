@@ -1,4 +1,3 @@
-from lims_snpseq.utils.ftp import FtpChannel
 import re
 
 
@@ -38,11 +37,15 @@ class LabelPrinterService:
         """Prints a default bar code label for a container"""
         print_info = LabelPrintInfo(name, barcode, self.HEIGHT_TALL,
                                     self.WIDTH_NARROW, (90, 20), LabelPrintInfo.POS_RIGHT)
-        self.print_label(print_info)
+        self.append_contents(print_info)
 
-    def print_label(self, label_print_info):
+    def append_contents(self, label_print_info):
         """Prints to the registered printer, using a LabelPrintInfo"""
-        self.printer.print_label(label_print_info)
+        self.printer.append_contents(label_print_info)
+
+    @property
+    def printfile_contents(self):
+        return '\n'.join(self.printer.contents)
 
     @staticmethod
     def create():
@@ -51,8 +54,7 @@ class LabelPrinterService:
     @staticmethod
     def create_printer():
         # Creates the default production version of a printer:
-        channel = FtpChannel("molmed-37.medsci.uu.se", ".zpl")
-        return ZebraLabelPrinter(channel, font="B", zoom_factor=4, spacing=5,
+        return ZebraLabelPrinter(font="B", zoom_factor=4, spacing=5,
                                  block_width_points=850, label_width_points=1240, text_max_lines=4,
                                  space_points=20, chars_per_line=28)
 
@@ -85,10 +87,8 @@ class ZebraLabelPrinter:
                   "E": (15, 28), "F": (13, 26), "G": (40, 60), "H": (13, 21)}
 
     """Specifies both the file format needed for this printer as well as the communication mechanism"""
-    def __init__(self, channel, font, zoom_factor, spacing, block_width_points, label_width_points,
+    def __init__(self, font, zoom_factor, spacing, block_width_points, label_width_points,
                  text_max_lines, space_points, chars_per_line):
-        # Channel needs to provide a "put" method. Mocking out the channel ensures no side effects
-        self.channel = channel
         self.font = font
         self.zoom_factor = zoom_factor
         self.spacing = spacing
@@ -98,10 +98,10 @@ class ZebraLabelPrinter:
         self.text_max_lines = text_max_lines
         self.space_points = space_points
         self.chars_per_line = chars_per_line
+        self.contents = list()
 
-    def print_label(self, info):
-        file_content = self.parse(info)
-        self.channel.put(file_content)
+    def append_contents(self, info):
+        self.contents.append(self.parse(info))
 
     def _parse(self, info):
         start            = 11 * info.width
