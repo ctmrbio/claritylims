@@ -14,7 +14,7 @@ class LabelPrinterService:
     def __init__(self, printer):
         self.printer = printer
 
-    def print_bar_code_for_containers(self, containers):
+    def generate_zpl_for_containers(self, containers):
         """
         Print out labels for all listed containers, using container name as barcode.
         Inserts newline in name string according to SNP&SEQ barcode policy (newline
@@ -31,9 +31,9 @@ class LabelPrinterService:
                 processed_name = match_res.group(1) + "\n" + match_res.group(2)
             else:
                 processed_name = c.name
-            self.print_bar_code_for_container(name=processed_name, barcode=without_prefix)
+            self.generate_zpl_for_container(name=processed_name, barcode=without_prefix)
 
-    def print_bar_code_for_container(self, name, barcode):
+    def generate_zpl_for_container(self, name, barcode):
         """Prints a default bar code label for a container"""
         print_info = LabelPrintInfo(name, barcode, self.HEIGHT_TALL,
                                     self.WIDTH_NARROW, (90, 20), LabelPrintInfo.POS_RIGHT)
@@ -44,7 +44,7 @@ class LabelPrinterService:
         self.printer.append_contents(label_print_info)
 
     @property
-    def printfile_contents(self):
+    def contents(self):
         return '\n'.join(self.printer.contents)
 
     @staticmethod
