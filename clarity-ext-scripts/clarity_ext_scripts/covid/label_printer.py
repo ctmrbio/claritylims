@@ -14,7 +14,7 @@ class LabelPrinterService(object):
     def __init__(self, printer):
         self.printer = printer
 
-    def generate_zpl_for_containers(self, containers):
+    def generate_zpl_for_containers(self, containers, lims_id_as_barcode=False):
         """
         Print out labels for all listed containers, using container name as barcode.
         Inserts newline in name string according to SNP&SEQ barcode policy (newline
@@ -22,16 +22,13 @@ class LabelPrinterService(object):
         :param containers: An unique list of containers
         :return:
         """
-        newline_pattern = re.compile("(^.+_)(PL\d+_\d+$)")
         for c in containers:
-            without_prefix = c.id.split("-", 1)[1]
-            processed_name = ""
-            match_res = newline_pattern.match(c.name)
-            if match_res:
-                processed_name = match_res.group(1) + "\n" + match_res.group(2)
+            if lims_id_as_barcode:
+                # Remove the prefix part of lims id
+                barcode = c.id.split("-", 1)[1]
             else:
-                processed_name = c.name
-            self.generate_zpl_for_container(name=processed_name, barcode=without_prefix)
+                barcode = c.name
+            self.generate_zpl_for_container(name=c.name, barcode=barcode)
 
     def generate_zpl_for_container(self, name, barcode):
         """Prints a default bar code label for a container"""
