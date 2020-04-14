@@ -37,9 +37,9 @@ class PartnerAPISampleInformation(object):
 
             if not verify_test_partner_referral_code(referral_code):
                 raise AssertionError(("Check code digit {} (last digit) did not match mod10 requirement"
-                                     "in referral code: {}."
+                                      "in referral code: {}."
                                       "Please verify the code is correct.").format(referral_code[-1],
-                                                                                 referral_code))
+                                                                                   referral_code))
 
             self.referral_code = referral_code
 
@@ -113,11 +113,12 @@ class PartnerAPIClient(object):
             self._integration_test_has_failed += 1
             raise FailedInContactingTestPartner(("'Fake failed' to contact test partner because integration test "
                                                  "mode is active. This is failure {} of {}.").format(
-                                                    self._integration_test_has_failed,
-                                                    self._integration_test_should_fail
-                                                ))
+                self._integration_test_has_failed,
+                self._integration_test_should_fail
+            ))
 
-    @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
+    # TODO Remember to re-enable.
+    # @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
     def send_single_sample_result(self, test_partner_sample_info):
         """
         Send a single sample result to the test partner.
@@ -126,6 +127,9 @@ class PartnerAPIClient(object):
         failure in the exception message. On a successful upload it will return True. Please note that since this
         actually never returns False, it is mostly useful for testing purposes.
         """
+
+        log.debug("Attempting to send information for sample with id: {}".format(
+            test_partner_sample_info.referral_code))
 
         if not isinstance(test_partner_sample_info, PartnerAPISampleInformation):
             raise AssertionError(
@@ -154,6 +158,8 @@ class PartnerAPIClient(object):
             log.error(mess)
             raise FailedInContactingTestPartner(mess)
 
+        log.debug("Got response: {} with text: {}, and headers: {}".format(
+            response, response.text, response.headers))
         # Example of successful API call response
         # success
         # referrral_code=1234567890
@@ -170,8 +176,6 @@ class PartnerAPIClient(object):
             raise FailedInContactingTestPartner(mess)
 
         return True
-
-        # TODO Figure out how text response should be parsed if there is an error.
 
     # TODO Finish this when/if there is a batch API at the partner.
     @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
