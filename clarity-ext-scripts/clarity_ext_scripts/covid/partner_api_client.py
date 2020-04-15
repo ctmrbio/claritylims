@@ -1,4 +1,5 @@
 
+import base64
 from datetime import datetime
 from luhn import verify as mod10verify
 from luhn import generate as mod10generate
@@ -224,9 +225,14 @@ class PartnerAPIV7Client(object):
         try:
             params = {"identifier": "|".join([org, org_referral_code])}
             search_url = "{}/ServiceRequest/".format(self._base_url)
+            user_and_password = "{}:{}".format(self._user, self._password)
+            b64_encoded_user_and_password = base64.b64encode(user_and_password)
+
+            headers = {"Authorization": "Basic {}".format(
+                b64_encoded_user_and_password)}
 
             response = requests.get(url=search_url, params=params,
-                                    auth=(self._user, self._password))
+                                    headers=headers)
 
             # TODO Add integration test mode
 
