@@ -15,7 +15,7 @@
     <module name="claritylims" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/clarity-ext-scripts/repos/clarity-ext/clarity_ext/cli.py" />
-    <option name="PARAMETERS" value="--level INFO extension --cache True clarity_ext_scripts.covid.pcr.example_result-file_rt-pcr test" />
+    <option name="PARAMETERS" value="--level INFO extension --cache True clarity_ext_scripts.covid.pcr.example_result_file_rt_pcr test" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <method />
