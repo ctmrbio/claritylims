@@ -1,6 +1,5 @@
 
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPISampleInformation, FailedInContactingTestPartner, \
-    PartnerAPIClient, verify_test_partner_referral_code
+from clarity_ext_scripts.covid.partner_api_client import *
 from mock import patch
 import pytest
 
@@ -78,3 +77,113 @@ comment=ett testmeddelande"""
 
         res = client.send_single_sample_result(sample)
         assert res
+
+
+class TestPartnerAPIV7Client(object):
+
+    class MockValidSearchResponse(object):
+        def __init__(self):
+            self.status_code = 200
+            self.headers = {"fake": "value"}
+
+        def json(self):
+            return {
+                "resourceType": "Bundle",
+                "id": "bundle-search-result",
+                "type": "searchset",
+                "total": 1,
+                "entry": [
+                    {
+                        "resourceType": "ServiceRequest",
+                        "id": "1",
+                        "identifiers": [
+                            {
+                                "system":
+                                "http://example.com/id/Identifier/i-external-lab-id/region-stockholm-karolinska",
+                                "value": "ABC123"
+                            },
+                            {
+                                "assigner": {
+                                    "display": "Direkttest unique referral code"
+                                },
+                                "system": "http://example.com/id/Identifier/i-referral-code",
+                                "value": "1234567897"
+                            }
+                        ],
+                        "status": "active",
+                        "intent": "original-order",
+                        "subject": {
+                            "reference": "Patient/4000"
+                        },
+                        "requester": {
+                            "reference": "Organization/123"
+                        },
+                        "code": {
+                            "coding": [
+                                {
+                                    "system": "http://example.com/id/CodeSystem/cs-analysis/ctmr",
+                                    "code": "stdqpcr-covid19"
+                                }
+                            ],
+                            "text": "Standard qPCR"
+                        }
+                    }],
+                "search": {
+                    "mode": "match"
+                }
+            }
+
+    class MockNoSearchResponse(object):
+        def __init__(self):
+            self.status_code = 200
+            self.headers = {"fake": "value"}
+
+        def json(self):
+            return {
+                "resourceType": "Bundle",
+                "id": "bundle-search-warning",
+                "type": "searchset",
+                "total": 0,
+                "entry": [
+                    {
+                        "resource": {
+                            "resourceType": "OperationOutcome",
+                            "id": "warning",
+                            "issue": [
+                                {
+                                    "severity": "warning",
+                                    "code": "not-found",
+                                    "details": {
+                                        "text": "No mathing ServiceRequest found"
+                                    }
+                                }
+                            ]
+                        },
+                        "search": {
+                            "mode": "outcome"
+                        }
+                    }
+                ]
+            }
+
+    config = {"test_partner_base_url": "https://example.com",
+              "test_partner_user": "api-1",
+              "test_partner_password": "1337"}
+
+    client = PartnerAPIV7Client(**config)
+
+    def test_can_get_search_result(self):
+        mock_search_response = self.MockValidSearchResponse()
+
+        with patch('requests.get', return_value=mock_search_response) as mock_search_response_ctl:
+            response = self.client.search_for_service_request(
+                "http://example.com/id/Identifier/i-external-lab-id/region-stockholm-karolinska", "ABC123")
+            assert response == mock_search_response.json()["entry"][0]
+
+    def test_raises_when_no_search_result_found(self):
+        mock_search_response = self.MockNoSearchResponse()
+
+        with patch('requests.get', return_value=mock_search_response) as mock_search_response_ctl:
+            with pytest.raises(OrganizationReferralCodeNotFound):
+                response = self.client.search_for_service_request(
+                    "http://example.com/id/Identifier/i-external-lab-id/region-stockholm-karolinska", "ABC123")

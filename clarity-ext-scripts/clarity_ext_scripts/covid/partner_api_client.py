@@ -248,7 +248,7 @@ class PartnerAPIV7Client(object):
             nbr_of_results = response_json["total"]
 
             if nbr_of_results == 1:
-                service_request = response_json["entry"][0]["resource"]
+                service_request = response_json["entry"][0]
                 return service_request
             elif nbr_of_results > 1:
                 raise MoreThanOneOrganizationReferralCodeFound(
