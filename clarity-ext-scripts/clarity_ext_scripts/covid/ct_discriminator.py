@@ -20,6 +20,9 @@ class CtDiscriminatorForPlate(object):
         if control_type.lower() == 'rtpcr_neg' and ct_value >= upper_bound:
             self.has_valid_neg_control = True
 
+    def is_valid(self):
+        return self.has_valid_neg_control and self.has_valid_pos_control
+
     def analyze(self, ct_value, lower_bound, upper_bound):
         """
         Returns: String with value of either 'positive', 'negative', 'failed'

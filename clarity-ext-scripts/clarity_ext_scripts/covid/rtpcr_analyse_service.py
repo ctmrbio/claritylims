@@ -26,9 +26,11 @@ class RTPCRAnalyseService(object):
         for _, output in self.context.all_analytes:
             if output.udf_control == 'Yes' and output.udf_control_type.lower() in rt_pcr_control_types:
                 found_controls.append(output.udf_control_type.lower())
-                if not ct_analysis_service.validate_control_value(
-                        output.udf_control_type, output.udf_ct, lower_bound, upper_bound):
-                    return
+                ct_analysis_service.validate_control_value(
+                    output.udf_control_type, output.udf_ct, lower_bound, upper_bound)
+
+        if not ct_analysis_service.is_valid():
+            return
 
         if set(rt_pcr_control_types) not in set(found_controls):
             raise UsageError('positive and negative rtPCR controls were not found on this plate: {}'
