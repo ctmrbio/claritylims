@@ -19,6 +19,22 @@ VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
                          COVID_RESPONSE_NEGATIVE, COVID_RESPONSE_FAILED}
 
 
+class PartnerClientAPIException(Exception):
+    pass
+
+
+class OrganizationReferralCodeNotFound(PartnerClientAPIException):
+    pass
+
+
+class MoreThanOneOrganizationReferralCodeFound(PartnerClientAPIException):
+    pass
+
+
+class FailedInContactingTestPartner(PartnerClientAPIException):
+    pass
+
+
 def verify_test_partner_referral_code(code):
     """
     Will check if the check number of the given code is correct.
@@ -85,10 +101,6 @@ class PartnerAPISampleInformation(object):
 
     def get_as_dict(self):
         return vars(self)
-
-
-class FailedInContactingTestPartner(Exception):
-    pass
 
 
 class PartnerAPIClient(object):
@@ -180,4 +192,69 @@ class PartnerAPIClient(object):
     # TODO Finish this when/if there is a batch API at the partner.
     @retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
     def send_many_sample_results(self, test_partner_sample_info_list):
+        raise NotImplementedError
+
+
+class PartnerAPIV7Client(object):
+    """
+    This is a client for v7 of the test partners API.
+
+    The workflow it is designed to support goes along these lines:
+      - Search for a ServiceRequest from a organization based on the
+        unique organization and their provided sample id. The returned
+        ServiceRequest object will contain the test partner referral code,
+        and the ServiceRequest id. These values are needed when creating the
+        diagnosis result.
+      - TODO Post a DiagnosisResult to a specific test partner referral code.
+    """
+
+    def __init__(self, test_partner_base_url, test_partner_user, test_partner_password,
+                 integration_test_mode=False, integration_test_should_fail=0):
+        self._base_url = test_partner_base_url
+        self._user = test_partner_user
+        self._password = test_partner_password
+        if integration_test_mode:
+            self._integration_test_mode = integration_test_mode
+            self._integration_test_should_fail = integration_test_should_fail
+            self._integration_test_has_failed = 0
+        else:
+            self._integration_test_mode = False
+
+    def search_for_service_request(self, org, org_referral_code):
+        try:
+            params = {"identifier": "|".join([org, org_referral_code])}
+            search_url = "{}/ServiceRequest/".format(self._base_url)
+
+            response = requests.get(url=search_url, params=params,
+                                    auth=(self._user, self._password))
+
+            # TODO Add integration test mode
+
+            if not response.status_code == 200:
+                mess = ("Did not get a 200 response from test partner. "
+                        "Response status code was: {} "
+                        "and response json: {}").format(
+                    response.status_code, response.json())
+                raise FailedInContactingTestPartner(mess)
+
+            response_json = response.json()
+
+            nbr_of_results = response_json["total"]
+
+            if nbr_of_results == 1:
+                service_request = response_json["entry"][0]["resource"]
+                return service_request
+            elif nbr_of_results > 1:
+                raise MoreThanOneOrganizationReferralCodeFound(
+                    ("More than one partner referral code was found for organization: {} "
+                     "and organization referral code: {}").format(org, org_referral_code))
+            else:
+                raise OrganizationReferralCodeNotFound(
+                    ("No partner referral code was found for organization: {} "
+                     "and organization referral code: {}").format(org, org_referral_code))
+        except PartnerClientAPIException as e:
+            log.error(e.message)
+            raise e
+
+    def post_diagnosis_report(self, diagnosis_report):
         raise NotImplementedError
