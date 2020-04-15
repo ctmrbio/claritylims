@@ -18,4 +18,4 @@ class Extension(GeneralExtension):
             self.usage_error_defer("Please confirm that the run was failed: '{}'", required_udf)
 
     def integration_tests(self):
-        yield self.test("24-10152", commit=False)
+        yield self.test("24-39269", commit=False)

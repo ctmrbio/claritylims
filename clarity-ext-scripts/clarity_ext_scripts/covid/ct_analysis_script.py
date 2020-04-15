@@ -12,4 +12,4 @@ class Extension(GeneralExtension):
         ct_analysis_service.execute()
 
     def integration_tests(self):
-        yield "24-39151"
+        yield "24-39269"

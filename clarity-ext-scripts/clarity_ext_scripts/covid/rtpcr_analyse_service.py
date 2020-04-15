@@ -17,22 +17,25 @@ class RTPCRAnalyseService(object):
 
         rt_pcr_control_types = ['rtpcr_pos', 'rtpcr_neg']
         found_controls = list()
-        self.context.current_step.udf_rtpcr_passed = False
+        self.context.current_step.udf_map.force("rtPCR Passed",False)
         for _, output in self.context.all_analytes:
             original_sample = output.sample()
             original_sample.udf_map.force("rtPCR Passed", False)
 
         # 1. Check control values
         for _, output in self.context.all_analytes:
-            if output.udf_control == 'Yes' and output.udf_control_type.lower() in rt_pcr_control_types:
-                found_controls.append(output.udf_control_type.lower())
+            original_sample = output.sample()
+            if original_sample.udf_control == 'Yes' \
+                    and original_sample.udf_control_type.lower() in rt_pcr_control_types:
+                found_controls.append(original_sample.udf_control_type.lower())
                 ct_analysis_service.validate_control_value(
-                    output.udf_control_type, output.udf_ct, lower_bound, upper_bound)
+                    original_sample.udf_control_type, output.udf_ct,
+                    lower_bound, upper_bound)
 
         if not ct_analysis_service.is_valid():
             return
 
-        if set(rt_pcr_control_types) not in set(found_controls):
+        if not set(rt_pcr_control_types).issubset(set(found_controls)):
             raise UsageError('positive and negative rtPCR controls were not found on this plate: {}'
                              .format(set(found_controls)))
 

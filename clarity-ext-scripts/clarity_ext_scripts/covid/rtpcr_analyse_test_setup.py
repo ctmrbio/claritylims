@@ -7,7 +7,7 @@ class Extension(GeneralExtension):
     """
     def execute(self):
         i = 0
-        values = [15, 10, 15]
+        values = [1, 100, 15, 15, 60, 60, 60, 50]
         for _, output in self.context.all_analytes:
             original_sample = output.sample()
             if i == 0:
@@ -23,4 +23,4 @@ class Extension(GeneralExtension):
             i += 1
 
     def integration_tests(self):
-        yield "24-39151"
+        yield "24-39269"
