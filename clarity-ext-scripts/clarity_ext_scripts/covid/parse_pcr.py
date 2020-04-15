@@ -3,7 +3,7 @@
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from datetime import datetime
-from clarity_ext_scripts.covid.rtpcr_analyes_service import RTPCRAnalyseService
+from clarity_ext_scripts.covid.rtpcr_analyse_service import RTPCRAnalyseService
 
 CT_HEADER = u"Cт"
 
