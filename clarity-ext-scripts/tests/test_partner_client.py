@@ -20,6 +20,7 @@ arrival_date=20140310
 test_date=20140310
 result_date=20140310
 comment=ett testmeddelande"""
+            self.headers = {"fake": "value"}
 
     def test_validate_sample_information_instance(self):
         # If all values are ok, don't raise
