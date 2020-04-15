@@ -3,7 +3,7 @@ from clarity_ext_scripts.covid.ct_discriminator import CtDiscriminator
 from clarity_ext.domain.validation import UsageError
 
 
-class CtAnalyseService(object):
+class RTPCRAnalyseService(object):
     def __init__(self, context):
         self.context = context
 
@@ -31,7 +31,7 @@ class CtAnalyseService(object):
         for _, output in self.context.all_analytes:
             original_sample = output.sample()
             ct = output.udf_ct
-            has_covid = ct_analysis_service.analyze(ct)
-            original_sample.udf_map.force("Has Covid19", has_covid)
-            original_sample.udf_map.force("rtPCR passed", True)
+            covid_result = ct_analysis_service.analyze(ct)
+            original_sample.udf_map.force("rtPCR covid-19 result", covid_result)
+            original_sample.udf_map.force("rtPCR Passed", True)
             self.context.update(original_sample)

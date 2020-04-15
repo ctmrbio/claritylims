@@ -31,7 +31,7 @@ class CtDiscriminator(object):
 
     def _has_assay_udf(self):
         try:
-            dummy = self.assay
+            _ = self.assay
         except AttributeError:
             return False
 
@@ -56,11 +56,11 @@ class CtDiscriminator(object):
 
     def analyze(self, ct_value):
         """
-        Returns: String with value of either 'Yes', 'No', 'Undefined'
+        Returns: String with value of either 'positive', 'negative', 'failed'
         """
         lower_bound, upper_bound = self._get_discriminator_values()
         if ct_value <= lower_bound:
-            return 'Yes'
+            return 'positive'
         elif ct_value >= upper_bound:
-            return 'No'
-        return 'Undefined'
+            return 'negative'
+        return 'failed'
