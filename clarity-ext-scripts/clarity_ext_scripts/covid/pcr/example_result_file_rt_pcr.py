@@ -1,19 +1,18 @@
-# -*- coding: utf-8 -*-
-from clarity_ext.extensions import GeneralExtension
 import xlwt
 import collections
 import datetime
 import random
-CT_HEADER = u"Cт"
+from clarity_ext.extensions import GeneralExtension
+from clarity_ext_scripts.covid.parse_pcr import CT_HEADER
 
 
 class Extension(GeneralExtension):
     def execute(self):
-        file_handle = "Result file"
-        today = datetime.date.today().strftime("%y%m%d")
+        file_handle_name = "Result file"
+        timestamp = datetime.datetime.now().strftime("%y%m%dT%H%M%S")
         user = self.context.current_user
 
-        file_name = "EXAMPLE-FILE_{}_{}.xls".format(user.initials, today)
+        file_name = "EXAMPLE-FILE_{}_{}.xls".format(user.initials, timestamp)
         wb = xlwt.Workbook()
         ws = wb.add_sheet('Results')
 
@@ -23,43 +22,35 @@ class Extension(GeneralExtension):
         column_index = 0
 
         # Creating the header of the table
-        for key in self.create_table():
+        for key in self.create_row():
             ws.write(table_row_start, column_index, key)
             column_index += 1
 
-        column_index = 0
         # Creating the content of the table
         for well in self.context.output_container:
-            for key in self.create_table():
-                if well.artifact:
-                    try:
-                        ws.write(well.index_right_first + table_row_start, column_index, eval(self.create_table()[key]))
-                    # When the value in the table is not a variable
-                    except NameError:
-                        ws.write(well.index_right_first + table_row_start, column_index, self.create_table()[key])
-                # This is only used to create empty rows with well number i.e. A1
-                else:
-                    if key == "Well":
-                        ws.write(well.index_right_first + table_row_start, column_index, eval(self.create_table()[key]))
-                column_index += 1
+            row = self.create_row(well, well.artifact)
             column_index = 0
-            wb.save(file_name)
+            for key, value in row.items():
+                ws.write(well.index_right_first +
+                         table_row_start, column_index, value)
+                column_index += 1
 
-        full_path, file_handle = self.context.file_service.pre_queue(file_name, file_handle)
+        full_path, file_handle = self.context.file_service.pre_queue(
+            file_name, file_handle_name)
         wb.save(full_path)
 
-        self.context.file_service.queue(file_name, file_handle)
+        self.context.file_service.queue(full_path, file_handle)
 
-    def create_table(self):
+    def create_row(self, well=None, artifact=None):
         header = collections.OrderedDict()
-        header["Well"] = "well.alpha_num_key"
-        header["Sample Name"] = "well.artifact.name"
-        header["Target Name"] = "well.artifact.name"
+        header["Well"] = well.alpha_num_key if well else None
+        header["Sample Name"] = artifact.name if artifact else None
+        header["Target Name"] = artifact.name if artifact else None
         header["Task"] = "UNKNOWN"
         header["Reporter"] = "SYBR"
         header["Quencher"] = "None"
-        header[CT_HEADER] = "random.randint(0,46)"
-        header[CT_HEADER + " Mean"] = "random.randint(0,40)"
+        header[CT_HEADER] = random.randint(0, 46)
+        header[CT_HEADER + " Mean"] = random.randint(0, 40)
         header[CT_HEADER + " SD"] = "0.473177612"
         header["Quantity"] = "None"
         header["Quantity Mean"] = "None"
