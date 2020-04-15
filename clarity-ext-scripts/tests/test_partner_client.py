@@ -166,6 +166,19 @@ class TestPartnerAPIV7Client(object):
                 ]
             }
 
+    class MockOkPostResponse(object):
+        def __init__(self):
+            self.status_code = 200
+            self.headers = {"fake": "value"}
+
+    class MockFailedPostResponse(object):
+        def __init__(self):
+            self.status_code = 400
+            self.headers = {"fake": "value"}
+
+        def json(self):
+            return {"reason": "YOU did something bad!"}
+
     config = {"test_partner_base_url": "https://example.com",
               "test_partner_user": "api-1",
               "test_partner_password": "1337"}
@@ -187,3 +200,91 @@ class TestPartnerAPIV7Client(object):
             with pytest.raises(OrganizationReferralCodeNotFound):
                 response = self.client.search_for_service_request(
                     "http://example.com/id/Identifier/i-external-lab-id/region-stockholm-karolinska", "ABC123")
+
+    def test_can_create_negative_diagnosis_payload(self):
+        expected_payload = {
+            "resourceType": "DiagnosticReport",
+            "contained": [
+                {
+                    "id": 0,
+                    "status": "final",
+                    "code": "",
+                    "valueQuantity": {
+                        "value": 30,
+                        "unit": "<UNIT HERE>",
+                        "system": "<SYSTEM HERE>",
+                        "code": "<CODE HERE>"
+                    }
+                },
+                {
+                    "id": 1,
+                    "status": "final",
+                    "code": "",
+                    "valueQuantity": {
+                        "value": 25,
+                        "unit": "<UNIT HERE>",
+                        "system": "<SYSTEM HERE>",
+                        "code": "<CODE HERE>"
+                    }
+                }
+            ],
+            "basedOn": [
+                {
+                    "reference": "ServiceRequest/1000"
+                }
+            ],
+            "code": {
+                "coding": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "260385009",
+                        "display": "Negative"
+                    },
+                    {
+                        "system": "http://example.com/id/CodeSystem/cs-results/ctmr",
+                        "code": "negative"
+                    }
+                ]
+            },
+            "result": [
+                {
+                    "reference": "Observation/#0"
+                },
+                {
+                    "reference": "Observation/#1"
+                }
+            ]
+        }
+        result = self.client._create_payload(service_request_id="1000",
+                                             diagnosis_result="positive",
+                                             analysis_results=[{"gene": "gene1", "value": 30},
+                                                               {"gene": "gene2", "value": 25}])
+        assert result == expected_payload
+
+    def test_can_create_positive_diagnosis_payload(self):
+        pass
+
+    def test_can_create_failed_diagnosis_payload(self):
+        pass
+
+    def test_can_post_diagnosis_result(self):
+        mock_ok_response = self.MockOkPostResponse()
+
+        # TODO Note that the analysis results may not look like this at all...
+        with patch('requests.post', return_value=mock_ok_response) as mock_post_response_ctl:
+            self.client.post_diagnosis_report(service_request_id="1000",
+                                              diagnosis_result="positive",
+                                              analysis_results=[{"gene": "gene1", "value": 30},
+                                                                {"gene": "gene2", "value": 25}])
+            mock_post_response_ctl.assert_called_once()
+
+    def test_failed_post_diagnosis_result_raises(self):
+        mock_failed_response = self.MockFailedPostResponse()
+
+        # TODO Note that the analysis results may not look like this at all...
+        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+            with pytest.raises(FailedInContactingTestPartner):
+                self.client.post_diagnosis_report(service_request_id="1000",
+                                                  diagnosis_result="positive",
+                                                  analysis_results=[{"gene": "gene1", "value": 30},
+                                                                    {"gene": "gene2", "value": 25}])

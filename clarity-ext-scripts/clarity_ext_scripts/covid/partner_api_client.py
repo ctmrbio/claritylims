@@ -221,12 +221,15 @@ class PartnerAPIV7Client(object):
         else:
             self._integration_test_mode = False
 
+    def _base64_encoded_credentials(self):
+        user_and_password = "{}:{}".format(self._user, self._password)
+        return base64.b64encode(user_and_password)
+
     def search_for_service_request(self, org, org_referral_code):
         try:
             params = {"identifier": "|".join([org, org_referral_code])}
             search_url = "{}/ServiceRequest/".format(self._base_url)
-            user_and_password = "{}:{}".format(self._user, self._password)
-            b64_encoded_user_and_password = base64.b64encode(user_and_password)
+            b64_encoded_user_and_password = self._base64_encoded_credentials()
 
             headers = {"Authorization": "Basic {}".format(
                 b64_encoded_user_and_password)}
@@ -262,5 +265,98 @@ class PartnerAPIV7Client(object):
             log.error(e.message)
             raise e
 
-    def post_diagnosis_report(self, diagnosis_report):
-        raise NotImplementedError
+    def post_diagnosis_report(self, service_request_id, diagnosis_result, analysis_results):
+        try:
+            # TODO Do we not need the referral_code?
+            payload = self._create_payload(
+                service_request_id, diagnosis_result, analysis_results)
+            diagnosis_result_url = "/DiagnosticReport/{}".format(
+                self._base_url)
+            b64_encoded_user_and_password = self._base64_encoded_credentials()
+
+            headers = {"Authorization": "Basic {}".format(
+                b64_encoded_user_and_password)}
+
+            response = requests.post(url=diagnosis_result_url, params=payload,
+                                     headers=headers)
+
+            # TODO Add integration test mode
+
+            if not response.status_code == 200:
+                raise FailedInContactingTestPartner(("Did not get a 200 response from test partner. "
+                                                     "Response status code was: {} "
+                                                     "and response json: {}").format(
+                    response.status_code, response.json())
+                )
+
+            return True
+
+        except PartnerClientAPIException as e:
+            log.error(e.message)
+            raise e
+
+    def _create_payload(self, service_request_id, diagnosis_result, analysis_results):
+        # TODO Need to think about if this needs refactoring later, to more easily support multiple
+        #      analysis types. This is going to be rather unwieldy to add more as it is implemented
+        #      atm.
+        observations = self._create_observations(analysis_results)
+        diagnosis_result_as_codeable_concept = self._translate_diagnosis_result_to_codeable_concept(
+            diagnosis_result)
+        return self._create_diagnosis_report_object(service_request_id=service_request_id,
+                                                    observations=observations,
+                                                    codeable_concept=diagnosis_result_as_codeable_concept)
+
+    def _create_observations(self, analysis_results):
+        # TODO Need to decide on format for the analysis results to be gathered in.
+        observations = []
+        for index, result in enumerate(analysis_results):
+            observations.append(
+                self._create_observation(index, result["value"]))
+        return observations
+
+    def _create_observation(self, index, value):
+        # TODO Define observations based on the different types of assays we might want to run.
+        # TODO Don't know what should go in under the code (CodableConcept)
+        return {
+            "id": index,
+            "status": "final",
+            "code": "",
+            "valueQuantity": {
+                "value": value,
+                "unit": "<UNIT HERE>",
+                "system": "<SYSTEM HERE>",
+                "code": "<CODE HERE>"
+            }
+        }
+
+    def _translate_diagnosis_result_to_codeable_concept(self, diagnosis_result):
+        # TODO Actually write a translation here!
+        # TODO Add base url for coding system as config?
+        return {
+            "coding": [
+                {
+                    "system": "http://snomed.info/sct",
+                    "code": "260385009",
+                    "display": "Negative"
+                },
+                {
+                    "system": "http://example.com/id/CodeSystem/cs-results/ctmr",
+                    "code": "negative"
+                }
+            ]
+        }
+
+    def _create_diagnosis_report_object(self, service_request_id, observations, codeable_concept):
+        # TODO Do we not need to use the referral code? Is it really just the service_request_id
+        #      we need to use? I can't see where it is supposed to go.
+        return {
+            "resourceType": "DiagnosticReport",
+            "contained": observations,
+            "basedOn": [
+                {
+                    "reference": "ServiceRequest/{}".format(service_request_id)
+                }
+            ],
+            "code": codeable_concept,
+            "result": map(lambda x: {"reference": "Observation/#{}".format(x["id"])}, observations)
+        }
