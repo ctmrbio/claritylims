@@ -1,0 +1,3 @@
+{% for artifact in ext.artifacts() -%}
+{{ artifact.name }},{{ artifact.well.index_down_first }}
+{% endfor %}
