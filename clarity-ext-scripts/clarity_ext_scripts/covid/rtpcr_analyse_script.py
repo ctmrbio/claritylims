@@ -3,6 +3,8 @@ from clarity_ext_scripts.covid.rtpcr_analysis_service import RTPCRAnalysisServic
 from clarity_ext.domain.validation import UsageError
 
 BOUNDARY_DICT = {'Assay 1': (10, 50)}
+RT_PCR_POSITIVE_CONTROL = 'rtpcr_pos'
+RT_PCR_NEGATIVE_CONTROL = 'rtpcr_neg'
 
 
 class Extension(GeneralExtension):
@@ -11,7 +13,7 @@ class Extension(GeneralExtension):
         ct_analysis_service = RTPCRAnalysisService()
         lower_bound, upper_bound = BOUNDARY_DICT[self.assay]
 
-        rt_pcr_control_types = ['rtpcr_pos', 'rtpcr_neg']
+        rt_pcr_control_types = [RT_PCR_POSITIVE_CONTROL, RT_PCR_NEGATIVE_CONTROL]
         found_controls = list()
         self.context.current_step.udf_map.force("rtPCR Passed", False)
         for _, output in self.context.all_analytes:

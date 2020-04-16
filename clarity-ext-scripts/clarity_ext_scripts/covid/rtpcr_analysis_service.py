@@ -1,4 +1,5 @@
 from clarity_ext.domain.validation import UsageError
+from clarity_ext_scripts.covid.rtpcr_analyse_script import RT_PCR_NEGATIVE_CONTROL, RT_PCR_POSITIVE_CONTROL
 
 
 class RTPCRAnalysisService(object):
@@ -15,9 +16,9 @@ class RTPCRAnalysisService(object):
         self.has_valid_neg_control = False
 
     def validate_control_value(self, control_type, ct_value, lower_bound, upper_bound):
-        if control_type.lower() == 'rtpcr_pos' and ct_value <= lower_bound:
+        if control_type.lower() == RT_PCR_POSITIVE_CONTROL and ct_value <= lower_bound:
             self.has_valid_pos_control = True
-        if control_type.lower() == 'rtpcr_neg' and ct_value >= upper_bound:
+        if control_type.lower() == RT_PCR_NEGATIVE_CONTROL and ct_value >= upper_bound:
             self.has_valid_neg_control = True
 
     def is_valid(self):
