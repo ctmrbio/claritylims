@@ -15,7 +15,7 @@ class Extension(GeneralExtension):
 
         rt_pcr_control_types = ['rtpcr_pos', 'rtpcr_neg']
         found_controls = list()
-        self.context.current_step.udf_map.force("rtPCR Passed",False)
+        self.context.current_step.udf_map.force("rtPCR Passed", False)
         for _, output in self.context.all_analytes:
             original_sample = output.sample()
             original_sample.udf_map.force("rtPCR Passed", False)
@@ -30,12 +30,12 @@ class Extension(GeneralExtension):
                     original_sample.udf_control_type, output.udf_ct,
                     lower_bound, upper_bound)
 
-        if not ct_analysis_service.is_valid():
-            return
-
         if not set(rt_pcr_control_types).issubset(set(found_controls)):
             raise UsageError('positive and negative rtPCR controls were not found on this plate: {}'
                              .format(set(found_controls)))
+
+        if not ct_analysis_service.is_valid():
+            return
 
         # 2. Control values ok, pass this run
         self.context.current_step.udf_rtpcr_passed = True
@@ -70,4 +70,4 @@ class Extension(GeneralExtension):
 
     def integration_tests(self):
         # yield "24-39269"
-        yield "24-40601"
+        yield "24-40616"
