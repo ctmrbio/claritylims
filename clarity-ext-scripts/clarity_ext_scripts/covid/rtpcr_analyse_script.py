@@ -2,8 +2,6 @@ from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.rtpcr_analysis_service import RTPCRAnalysisService
 from clarity_ext.domain.validation import UsageError
 
-VALID_ASSAYS = ['Assay 1']
-
 BOUNDARY_DICT = {'Assay 1': (10, 50)}
 
 
@@ -52,7 +50,7 @@ class Extension(GeneralExtension):
     def initial_validation(self):
         if not self._has_assay_udf():
             raise UsageError("The udf 'Assay' must be filled in before running this script")
-        if self.assay not in VALID_ASSAYS:
+        if self.assay not in BOUNDARY_DICT:
             raise UsageError("The current assay value is not recognized: {}"
                              .format(self.assay))
 
