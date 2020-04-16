@@ -3,7 +3,6 @@
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from datetime import datetime
-from clarity_ext_scripts.covid.rtpcr_analyse_service import RTPCRAnalyseService
 
 CT_HEADER = u"Cт"
 
@@ -42,8 +41,6 @@ class Extension(GeneralExtension):
             # LIMS ID of the source of the CT measurement
             original_sample.udf_map.force("CT source", output.api_resource.uri)
             self.context.update(original_sample)
-
-        rt_pcr_analyze_service.execute()
 
     def integration_tests(self):
         yield "24-39151"

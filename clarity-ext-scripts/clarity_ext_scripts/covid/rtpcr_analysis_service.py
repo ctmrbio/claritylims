@@ -1,7 +1,7 @@
 from clarity_ext.domain.validation import UsageError
 
 
-class CtDiscriminatorForPlate(object):
+class RTPCRAnalysisService(object):
     """
     A service to analyze if a sample is positive for Covid19
     Given:

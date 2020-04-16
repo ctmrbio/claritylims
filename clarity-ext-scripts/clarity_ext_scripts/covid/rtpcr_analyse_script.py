@@ -1,4 +1,5 @@
-from clarity_ext_scripts.covid.ct_discriminator import CtDiscriminatorForPlate
+from clarity_ext.extensions import GeneralExtension
+from clarity_ext_scripts.covid.rtpcr_analysis_service import RTPCRAnalysisService
 from clarity_ext.domain.validation import UsageError
 
 VALID_ASSAYS = ['Assay 1']
@@ -6,13 +7,10 @@ VALID_ASSAYS = ['Assay 1']
 BOUNDARY_DICT = {'Assay 1': (10, 50)}
 
 
-class RTPCRAnalyseService(object):
-    def __init__(self, context):
-        self.context = context
-
+class Extension(GeneralExtension):
     def execute(self):
         self.initial_validation()
-        ct_analysis_service = CtDiscriminatorForPlate()
+        ct_analysis_service = RTPCRAnalysisService()
         lower_bound, upper_bound = BOUNDARY_DICT[self.assay]
 
         rt_pcr_control_types = ['rtpcr_pos', 'rtpcr_neg']
@@ -69,3 +67,7 @@ class RTPCRAnalyseService(object):
             return False
 
         return True
+
+    def integration_tests(self):
+        # yield "24-39269"
+        yield "24-40601"

@@ -23,4 +23,4 @@ class Extension(GeneralExtension):
             i += 1
 
     def integration_tests(self):
-        yield "24-39269"
+        yield "24-40601"
