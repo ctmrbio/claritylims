@@ -46,27 +46,27 @@ class Extension(GeneralExtension):
         header["Well"] = well.alpha_num_key if well else None
         header["Sample Name"] = artifact.name if artifact else None
         header["Target Name"] = artifact.name if artifact else None
-        header["Task"] = "UNKNOWN"
-        header["Reporter"] = "SYBR"
-        header["Quencher"] = "None"
-        header[CT_HEADER] = random.randint(0, 46)
-        header[CT_HEADER + " Mean"] = random.randint(0, 40)
-        header[CT_HEADER + " SD"] = "0.473177612"
-        header["Quantity"] = "None"
-        header["Quantity Mean"] = "None"
-        header["Quantity SD"] = "None"
-        header["Automatic Ct"] = "TRUE"
-        header["Threshold"] = "0.134671769"
-        header["Ct Threshold"] = "TRUE"
-        header["Automatic Baseline"] = "None"
-        header["Baseline Start"] = "3"
-        header["Baseline End"] = "39"
-        header["Tm1"] = "62.47861099"
-        header["Tm2"] = "None"
-        header["Tm3"] = "None"
-        header["Comments"] = "None"
-        header["NOAMP"] = "Y"
-        header["EXPFAIL"] = "Y"
+        header["Task"] = "UNKNOWN" if artifact else None
+        header["Reporter"] = "SYBR" if artifact else None
+        header["Quencher"] = "None" if artifact else None
+        header[CT_HEADER] = random.randint(0, 46) if artifact else None
+        header[CT_HEADER + " Mean"] = random.randint(0, 40) if artifact else None
+        header[CT_HEADER + " SD"] = "0.473177612" if artifact else None
+        header["Quantity"] = "None" if artifact else None
+        header["Quantity Mean"] = "None" if artifact else None
+        header["Quantity SD"] = "None" if artifact else None
+        header["Automatic Ct"] = "TRUE" if artifact else None
+        header["Threshold"] = "0.134671769" if artifact else None
+        header["Ct Threshold"] = "TRUE" if artifact else None
+        header["Automatic Baseline"] = "None" if artifact else None
+        header["Baseline Start"] = "3" if artifact else None
+        header["Baseline End"] = "39" if artifact else None
+        header["Tm1"] = "62.47861099" if artifact else None
+        header["Tm2"] = "None" if artifact else None
+        header["Tm3"] = "None" if artifact else None
+        header["Comments"] = "None" if artifact else None
+        header["NOAMP"] = "Y" if artifact else None
+        header["EXPFAIL"] = "Y" if artifact else None
 
         return header
 
@@ -86,4 +86,4 @@ class Extension(GeneralExtension):
         ws.write(5, 1, "ROX")
 
     def integration_tests(self):
-        yield self.test("24-39151", commit=False)
+        yield self.test("24-39282", commit=False)
