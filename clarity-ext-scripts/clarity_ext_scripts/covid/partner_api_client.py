@@ -210,10 +210,11 @@ class PartnerAPIV7Client(object):
     """
 
     def __init__(self, test_partner_base_url, test_partner_user, test_partner_password,
-                 integration_test_mode=False, integration_test_should_fail=0):
+                 test_partner_code_system_base_url, integration_test_mode=False, integration_test_should_fail=0):
         self._base_url = test_partner_base_url
         self._user = test_partner_user
         self._password = test_partner_password
+        self._test_partner_code_system_base_url = test_partner_code_system_base_url
         if integration_test_mode:
             self._integration_test_mode = integration_test_mode
             self._integration_test_should_fail = integration_test_should_fail
@@ -225,25 +226,32 @@ class PartnerAPIV7Client(object):
         user_and_password = "{}:{}".format(self._user, self._password)
         return base64.b64encode(user_and_password)
 
+    def _generate_headers(self):
+        b64_encoded_user_and_password = self._base64_encoded_credentials()
+
+        headers = {"Authorization": "Basic {}".format(
+            b64_encoded_user_and_password),
+            "Content-Type": "application/fhir+json"}
+        return headers
+
     def search_for_service_request(self, org, org_referral_code):
         try:
             params = {"identifier": "|".join([org, org_referral_code])}
-            search_url = "{}/ServiceRequest/".format(self._base_url)
-            b64_encoded_user_and_password = self._base64_encoded_credentials()
+            search_url = "{}/ServiceRequest".format(self._base_url)
+            headers = self._generate_headers()
 
-            headers = {"Authorization": "Basic {}".format(
-                b64_encoded_user_and_password)}
-
-            response = requests.get(url=search_url, params=params,
-                                    headers=headers)
+            response = requests.get(
+                url=search_url, headers=headers, params=params)
 
             # TODO Add integration test mode
 
             if not response.status_code == 200:
-                mess = ("Did not get a 200 response from test partner. "
-                        "Response status code was: {} "
-                        "and response json: {}").format(
-                    response.status_code, response.json())
+                mess = "Did not get a 200 response from test partner. Response status code was: {}".format(
+                    response.status_code)
+                try:
+                    mess += " and response json: {}".format(response.json())
+                except ValueError:
+                    mess += " and the response json was empty."
                 raise FailedInContactingTestPartner(mess)
 
             response_json = response.json()
@@ -258,6 +266,7 @@ class PartnerAPIV7Client(object):
                     ("More than one partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
             else:
+                log.debug("Response json was: {}".format(response_json))
                 raise OrganizationReferralCodeNotFound(
                     ("No partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
@@ -267,27 +276,26 @@ class PartnerAPIV7Client(object):
 
     def post_diagnosis_report(self, service_request_id, diagnosis_result, analysis_results):
         try:
-            # TODO Do we not need the referral_code?
             payload = self._create_payload(
                 service_request_id, diagnosis_result, analysis_results)
-            diagnosis_result_url = "/DiagnosticReport/{}".format(
+            diagnosis_result_url = "{}/DiagnosticReport".format(
                 self._base_url)
-            b64_encoded_user_and_password = self._base64_encoded_credentials()
+            log.debug("URL: {}".format(diagnosis_result_url))
+            headers = self._generate_headers()
 
-            headers = {"Authorization": "Basic {}".format(
-                b64_encoded_user_and_password)}
-
-            response = requests.post(url=diagnosis_result_url, params=payload,
+            response = requests.post(url=diagnosis_result_url,
+                                     json=payload,
                                      headers=headers)
 
             # TODO Add integration test mode
-
-            if not response.status_code == 200:
-                raise FailedInContactingTestPartner(("Did not get a 200 response from test partner. "
-                                                     "Response status code was: {} "
-                                                     "and response json: {}").format(
-                    response.status_code, response.json())
-                )
+            if not response.status_code == 201:
+                mess = "Did not get a 200 response from test partner. Response status code was: {}".format(
+                    response.status_code)
+                try:
+                    mess += " and response json: {}".format(response.json())
+                except ValueError:
+                    mess += " and the response json was empty."
+                raise FailedInContactingTestPartner(mess)
 
             return True
 
@@ -315,33 +323,29 @@ class PartnerAPIV7Client(object):
         return observations
 
     def _create_observation(self, index, value):
-        # TODO Define observations based on the different types of assays we might want to run.
-        # TODO Don't know what should go in under the code (CodableConcept)
+        # TODO Note this this now hard codes the observation type. We will need to
+        #      extend this if we implement other types of analysis.
         return {
-            "id": index,
+            "resourceType": "Observation",
+            "id": str(index),
             "status": "final",
-            "code": "",
+            "code": "v1-ct-value-mgi-real-time-fluorescent-RT-PCR-2019-nCoV",
+            "system": "http://uri.ctmr.scilifelab.se/id/CodeSystem/cs-observations",
             "valueQuantity": {
-                "value": value,
-                "unit": "<UNIT HERE>",
-                "system": "<SYSTEM HERE>",
-                "code": "<CODE HERE>"
+                "value": value
             }
         }
 
     def _translate_diagnosis_result_to_codeable_concept(self, diagnosis_result):
-        # TODO Actually write a translation here!
-        # TODO Add base url for coding system as config?
+        if diagnosis_result not in VALID_COVID_RESPONSES:
+            raise AssertionError("Diagnosis result {} no in list of valid resonses: {}.".format(
+                diagnosis_result, VALID_COVID_RESPONSES
+            ))
         return {
             "coding": [
                 {
-                    "system": "http://snomed.info/sct",
-                    "code": "260385009",
-                    "display": "Negative"
-                },
-                {
-                    "system": "http://example.com/id/CodeSystem/cs-results/ctmr",
-                    "code": "negative"
+                    "system": "{}/id/CodeSystem/cs-result-types".format(self._test_partner_code_system_base_url),
+                    "code": diagnosis_result
                 }
             ]
         }
