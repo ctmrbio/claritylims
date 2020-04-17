@@ -25,11 +25,11 @@ class Extension(GeneralExtension):
 
 
     Creates two containers with samples and controls in Clarity:
-        COVID_PREXT_<timestamp> 
+        COVID_<date>_PREXT_<time>
             <sample_name_in_csv>_<timestamp w sec>
             <control_name_in_csv>_<timestamp w sec>_<running>  
             ...
-        COVID_BIOBANK_<timestamp> 
+        COVID_<date>_BIOBANK_<time> 
             <sample_name_in_csv>_<timestamp w sec>_BIOBANK
             <control_name_in_csv>_<timestamp w sec>_<running>_BIOBANK
             ...
@@ -47,7 +47,7 @@ class Extension(GeneralExtension):
         return sample
 
     def create_control(self, original_name, control_type, timestamp,
-            running_number, project, specifier):
+                       running_number, project, specifier):
         name = map(str, [original_name, timestamp, running_number])
         if specifier:
             name.append(specifier)
@@ -58,12 +58,12 @@ class Extension(GeneralExtension):
         return control
 
     def create_in_mem_container(
-            self, csv, container_specifier, sample_specifier, control_specifier, timestamp):
+            self, csv, container_specifier, sample_specifier, control_specifier, date, time):
         """Creates an in-memory container with the samples
         
         The name of the container will be on the form:
             
-           COVID_<container_specifier>_<timestamp> 
+           COVID_<date>_<container_specifier>_<time to sec> 
 
         The name of the samples will be:
 
@@ -73,13 +73,15 @@ class Extension(GeneralExtension):
 
             <name in csv>_<timestamp>_<control_specifier>
         """
+        timestamp = date + "T" + time
+
         # 1. Get the project
         project = self.context.clarity_service.get_project_by_name(
             self.context.current_step.udf_project)
 
         # 2. Create a 96 well plate in memory:
         container_type = "96 well plate"
-        name = "COVID_{}_{}".format(container_specifier, timestamp)
+        name = "COVID_{}_{}_{}".format(date, container_specifier, time)
         container = Container(container_type=container_type, name=name)
 
         # 3. Create in-memory samples
@@ -101,7 +103,9 @@ class Extension(GeneralExtension):
         return container
 
     def execute(self):
-        timestamp = self.context.start.strftime("%Y%m%dT%H%M%S")
+        start = self.context.start
+        date = start.strftime("%y%m%d")
+        time = start.strftime("%H%M%S")
 
         # 1. Read the samples from the uploaded csv
         file_name = "Sample creation list"
@@ -112,13 +116,15 @@ class Extension(GeneralExtension):
                                                    container_specifier="PREXT",
                                                    sample_specifier="",
                                                    control_specifier="",
-                                                   timestamp=timestamp)
+                                                   date=date,
+                                                   time=time)
 
         biobank_plate = self.create_in_mem_container(csv,
                                                      container_specifier="BIOBANK",
                                                      sample_specifier="BIOBANK",
                                                      control_specifier="BIOBANK",
-                                                     timestamp=timestamp)
+                                                     date=date,
+                                                     time=time)
 
         # 4. Create the container and samples in clarity
         workflow = self.context.current_step.udf_assign_to_workflow
