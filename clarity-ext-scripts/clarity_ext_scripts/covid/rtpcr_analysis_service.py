@@ -126,6 +126,13 @@ class RTPCRAnalysisService(object):
         """
 
         # TODO Should we validate that there are controls on the plate?
+        if not positive_controls:
+            raise AssertionError(
+                "Positive controls are missing from input. They are mandatory!")
+
+        if not negative_controls:
+            raise AssertionError(
+                "Negative controls are missing from input. They are mandatory!")
 
         # If controls fail, fail all samples on plate.
         control_results, errors = self._analyze_controls(
