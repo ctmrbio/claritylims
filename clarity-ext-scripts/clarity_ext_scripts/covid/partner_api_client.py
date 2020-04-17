@@ -289,7 +289,7 @@ class PartnerAPIV7Client(object):
 
             # TODO Add integration test mode
             if not response.status_code == 201:
-                mess = "Did not get a 200 response from test partner. Response status code was: {}".format(
+                mess = "Did not get a 201 response from test partner. Response status code was: {}".format(
                     response.status_code)
                 try:
                     mess += " and response json: {}".format(response.json())
