@@ -25,11 +25,11 @@ class Extension(GeneralExtension):
 
 
     Creates two containers with samples and controls in Clarity:
-        COVID_PREXT_<timestamp>
+        COVID_<date>_PREXT_<time>
             <sample_name_in_csv>_<timestamp w sec>
             <control_name_in_csv>_<timestamp w sec>_<running>  
             ...
-        COVID_BIOBANK_<timestamp> 
+        COVID_<date>_BIOBANK_<time> 
             <sample_name_in_csv>_<timestamp w sec>_BIOBANK
             <control_name_in_csv>_<timestamp w sec>_<running>_BIOBANK
             ...
