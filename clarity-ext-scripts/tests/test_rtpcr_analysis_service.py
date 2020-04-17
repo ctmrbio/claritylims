@@ -13,6 +13,9 @@ class TestRTPCRAnalysisService(object):
     """
 
     def test_can_analyze_samples_scenario1(self):
+        """
+        Controls are ok. Fail one sample on FAM value
+        """
 
         pos_controls = [{"id": "pos-1", "FAM-CT": 25, "HEX-CT": 20},
                         {"id": "pos-2", "FAM-CT": 20, "HEX-CT": 18}]
@@ -43,6 +46,9 @@ class TestRTPCRAnalysisService(object):
         assert expected == list(result)
 
     def test_can_analyze_samples_scenario2(self):
+        """
+        Fail on neg control is positive
+        """
 
         pos_controls = [{"id": "pos-1", "FAM-CT": 25, "HEX-CT": 20},
                         {"id": "pos-2", "FAM-CT": 20, "HEX-CT": 18}]
@@ -75,6 +81,9 @@ class TestRTPCRAnalysisService(object):
         assert expected == list(result)
 
     def test_can_analyze_samples_scenario3(self):
+        """
+        Controls are ok. Fail one sample on high HEX value
+        """
 
         pos_controls = [{"id": "pos-1", "FAM-CT": 25, "HEX-CT": 20},
                         {"id": "pos-2", "FAM-CT": 20, "HEX-CT": 18}]
@@ -107,6 +116,9 @@ class TestRTPCRAnalysisService(object):
         assert expected == list(result)
 
     def test_can_analyze_samples_scenario4(self):
+        """
+        Samples fail because positive control has negative result
+        """
 
         pos_controls = [{"id": "pos-1", "FAM-CT": 0, "HEX-CT": 20},
                         {"id": "pos-2", "FAM-CT": 0, "HEX-CT": 18}]
@@ -139,6 +151,9 @@ class TestRTPCRAnalysisService(object):
         assert expected == list(result)
 
     def test_can_analyze_samples_scenario5(self):
+        """
+        Samples are failed because positive control is failed.
+        """
 
         pos_controls = [{"id": "pos-1", "FAM-CT": 25, "HEX-CT": 20},
                         {"id": "pos-2", "FAM-CT": 0, "HEX-CT": 33}]
@@ -171,6 +186,9 @@ class TestRTPCRAnalysisService(object):
         assert expected == list(result)
 
     def test_can_analyze_samples_scenario6(self):
+        """
+        Samples are failed because negative control failed.
+        """
 
         pos_controls = [{"id": "pos-1", "FAM-CT": 25, "HEX-CT": 20},
                         {"id": "pos-2", "FAM-CT": 20, "HEX-CT": 18}]
