@@ -105,3 +105,37 @@ class TestRTPCRAnalysisService(object):
             {"id": "cov-3-fail", "diagnosis_result": FAILED_BY_INTERNAL_CONTROL}]
 
         assert expected == list(result)
+
+    def test_can_analyze_samples_scenario4(self):
+
+        pos_controls = [{"id": "pos-1", "FAM-CT": 0, "HEX-CT": 20},
+                        {"id": "pos-2", "FAM-CT": 0, "HEX-CT": 18}]
+
+        neg_controls = [{"id": "neg-1", "FAM-CT": 0, "HEX-CT": 20},
+                        {"id": "neg-2", "FAM-CT": 0, "HEX-CT": 18}]
+
+        samples = [{"id": "cov-1-pos", "FAM-CT": 20, "HEX-CT": 20},
+                   {"id": "cov-2-neg", "FAM-CT": 0, "HEX-CT": 18},
+                   {"id": "cov-3-fail", "FAM-CT": 0, "HEX-CT": 33}]
+
+        service = RTPCRAnalysisService(
+            covid_reporter_key="FAM", internal_control_reporter_key="HEX")
+
+        result = service.analyze_samples(positive_controls=pos_controls,
+                                         negative_controls=neg_controls,
+                                         samples=samples)
+
+        # TODO Replace sample names so they are less confusing.
+
+        expected = [
+            {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "cov-1-pos",
+                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-2-neg",
+                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-3-fail", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}]
+
+        assert expected == list(result)
