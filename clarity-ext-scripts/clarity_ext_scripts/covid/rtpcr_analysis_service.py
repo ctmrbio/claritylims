@@ -57,7 +57,7 @@ class RTPCRAnalysisService(object):
     # Positive if CT(FAM) = <=38
     # Failed  if CT(FAM)= >38
     # Negative if CT(FAM) = 0 and CT(HEX) = <=32
-    # Retest if CT(FAM) = 0 and CT(HEX) = >32
+    # Failed if CT(FAM) = 0 and CT(HEX) = >32
 
     # TODO Later we might have to account for giving two trails over 38 as positive.
 
