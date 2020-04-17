@@ -103,15 +103,32 @@ class Extension(GeneralExtension):
         return container
 
     def execute(self):
+        # This is for debug reasons only. Set this to True to create samples even if they have
+        # been created before. This will overwrite the field udf_created_containers.
+        force = False
+
+        # 1. Don't create samples again if we've already created them. This is a limitation
+        # that we add to make sure that we don't have more than 2 container labels to print.
+        try:
+            udf_container_log = self.context.current_step.udf_created_containers
+        except AttributeError:
+            udf_container_log = ""
+        if udf_container_log and not force:
+            raise AssertionError(
+                "Samples have already been created in this step")
+
+        container_log = list()
+
         start = self.context.start
         date = start.strftime("%y%m%d")
         time = start.strftime("%H%M%S")
 
-        # 1. Read the samples from the uploaded csv
+        # 2. Read the samples from the uploaded csv
         file_name = "Sample creation list"
         f = self.context.local_shared_file(file_name, mode="rb")
         csv = pd.read_csv(f, encoding="utf-8", sep=";")
 
+        # 3. Create the two plates in memory
         prext_plate = self.create_in_mem_container(csv,
                                                    container_specifier="PREXT",
                                                    sample_specifier="",
@@ -128,10 +145,18 @@ class Extension(GeneralExtension):
 
         # 4. Create the container and samples in clarity
         workflow = self.context.current_step.udf_assign_to_workflow
-        self.context.clarity_service.create_container(
+        prext_plate = self.context.clarity_service.create_container(
             prext_plate, with_samples=True, assign_to=workflow)
-        self.context.clarity_service.create_container(
+        biobank_plate = self.context.clarity_service.create_container(
             biobank_plate, with_samples=True)
 
+        # 5. Add both containers to a UDF so they can be printed
+        for plate in [prext_plate, biobank_plate]:
+            container_log.append("{}:{}".format(plate.id, plate.name))
+
+        self.context.current_step.udf_map.force(
+            "Created containers", "\n".join(container_log))
+        self.context.update(self.context.current_step)
+
     def integration_tests(self):
-        yield "24-39260"
+        yield "24-40639"
