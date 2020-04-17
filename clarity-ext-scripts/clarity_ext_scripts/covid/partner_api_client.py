@@ -210,10 +210,11 @@ class PartnerAPIV7Client(object):
     """
 
     def __init__(self, test_partner_base_url, test_partner_user, test_partner_password,
-                 integration_test_mode=False, integration_test_should_fail=0):
+                 test_partner_code_system_base_url, integration_test_mode=False, integration_test_should_fail=0):
         self._base_url = test_partner_base_url
         self._user = test_partner_user
         self._password = test_partner_password
+        self._test_partner_code_system_base_url = test_partner_code_system_base_url
         if integration_test_mode:
             self._integration_test_mode = integration_test_mode
             self._integration_test_should_fail = integration_test_should_fail
@@ -221,26 +222,36 @@ class PartnerAPIV7Client(object):
         else:
             self._integration_test_mode = False
 
+    def _base64_encoded_credentials(self):
+        user_and_password = "{}:{}".format(self._user, self._password)
+        return base64.b64encode(user_and_password)
+
+    def _generate_headers(self):
+        b64_encoded_user_and_password = self._base64_encoded_credentials()
+
+        headers = {"Authorization": "Basic {}".format(
+            b64_encoded_user_and_password),
+            "Content-Type": "application/fhir+json"}
+        return headers
+
     def search_for_service_request(self, org, org_referral_code):
         try:
             params = {"identifier": "|".join([org, org_referral_code])}
-            search_url = "{}/ServiceRequest/".format(self._base_url)
-            user_and_password = "{}:{}".format(self._user, self._password)
-            b64_encoded_user_and_password = base64.b64encode(user_and_password)
+            search_url = "{}/ServiceRequest".format(self._base_url)
+            headers = self._generate_headers()
 
-            headers = {"Authorization": "Basic {}".format(
-                b64_encoded_user_and_password)}
-
-            response = requests.get(url=search_url, params=params,
-                                    headers=headers)
+            response = requests.get(
+                url=search_url, headers=headers, params=params)
 
             # TODO Add integration test mode
 
             if not response.status_code == 200:
-                mess = ("Did not get a 200 response from test partner. "
-                        "Response status code was: {} "
-                        "and response json: {}").format(
-                    response.status_code, response.json())
+                mess = "Did not get a 200 response from test partner. Response status code was: {}".format(
+                    response.status_code)
+                try:
+                    mess += " and response json: {}".format(response.json())
+                except ValueError:
+                    mess += " and the response json was empty."
                 raise FailedInContactingTestPartner(mess)
 
             response_json = response.json()
@@ -255,6 +266,7 @@ class PartnerAPIV7Client(object):
                     ("More than one partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
             else:
+                log.debug("Response json was: {}".format(response_json))
                 raise OrganizationReferralCodeNotFound(
                     ("No partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
@@ -262,5 +274,92 @@ class PartnerAPIV7Client(object):
             log.error(e.message)
             raise e
 
-    def post_diagnosis_report(self, diagnosis_report):
-        raise NotImplementedError
+    def post_diagnosis_report(self, service_request_id, diagnosis_result, analysis_results):
+        try:
+            payload = self._create_payload(
+                service_request_id, diagnosis_result, analysis_results)
+            url = "{}/DiagnosticReport".format(
+                self._base_url)
+            headers = self._generate_headers()
+
+            response = requests.post(url=url,
+                                     json=payload,
+                                     headers=headers)
+
+            # TODO Add integration test mode
+            if not response.status_code == 201:
+                mess = "Did not get a 201 response from test partner. Response status code was: {}".format(
+                    response.status_code)
+                try:
+                    mess += " and response json: {}".format(response.json())
+                except ValueError:
+                    mess += " and the response json was empty."
+                raise FailedInContactingTestPartner(mess)
+
+            return True
+
+        except PartnerClientAPIException as e:
+            log.error(e.message)
+            raise e
+
+    def _create_payload(self, service_request_id, diagnosis_result, analysis_results):
+        # TODO Need to think about if this needs refactoring later, to more easily support multiple
+        #      analysis types. This is going to be rather unwieldy to add more as it is implemented
+        #      atm.
+        observations = self._create_observations(analysis_results)
+        diagnosis_result_as_codeable_concept = self._translate_diagnosis_result_to_codeable_concept(
+            diagnosis_result)
+        return self._create_diagnosis_report_object(service_request_id=service_request_id,
+                                                    observations=observations,
+                                                    codeable_concept=diagnosis_result_as_codeable_concept)
+
+    def _create_observations(self, analysis_results):
+        # TODO Need to decide on format for the analysis results to be gathered in.
+        observations = []
+        for index, result in enumerate(analysis_results):
+            observations.append(
+                self._create_observation(index, result["value"]))
+        return observations
+
+    def _create_observation(self, index, value):
+        # TODO Note this this now hard codes the observation type. We will need to
+        #      extend this if we implement other types of analysis.
+        return {
+            "resourceType": "Observation",
+            "id": str(index),
+            "status": "final",
+            "code": "v1-ct-value-mgi-real-time-fluorescent-RT-PCR-2019-nCoV",
+            "system": "http://uri.ctmr.scilifelab.se/id/CodeSystem/cs-observations",
+            "valueQuantity": {
+                "value": value
+            }
+        }
+
+    def _translate_diagnosis_result_to_codeable_concept(self, diagnosis_result):
+        if diagnosis_result not in VALID_COVID_RESPONSES:
+            raise AssertionError("Diagnosis result {} not in list of valid resonses: {}.".format(
+                diagnosis_result, VALID_COVID_RESPONSES
+            ))
+        return {
+            "coding": [
+                {
+                    "system": "{}/id/CodeSystem/cs-result-types".format(self._test_partner_code_system_base_url),
+                    "code": diagnosis_result
+                }
+            ]
+        }
+
+    def _create_diagnosis_report_object(self, service_request_id, observations, codeable_concept):
+        # TODO Do we not need to use the referral code? Is it really just the service_request_id
+        #      we need to use? I can't see where it is supposed to go.
+        return {
+            "resourceType": "DiagnosticReport",
+            "contained": observations,
+            "basedOn": [
+                {
+                    "reference": "ServiceRequest/{}".format(service_request_id)
+                }
+            ],
+            "code": codeable_concept,
+            "result": map(lambda x: {"reference": "Observation/#{}".format(x["id"])}, observations)
+        }
