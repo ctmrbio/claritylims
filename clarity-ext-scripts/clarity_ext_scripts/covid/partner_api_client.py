@@ -278,12 +278,11 @@ class PartnerAPIV7Client(object):
         try:
             payload = self._create_payload(
                 service_request_id, diagnosis_result, analysis_results)
-            diagnosis_result_url = "{}/DiagnosticReport".format(
+            url = "{}/DiagnosticReport".format(
                 self._base_url)
-            log.debug("URL: {}".format(diagnosis_result_url))
             headers = self._generate_headers()
 
-            response = requests.post(url=diagnosis_result_url,
+            response = requests.post(url=url,
                                      json=payload,
                                      headers=headers)
 
@@ -338,7 +337,7 @@ class PartnerAPIV7Client(object):
 
     def _translate_diagnosis_result_to_codeable_concept(self, diagnosis_result):
         if diagnosis_result not in VALID_COVID_RESPONSES:
-            raise AssertionError("Diagnosis result {} no in list of valid resonses: {}.".format(
+            raise AssertionError("Diagnosis result {} not in list of valid resonses: {}.".format(
                 diagnosis_result, VALID_COVID_RESPONSES
             ))
         return {
