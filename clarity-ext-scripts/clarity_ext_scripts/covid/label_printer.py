@@ -7,9 +7,11 @@ class LabelPrinterService(object):
     HEIGHT_SHORT = 80
     HEIGHT_MEDIUM = 120
     HEIGHT_TALL = 160
+    HEIGHT_CUSTOM = 30
 
     WIDTH_NARROW = 4
     WIDTH_WIDE = 6
+    WIDTH_CUSTOM = 2
 
     def __init__(self, printer):
         self.printer = printer
@@ -32,8 +34,9 @@ class LabelPrinterService(object):
 
     def generate_zpl_for_container(self, name, barcode):
         """Prints a default bar code label for a container"""
-        print_info = LabelPrintInfo(name, barcode, self.HEIGHT_TALL,
-                                    self.WIDTH_NARROW, (90, 20), LabelPrintInfo.POS_RIGHT)
+        offset = (0, 0)
+        print_info = LabelPrintInfo(name, barcode, self.HEIGHT_CUSTOM,
+                                    self.WIDTH_CUSTOM, offset, LabelPrintInfo.POS_RIGHT)
         self.append_contents(print_info)
 
     def append_contents(self, label_print_info):
@@ -51,7 +54,7 @@ class LabelPrinterService(object):
     @staticmethod
     def create_printer():
         # Creates the default production version of a printer:
-        return ZebraLabelPrinter(font="B", zoom_factor=4, spacing=5,
+        return ZebraLabelPrinter(font="J", zoom_factor=1, vertical_spacing=5,
                                  block_width_points=850, label_width_points=1240, text_max_lines=4,
                                  space_points=20, chars_per_line=28)
 
@@ -81,14 +84,14 @@ class LabelPrintInfo(object):
 class ZebraLabelPrinter(object):
 
     FONT_SIZES = {"A": (5, 9), "B": (7, 11), "C": (10, 18), "D": (10, 18),
-                  "E": (15, 28), "F": (13, 26), "G": (40, 60), "H": (13, 21)}
+                  "E": (15, 28), "F": (13, 26), "G": (40, 60), "H": (13, 21), "J": (25, 32)}
 
     """Specifies both the file format needed for this printer as well as the communication mechanism"""
-    def __init__(self, font, zoom_factor, spacing, block_width_points, label_width_points,
+    def __init__(self, font, zoom_factor, vertical_spacing, block_width_points, label_width_points,
                  text_max_lines, space_points, chars_per_line):
         self.font = font
         self.zoom_factor = zoom_factor
-        self.spacing = spacing
+        self.vertical_spacing = vertical_spacing
         self.block_width_points = block_width_points
         self.label_width_points = label_width_points    #the length of the label in points for easy calc of positions
 
@@ -110,6 +113,8 @@ class ZebraLabelPrinter(object):
 
         text_width, text_height = self.FONT_SIZES[self.font]
         text_width, text_height = text_width * self.zoom_factor, text_height * self.zoom_factor
+        first_row_offset = (10, self.vertical_spacing)
+        second_row_offset = (10, info.height + 2*self.vertical_spacing)
 
         yield "^XA"
         yield "^LH{},{}".format(*info.offset)
@@ -119,7 +124,7 @@ class ZebraLabelPrinter(object):
             yield "^FO{},{}".format(0, 0)
             yield "^FD{}^FS".format(info.text)
 
-        yield "^FO{},{}".format(0, text_height + self.spacing)
+        yield "^FO{},{}".format(*first_row_offset)
 
         yield "^BY{}".format(info.width)
         yield "^BCN,{},N,N,N".format(info.height)
@@ -130,8 +135,8 @@ class ZebraLabelPrinter(object):
                 barcode_width = start + data + CRC + stop + text_spacing
             else:
                 barcode_width = len(info.barcode) * info.width * 7 + 200
-            yield "^FO{},{}".format(barcode_width, text_height + self.spacing)
-            yield "^A{}{},{}".format(self.font, text_height, text_width)
+            yield "^FO{},{}".format(*second_row_offset)
+            yield "^A0,{},{}".format(text_height, text_width)
             yield "^FB{},{},{},".format(self.label_width_points - info.offset[0] - barcode_width, self.text_max_lines, self.space_points)
             yield "^FD{}^FS".format(self.replace_newlines(info.text)) #use built in linebreak functionality for bulk of string
         yield "^XZ"
