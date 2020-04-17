@@ -113,8 +113,6 @@ class ZebraLabelPrinter(object):
 
         text_width, text_height = self.FONT_SIZES[self.font]
         text_width, text_height = text_width * self.zoom_factor, text_height * self.zoom_factor
-        # first_row_offset = (0, 5)
-        # second_row_offset = (5, 50)
         first_row_offset = (10, self.vertical_spacing)
         second_row_offset = (10, info.height + 2*self.vertical_spacing)
 
