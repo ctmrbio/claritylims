@@ -11,7 +11,7 @@ class LabelPrinterService(object):
 
     WIDTH_NARROW = 4
     WIDTH_WIDE = 6
-    WIDTH_CUSTOM = 3
+    WIDTH_CUSTOM = 2
 
     def __init__(self, printer):
         self.printer = printer
