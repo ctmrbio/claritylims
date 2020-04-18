@@ -3,16 +3,7 @@ import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext.utils import single
 from clarity_ext.domain import Container, Sample
-
-POSITIVE_PLASMID_CONTROL = "positive plasmid control"
-NEGATIVE_WATER_CONTROL = "negative water control"
-POSITIVE_VIRUS_CONTROL = "positive virus control"
-
-CONTROLS_IN_CSV = {
-    POSITIVE_PLASMID_CONTROL,
-    NEGATIVE_WATER_CONTROL,
-    POSITIVE_VIRUS_CONTROL,
-}
+from clarity_ext_scripts.covid.validate_sample_creation_list import Controls
 
 
 class Extension(GeneralExtension):
@@ -37,13 +28,19 @@ class Extension(GeneralExtension):
     The <running> part of the names is a running number for controls.
     """
 
-    def create_sample(self, original_name, timestamp, project, specifier):
+    def create_sample(self, original_name, timestamp, project, specifier, org_uri, service_request_id):
         name = map(str, [original_name, timestamp])
         if specifier:
             name.append(specifier)
         name = "_".join(name)
         sample = Sample(sample_id=None, name=name, project=project)
         sample.udf_map.force("Control", "No")
+
+        # Add KNM data:
+        sample.udf_map.force("KNM data added at", timestamp)
+        sample.udf_map.force("KNM org URI", org_uri)
+        sample.udf_map.force("KNM service request id", service_request_id)
+
         return sample
 
     def create_control(self, original_name, control_type, timestamp,
@@ -89,7 +86,9 @@ class Extension(GeneralExtension):
         for ix, row in csv.iterrows():
             original_name = row["barcode"]
             well = row["well"]
-            control_type = original_name if original_name in CONTROLS_IN_CSV else None
+            org_uri = row["org_uri"]
+            service_request_id = row["service_request_id"]
+            control_type = original_name if original_name in Controls.ALL else None
             if control_type:
                 control_running += 1
                 substance = self.create_control(
@@ -97,7 +96,8 @@ class Extension(GeneralExtension):
                     control_running, project, control_specifier)
             else:
                 substance = self.create_sample(
-                    original_name, timestamp, project, sample_specifier)
+                    original_name, timestamp, project, sample_specifier, org_uri,
+                    service_request_id)
             substance.udf_map.force("Sample Buffer", "None")
             container[well] = substance
         return container
@@ -123,10 +123,21 @@ class Extension(GeneralExtension):
         date = start.strftime("%y%m%d")
         time = start.strftime("%H%M%S")
 
-        # 2. Read the samples from the uploaded csv
-        file_name = "Sample creation list"
+        # 2. Read the samples from the uploaded csv and ensure they are valid
+        file_name = "Validated sample list"
         f = self.context.local_shared_file(file_name, mode="rb")
-        csv = pd.read_csv(f, encoding="utf-8", sep=";")
+        csv = pd.read_csv(f, encoding="utf-8", sep=";", dtype=str)
+
+        errors = list()
+        for ix, row in csv.iterrows():
+            if row["status"] != "ok":
+                errors.append(row["barcode"])
+
+        if len(errors):
+            msg = "There are {} errors in the sample list. " \
+                  "Check the file 'Validated sample list' for details".format(
+                      len(errors))
+            self.usage_error(msg)
 
         # 3. Create the two plates in memory
         prext_plate = self.create_in_mem_container(csv,
@@ -159,4 +170,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield "24-40639"
+        yield "24-43202"
