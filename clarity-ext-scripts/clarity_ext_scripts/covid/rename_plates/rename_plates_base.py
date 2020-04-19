@@ -31,6 +31,9 @@ class Extension(GeneralExtension):
         template = self.rename_template()
         for in_cont, out_cont in self.context.containers:
             m = pattern.match(in_cont.name)
+            # Ignore control tubes
+            if m is None:
+                continue
             tokens = m.groupdict()
             tokens["step"] = self.step_abbreviation()
             base_name = template.format(**tokens)
