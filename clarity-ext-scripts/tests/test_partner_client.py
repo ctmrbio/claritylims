@@ -233,7 +233,7 @@ class TestPartnerAPIV7Client(object):
             },
             "result": [
                 {
-                    "reference": "Observation/#0"
+                    "reference": "#0"
                 },
             ]
         }

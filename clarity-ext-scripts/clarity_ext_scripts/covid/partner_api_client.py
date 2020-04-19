@@ -361,5 +361,5 @@ class PartnerAPIV7Client(object):
                 }
             ],
             "code": codeable_concept,
-            "result": map(lambda x: {"reference": "Observation/#{}".format(x["id"])}, observations)
+            "result": map(lambda x: {"reference": "#{}".format(x["id"])}, observations)
         }
