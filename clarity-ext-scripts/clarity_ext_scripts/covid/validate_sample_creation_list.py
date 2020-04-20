@@ -1,13 +1,21 @@
+from uuid import uuid4
+import logging
 from datetime import datetime
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
 
+
+logger = logging.getLogger(__name__)
+
+
 # NOTE: When editing organization keys, one must also update the Clarity field
 # "Ordering organization"
-org_uri_by_name = {
+TESTING_ORG = "Internal testing"
+
+ORG_URI_BY_NAME = {
+    TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
     "Karlsson and Novak": "http://uri.d-t.se/id/Identifier/i-referral-code",
-    "Internal testing": "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
 }
 
 
@@ -49,11 +57,10 @@ class Extension(GeneralExtension):
             ordering_org = self.context.current_step.udf_ordering_organization
         except AttributeError:
             self.usage_error("You must select an ordering organization")
-        org_uri = org_uri_by_name[ordering_org]
+        org_uri = ORG_URI_BY_NAME[ordering_org]
 
         # 2. Create an API client
         #    Make sure that there is a config at ~/.config/clarity-ext/clarity-ext.config
-
         config = {
             key: self.config[key]
             for key in [
@@ -74,14 +81,22 @@ class Extension(GeneralExtension):
             control_type = barcode if barcode in Controls.ALL else None
 
             if not control_type:
-                response = client.search_for_service_request(org_uri, barcode)
-                service_request_id = response["resource"]["id"]
+                if ordering_org == TESTING_ORG:
+                    service_request_id = uuid4()
+                    logger.warn("Using testing org. Service request ID faked: {}".format(
+                        service_request_id))
+                else:
+                    response = client.search_for_service_request(
+                        org_uri, barcode)
+                    service_request_id = response["resource"]["id"]
 
                 if service_request_id == "warning":
                     service_request_id = ""
                     status = "error"
                     comment = response["resource"]["issue"][0]["details"][
                         "text"]
+                    self.usage_error_defer(
+                        "Can't find service_request_id for barcode(s)", barcode)
                 else:
                     status = "ok"
                     comment = ""
@@ -105,7 +120,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-43202"
+        yield "24-43219"
 
 
 class Controls(object):
