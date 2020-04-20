@@ -9,11 +9,11 @@ from clarity_ext_scripts.covid.partner_api_client import VALID_COVID_RESPONSES, 
 log = logging.getLogger(__name__)
 
 FAILED_BY_INTERNAL_CONTROL = "failed_by_internal_control"
-FAILED_BY_TO_HIGH_COVID_VALUE = "failed_by_to_high_covid_value"
+FAILED_BY_TOO_HIGH_COVID_VALUE = "failed_by_too_high_covid_value"
 FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL = "failed_entire_plate_by_failed_external_control"
 
 FAILED_STATES = {FAILED_BY_INTERNAL_CONTROL,
-                 FAILED_BY_TO_HIGH_COVID_VALUE,
+                 FAILED_BY_TOO_HIGH_COVID_VALUE,
                  FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}
 
 
@@ -65,7 +65,7 @@ class RTPCRAnalysisService(object):
         covid_ct = sample[self._covid_reporter_key]
         internal_control_ct = sample[self._internal_control_reporter_key]
         if covid_ct > self.COVID_CONTROL_THRESHOLD:
-            return FAILED_BY_TO_HIGH_COVID_VALUE
+            return FAILED_BY_TOO_HIGH_COVID_VALUE
         elif covid_ct == 0 and internal_control_ct <= self.INTERNAL_CONTROL_THRESHOLD:
             return COVID_RESPONSE_NEGATIVE
         elif covid_ct == 0 and internal_control_ct > self.INTERNAL_CONTROL_THRESHOLD:

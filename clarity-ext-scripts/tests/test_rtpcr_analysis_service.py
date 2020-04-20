@@ -41,7 +41,7 @@ class TestRTPCRAnalysisService(object):
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "cov-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "cov-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-3", "diagnosis_result": FAILED_BY_TO_HIGH_COVID_VALUE}]
+            {"id": "cov-3", "diagnosis_result": FAILED_BY_TOO_HIGH_COVID_VALUE}]
 
         assert expected == list(result)
 
@@ -196,7 +196,7 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "neg-2", "diagnosis_result": FAILED_BY_TO_HIGH_COVID_VALUE},
+            {"id": "neg-2", "diagnosis_result": FAILED_BY_TOO_HIGH_COVID_VALUE},
             {"id": "cov-1",
                 "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
             {"id": "cov-2",
