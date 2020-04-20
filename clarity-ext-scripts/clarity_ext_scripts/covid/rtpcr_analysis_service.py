@@ -40,8 +40,8 @@ class FailedControl(AnalysisServiceException):
 class RTPCRAnalysisService(object):
     """
     Create a new RTPCRAnalysis Service:
-        RTPCRAnalysisService(covid_reporter_key="FAM",
-                             internal_control_reporter_key="HEX")
+        RTPCRAnalysisService(covid_reporter_key="FAM-CT",
+                             internal_control_reporter_key="HEX-CT")
     """
 
     INTERNAL_CONTROL_THRESHOLD = 32
@@ -49,7 +49,7 @@ class RTPCRAnalysisService(object):
 
     def __init__(self, covid_reporter_key, internal_control_reporter_key):
         self._covid_reporter_key = covid_reporter_key
-        self._internal_control_reporter = internal_control_reporter_key
+        self._internal_control_reporter_key = internal_control_reporter_key
 
     # These are notes on what Maike said about the analysis
     # Understanding of the analysis criterias
@@ -62,9 +62,8 @@ class RTPCRAnalysisService(object):
     # TODO Later we might have to account for giving two trails over 38 as positive.
 
     def _analyze_sample(self, sample):
-        covid_ct = sample["{}-CT".format(self._covid_reporter_key)]
-        internal_control_ct = sample["{}-CT".format(
-            self._internal_control_reporter)]
+        covid_ct = sample[self._covid_reporter_key]
+        internal_control_ct = sample[self._internal_control_reporter_key]
         if covid_ct > self.COVID_CONTROL_THRESHOLD:
             return FAILED_BY_TO_HIGH_COVID_VALUE
         elif covid_ct == 0 and internal_control_ct <= self.INTERNAL_CONTROL_THRESHOLD:
@@ -151,3 +150,15 @@ class RTPCRAnalysisService(object):
             for sample in samples:
                 result = self._analyze_sample(sample)
                 yield {"id": sample["id"], "diagnosis_result": result}
+
+
+class ABI7500RTPCRAnalysisService(RTPCRAnalysisService):
+    def __init__(self):
+        super(RTPCRAnalysisService, self).__init__(
+            covid_reporter_key="FAM-CT", internal_control_reporter_key="HEX-CT")
+
+
+class QuantStudio7AnalysisService(RTPCRAnalysisService):
+    def __init__(self):
+        super(RTPCRAnalysisService, self).__init__(
+            covid_reporter_key="FAM-CT", internal_control_reporter_key="VIC-CT")

@@ -12,6 +12,9 @@ class TestRTPCRAnalysisService(object):
     drive document used to document test cases.
     """
 
+    service = RTPCRAnalysisService(
+        covid_reporter_key="FAM-CT", internal_control_reporter_key="HEX-CT")
+
     def test_can_analyze_samples_scenario1(self):
         """
         Controls are ok. Fail one sample on FAM value
@@ -27,12 +30,9 @@ class TestRTPCRAnalysisService(object):
                    {"id": "cov-2", "FAM-CT": 0, "HEX-CT": 18},
                    {"id": "cov-3", "FAM-CT": 40, "HEX-CT": 18}]
 
-        service = RTPCRAnalysisService(
-            covid_reporter_key="FAM", internal_control_reporter_key="HEX")
-
-        result = service.analyze_samples(positive_controls=pos_controls,
-                                         negative_controls=neg_controls,
-                                         samples=samples)
+        result = self.service.analyze_samples(positive_controls=pos_controls,
+                                              negative_controls=neg_controls,
+                                              samples=samples)
 
         expected = [
             {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
@@ -60,12 +60,9 @@ class TestRTPCRAnalysisService(object):
                    {"id": "cov-2", "FAM-CT": 0, "HEX-CT": 18},
                    {"id": "cov-3", "FAM-CT": 40, "HEX-CT": 18}]
 
-        service = RTPCRAnalysisService(
-            covid_reporter_key="FAM", internal_control_reporter_key="HEX")
-
-        result = service.analyze_samples(positive_controls=pos_controls,
-                                         negative_controls=neg_controls,
-                                         samples=samples)
+        result = self.service.analyze_samples(positive_controls=pos_controls,
+                                              negative_controls=neg_controls,
+                                              samples=samples)
 
         expected = [
             {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
@@ -95,12 +92,9 @@ class TestRTPCRAnalysisService(object):
                    {"id": "cov-2", "FAM-CT": 0, "HEX-CT": 18},
                    {"id": "cov-3", "FAM-CT": 0, "HEX-CT": 33}]
 
-        service = RTPCRAnalysisService(
-            covid_reporter_key="FAM", internal_control_reporter_key="HEX")
-
-        result = service.analyze_samples(positive_controls=pos_controls,
-                                         negative_controls=neg_controls,
-                                         samples=samples)
+        result = self.service.analyze_samples(positive_controls=pos_controls,
+                                              negative_controls=neg_controls,
+                                              samples=samples)
 
         expected = [
             {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
@@ -130,12 +124,9 @@ class TestRTPCRAnalysisService(object):
                    {"id": "cov-2", "FAM-CT": 0, "HEX-CT": 18},
                    {"id": "cov-3", "FAM-CT": 0, "HEX-CT": 33}]
 
-        service = RTPCRAnalysisService(
-            covid_reporter_key="FAM", internal_control_reporter_key="HEX")
-
-        result = service.analyze_samples(positive_controls=pos_controls,
-                                         negative_controls=neg_controls,
-                                         samples=samples)
+        result = self.service.analyze_samples(positive_controls=pos_controls,
+                                              negative_controls=neg_controls,
+                                              samples=samples)
 
         expected = [
             {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
@@ -165,12 +156,9 @@ class TestRTPCRAnalysisService(object):
                    {"id": "cov-2", "FAM-CT": 0, "HEX-CT": 18},
                    {"id": "cov-3", "FAM-CT": 0, "HEX-CT": 33}]
 
-        service = RTPCRAnalysisService(
-            covid_reporter_key="FAM", internal_control_reporter_key="HEX")
-
-        result = service.analyze_samples(positive_controls=pos_controls,
-                                         negative_controls=neg_controls,
-                                         samples=samples)
+        result = self.service.analyze_samples(positive_controls=pos_controls,
+                                              negative_controls=neg_controls,
+                                              samples=samples)
 
         expected = [
             {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
@@ -200,12 +188,9 @@ class TestRTPCRAnalysisService(object):
                    {"id": "cov-2", "FAM-CT": 0, "HEX-CT": 18},
                    {"id": "cov-3", "FAM-CT": 0, "HEX-CT": 33}]
 
-        service = RTPCRAnalysisService(
-            covid_reporter_key="FAM", internal_control_reporter_key="HEX")
-
-        result = service.analyze_samples(positive_controls=pos_controls,
-                                         negative_controls=neg_controls,
-                                         samples=samples)
+        result = self.service.analyze_samples(positive_controls=pos_controls,
+                                              negative_controls=neg_controls,
+                                              samples=samples)
 
         expected = [
             {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
