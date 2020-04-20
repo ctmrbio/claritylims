@@ -88,7 +88,7 @@ class RTPCRAnalysisService(object):
         for pos_control in positive_controls:
             res = self._analyze_sample(pos_control)
             control_results.append({"id": pos_control["id"],
-                                    "diagnosis_result": res})
+                                    DIAGNOSIS_RESULT: res})
 
             if res == COVID_RESPONSE_NEGATIVE:
                 errors.append(PositiveControlWasNegative(
@@ -99,7 +99,7 @@ class RTPCRAnalysisService(object):
         for neg_control in negative_controls:
             res = self._analyze_sample(neg_control)
             control_results.append({"id": neg_control["id"],
-                                    "diagnosis_result": res})
+                                    DIAGNOSIS_RESULT: res})
 
             if res == COVID_RESPONSE_POSITIVE:
                 errors.append(NegativeControlWasPositive(
@@ -146,12 +146,12 @@ class RTPCRAnalysisService(object):
         if errors:
             for sample in samples:
                 yield {"id": sample["id"],
-                       "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}
+                       DIAGNOSIS_RESULT: FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}
         # Check samples
         else:
             for sample in samples:
                 result = self._analyze_sample(sample)
-                yield {"id": sample["id"], "diagnosis_result": result}
+                yield {"id": sample["id"], DIAGNOSIS_RESULT: result}
 
 
 class ABI7500RTPCRAnalysisService(RTPCRAnalysisService):
