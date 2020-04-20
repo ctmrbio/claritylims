@@ -156,13 +156,13 @@ class RTPCRAnalysisService(object):
 
 class ABI7500RTPCRAnalysisService(RTPCRAnalysisService):
     def __init__(self):
-        super(RTPCRAnalysisService, self).__init__(
+        super(ABI7500RTPCRAnalysisService, self).__init__(
             covid_reporter_key="FAM-CT", internal_control_reporter_key="HEX-CT")
 
 
 class QuantStudio7AnalysisService(RTPCRAnalysisService):
     def __init__(self):
-        super(RTPCRAnalysisService, self).__init__(
+        super(QuantStudio7AnalysisService, self).__init__(
             covid_reporter_key="FAM-CT", internal_control_reporter_key="VIC-CT")
 
 
