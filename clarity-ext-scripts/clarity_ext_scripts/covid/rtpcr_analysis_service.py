@@ -1,11 +1,10 @@
 
 import logging
-from collections import namedtuple
 
 
 # TODO Move these constants into some other file
-from clarity_ext_scripts.covid.partner_api_client import VALID_COVID_RESPONSES, \
-    COVID_RESPONSE_FAILED, COVID_RESPONSE_NEGATIVE, COVID_RESPONSE_POSITIVE
+from clarity_ext_scripts.covid.partner_api_client import \
+    COVID_RESPONSE_NEGATIVE, COVID_RESPONSE_POSITIVE
 
 DIAGNOSIS_RESULT = "diagnosis_result"
 
@@ -164,20 +163,3 @@ class QuantStudio7AnalysisService(RTPCRAnalysisService):
     def __init__(self):
         super(QuantStudio7AnalysisService, self).__init__(
             covid_reporter_key="FAM-CT", internal_control_reporter_key="VIC-CT")
-
-
-class CTResult(namedtuple('CTResult', ['id', 'fam_ct', 'human_gene_ct'])):
-    """
-    Encapsulate contract for input format for this service
-    """
-    def init_service(self, rt_pcr_analysis_service):
-        self.rt_pcr_analysis_service = rt_pcr_analysis_service
-
-    def get_dict(self):
-        internal_control_reporter_key = self.rt_pcr_analysis_service._internal_control_reporter_key
-        dict_template = {
-            "id": self.id,
-            "FAM-CT": self.fam_ct,
-            internal_control_reporter_key: self.human_gene_ct
-        }
-        return dict_template

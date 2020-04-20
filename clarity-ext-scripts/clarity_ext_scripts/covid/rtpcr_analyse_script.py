@@ -1,9 +1,9 @@
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.rtpcr_analysis_service import ABI7500RTPCRAnalysisService
 from clarity_ext_scripts.covid.rtpcr_analysis_service import DIAGNOSIS_RESULT
-from clarity_ext_scripts.covid.rtpcr_analysis_service import COVID_RESPONSE_FAILED
+from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_BY_INTERNAL_CONTROL
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
-from clarity_ext_scripts.covid.rtpcr_analysis_service import CTResult
+from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
 from clarity_ext.domain.validation import UsageError
 
 
@@ -20,31 +20,25 @@ class Extension(GeneralExtension):
             raise UsageError("The udf 'Instrument Used' must be filled in before running this script")
 
         # Prepare analyse service input args
-        ct_analysis_service = self._instantiate_service()
+        ct_analysis_service, udf_ref_control_ct_value = self._instantiate_service()
         samples = list()
         positive_controls = list()
         negative_controls = list()
         for _, output in self.context.all_analytes:
-            # TODO: currently we only have udf for CT (no distinction between FAM and HEX)
-            result = CTResult(id=output.id, fam_ct=output.udf_famct, human_gene_ct=output.udf_hexct)
-            result.init_service(ct_analysis_service)
+            result = {
+                "id": output.id,
+                "FAM-CT": output.udf_famct,
+                udf_ref_control_ct_value: output.udf_map[udf_ref_control_ct_value].value,
+            }
             if output.name == RT_PCR_POSITIVE_CONTROL:
-                positive_controls.append(result.get_dict())
+                positive_controls.append(result)
             elif output.name == RT_PCR_NEGATIVE_CONTROL:
-                negative_controls.append(result.get_dict())
+                negative_controls.append(result)
             else:
-                samples.append(result.get_dict())
+                samples.append(result)
 
         if len(positive_controls) == 0 or len(negative_controls) == 0:
             raise UsageError('positive and negative rtPCR controls were not found on this plate.')
-
-        # Check control values
-        self.context.current_step.udf_map.force("rtPCR Passed", True)
-        self.context.update(self.context.current_step)
-        try:
-            ct_analysis_service._analyze_controls(positive_controls, negative_controls)
-        except MultipleAnalysisErrors:
-            self.context.current_step.udf_map.force("rtPCR Passed", False)
 
         # Fetch results from service
         result_gen = ct_analysis_service.analyze_samples(
@@ -57,10 +51,10 @@ class Extension(GeneralExtension):
             original_sample = output.sample()
             covid_result = result[DIAGNOSIS_RESULT]
             output.udf_map.force("rtPCR covid-19 result", covid_result)
-            output.udf_map.force("rtPCR Passed", covid_result != COVID_RESPONSE_FAILED)
+            output.udf_map.force("rtPCR Passed", covid_result not in FAILED_STATES)
             original_sample.udf_map.force("rtPCR covid-19 result latest", covid_result)
             # TODO: "rtPCR Passed" may be redundant?
-            original_sample.udf_map.force("rtPCR Passed latest", covid_result != COVID_RESPONSE_FAILED)
+            original_sample.udf_map.force("rtPCR Passed latest", covid_result not in FAILED_STATES)
             self.context.update(original_sample)
             self.context.update(output)
 
@@ -76,10 +70,13 @@ class Extension(GeneralExtension):
 
     def _instantiate_service(self):
         if self.instrument == 'RT-PCR Robot ID Covid RT-PCR':
-            return ABI7500RTPCRAnalysisService()
+            service = ABI7500RTPCRAnalysisService()
+            # TODO: Assert that this is the name of the real UDF in Clarity
+            udf_ref_control_ct_value = 'HEX-CT'
         else:
             raise UsageError("The instrument in 'Instrument Used' is not recognized: {}"
                              .format(self.instrument))
+        return service, udf_ref_control_ct_value
 
     @property
     def assay(self):
