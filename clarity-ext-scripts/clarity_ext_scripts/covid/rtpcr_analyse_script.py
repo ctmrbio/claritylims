@@ -1,7 +1,7 @@
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.rtpcr_analysis_service import ABI7500RTPCRAnalysisService
-from clarity_ext_scripts.covid.rtpcr_analysis_service import DIAGNOSIS_RESULT
-from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_BY_INTERNAL_CONTROL
+from clarity_ext_scripts.covid.rtpcr_analysis_service import QuantStudio7AnalysisService
+from clarity_ext_scripts.covid.rtpcr_analysis_service import DIAGNOSIS_RESULT_KEY
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
 from clarity_ext.domain.validation import UsageError
@@ -20,7 +20,7 @@ class Extension(GeneralExtension):
             raise UsageError("The udf 'Instrument Used' must be filled in before running this script")
 
         # Prepare analyse service input args
-        ct_analysis_service, udf_ref_control_ct_value = self._instantiate_service()
+        ct_analysis_service, udf_name_for_ct_control = self._instantiate_service()
         samples = list()
         positive_controls = list()
         negative_controls = list()
@@ -28,7 +28,7 @@ class Extension(GeneralExtension):
             result = {
                 "id": output.id,
                 "FAM-CT": output.udf_famct,
-                udf_ref_control_ct_value: output.udf_map[udf_ref_control_ct_value].value,
+                udf_name_for_ct_control: output.udf_map[udf_name_for_ct_control].value,
             }
             if output.name == RT_PCR_POSITIVE_CONTROL:
                 positive_controls.append(result)
@@ -49,7 +49,7 @@ class Extension(GeneralExtension):
         for result in result_gen:
             output = artifact_dict[result["id"]]
             original_sample = output.sample()
-            covid_result = result[DIAGNOSIS_RESULT]
+            covid_result = result[DIAGNOSIS_RESULT_KEY]
             output.udf_map.force("rtPCR covid-19 result", covid_result)
             output.udf_map.force("rtPCR Passed", covid_result not in FAILED_STATES)
             original_sample.udf_map.force("rtPCR covid-19 result latest", covid_result)
@@ -69,14 +69,16 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def _instantiate_service(self):
-        if self.instrument == 'RT-PCR Robot ID Covid RT-PCR':
+        if self.instrument == 'qPCR ABI 7500':
             service = ABI7500RTPCRAnalysisService()
-            # TODO: Assert that this is the name of the real UDF in Clarity
-            udf_ref_control_ct_value = 'HEX-CT'
+        elif self.instrument == 'Quant Studio 7':
+            service = QuantStudio7AnalysisService()
         else:
             raise UsageError("The instrument in 'Instrument Used' is not recognized: {}"
                              .format(self.instrument))
-        return service, udf_ref_control_ct_value
+
+        udf_name_for_ct_control = service.internal_control_reporter_key
+        return service, udf_name_for_ct_control
 
     @property
     def assay(self):

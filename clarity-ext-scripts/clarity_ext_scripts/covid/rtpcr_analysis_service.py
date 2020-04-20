@@ -6,7 +6,7 @@ import logging
 from clarity_ext_scripts.covid.partner_api_client import \
     COVID_RESPONSE_NEGATIVE, COVID_RESPONSE_POSITIVE
 
-DIAGNOSIS_RESULT = "diagnosis_result"
+DIAGNOSIS_RESULT_KEY = "diagnosis_result"
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class RTPCRAnalysisService(object):
 
     def __init__(self, covid_reporter_key, internal_control_reporter_key):
         self._covid_reporter_key = covid_reporter_key
-        self._internal_control_reporter_key = internal_control_reporter_key
+        self.internal_control_reporter_key = internal_control_reporter_key
 
     # These are notes on what Maike said about the analysis
     # Understanding of the analysis criterias
@@ -65,7 +65,7 @@ class RTPCRAnalysisService(object):
 
     def _analyze_sample(self, sample):
         covid_ct = sample[self._covid_reporter_key]
-        internal_control_ct = sample[self._internal_control_reporter_key]
+        internal_control_ct = sample[self.internal_control_reporter_key]
         if covid_ct > self.COVID_CONTROL_THRESHOLD:
             return FAILED_BY_TOO_HIGH_COVID_VALUE
         elif covid_ct == 0 and internal_control_ct <= self.INTERNAL_CONTROL_THRESHOLD:
@@ -78,7 +78,7 @@ class RTPCRAnalysisService(object):
             raise AssertionError(
                 "Got CT-value for {}: {} and CT-value for {}: {}.".format(self._covid_reporter_key,
                                                                           covid_ct,
-                                                                          self._internal_control_reporter_key,
+                                                                          self.internal_control_reporter_key,
                                                                           internal_control_ct))
 
     def _analyze_controls(self, positive_controls, negative_controls):
@@ -87,7 +87,7 @@ class RTPCRAnalysisService(object):
         for pos_control in positive_controls:
             res = self._analyze_sample(pos_control)
             control_results.append({"id": pos_control["id"],
-                                    DIAGNOSIS_RESULT: res})
+                                    DIAGNOSIS_RESULT_KEY: res})
 
             if res == COVID_RESPONSE_NEGATIVE:
                 errors.append(PositiveControlWasNegative(
@@ -98,7 +98,7 @@ class RTPCRAnalysisService(object):
         for neg_control in negative_controls:
             res = self._analyze_sample(neg_control)
             control_results.append({"id": neg_control["id"],
-                                    DIAGNOSIS_RESULT: res})
+                                    DIAGNOSIS_RESULT_KEY: res})
 
             if res == COVID_RESPONSE_POSITIVE:
                 errors.append(NegativeControlWasPositive(
@@ -145,12 +145,12 @@ class RTPCRAnalysisService(object):
         if errors:
             for sample in samples:
                 yield {"id": sample["id"],
-                       DIAGNOSIS_RESULT: FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}
+                       DIAGNOSIS_RESULT_KEY: FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}
         # Check samples
         else:
             for sample in samples:
                 result = self._analyze_sample(sample)
-                yield {"id": sample["id"], DIAGNOSIS_RESULT: result}
+                yield {"id": sample["id"], DIAGNOSIS_RESULT_KEY: result}
 
 
 class ABI7500RTPCRAnalysisService(RTPCRAnalysisService):
