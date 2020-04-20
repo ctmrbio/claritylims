@@ -1,3 +1,4 @@
+from uuid import uuid4
 import logging
 from datetime import datetime
 import pandas as pd
@@ -94,6 +95,8 @@ class Extension(GeneralExtension):
                     status = "error"
                     comment = response["resource"]["issue"][0]["details"][
                         "text"]
+                    self.usage_error_defer(
+                        "Can't find service_request_id for barcode(s)", barcode)
                 else:
                     status = "ok"
                     comment = ""
@@ -117,7 +120,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-43202"
+        yield "24-43219"
 
 
 class Controls(object):
