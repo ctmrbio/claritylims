@@ -1,8 +1,8 @@
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.rtpcr_analysis_service import ABI7500RTPCRAnalysisService
-from clarity_ext_scripts.covid.rtpcr_analysis_service import MultipleAnalysisErrors
 from clarity_ext_scripts.covid.rtpcr_analysis_service import DIAGNOSIS_RESULT
 from clarity_ext_scripts.covid.rtpcr_analysis_service import COVID_RESPONSE_FAILED
+from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
 from clarity_ext_scripts.covid.rtpcr_analysis_service import CTResult
 from clarity_ext.domain.validation import UsageError
 
@@ -16,8 +16,11 @@ class Extension(GeneralExtension):
         if not self._has_assay_udf():
             raise UsageError("The udf 'Assay' must be filled in before running this script")
 
+        if not self._has_instrument_udf():
+            raise UsageError("The udf 'Instrument Used' must be filled in before running this script")
+
         # Prepare analyse service input args
-        ct_analysis_service = ABI7500RTPCRAnalysisService()
+        ct_analysis_service = self._instantiate_service()
         samples = list()
         positive_controls = list()
         negative_controls = list()
@@ -61,9 +64,38 @@ class Extension(GeneralExtension):
             self.context.update(original_sample)
             self.context.update(output)
 
+        # Check control values
+        artifacts_that_failed = [
+            name for name in artifact_dict
+            if artifact_dict[name].udf_rtpcr_covid19_result ==
+               FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
+        ]
+        rt_pcr_passed = len(artifacts_that_failed) == 0
+        self.context.current_step.udf_map.force("rtPCR Passed", rt_pcr_passed)
+        self.context.update(self.context.current_step)
+
+    def _instantiate_service(self):
+        if self.instrument == 'RT-PCR Robot ID Covid RT-PCR':
+            return ABI7500RTPCRAnalysisService()
+        else:
+            raise UsageError("The instrument in 'Instrument Used' is not recognized: {}"
+                             .format(self.instrument))
+
     @property
     def assay(self):
         return self.context.current_step.udf_assay
+
+    @property
+    def instrument(self):
+        return self.context.current_step.udf_instrument_used
+
+    def _has_instrument_udf(self):
+        try:
+            _ = self.instrument
+        except AttributeError:
+            return False
+
+        return True
 
     def _has_assay_udf(self):
         try:
