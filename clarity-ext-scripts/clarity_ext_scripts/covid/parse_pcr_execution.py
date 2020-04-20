@@ -14,7 +14,6 @@ class ParsePcrExecution(object):
         file_name = "Result file"
         f = self.context.local_shared_file(file_name, mode="rb")
         data = pd.read_excel(f, 'Results', index_col=0, skiprows=7, encoding='utf-8')
-        rt_pcr_analyze_service = RTPCRAnalyseService(self.context)
 
         for _, output in self.context.all_analytes:
             entry = data.loc[output.well.alpha_num_key]
