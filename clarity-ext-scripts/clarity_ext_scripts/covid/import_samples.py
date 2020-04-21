@@ -86,8 +86,8 @@ class Extension(GeneralExtension):
         # 3. Create in-memory samples
         control_running = 0
         for ix, row in csv.iterrows():
-            original_name = row["barcode"]
-            well = row["well"]
+            original_name = row["Sample Id"]
+            well = row["Position"]
             org_uri = row["org_uri"]
             service_request_id = row["service_request_id"]
 
@@ -131,12 +131,12 @@ class Extension(GeneralExtension):
         # 2. Read the samples from the uploaded csv and ensure they are valid
         file_name = "Validated sample list"
         f = self.context.local_shared_file(file_name, mode="rb")
-        csv = pd.read_csv(f, encoding="utf-8", sep=";", dtype=str)
+        csv = pd.read_csv(f, encoding="utf-8", sep=",", dtype=str)
 
         errors = list()
         for ix, row in csv.iterrows():
             if row["status"] != "ok":
-                errors.append(row["barcode"])
+                errors.append(row["Sample Id"])
 
         if len(errors):
             msg = "There are {} errors in the sample list. " \
