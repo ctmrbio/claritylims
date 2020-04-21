@@ -1,4 +1,5 @@
 from clarity_ext_scripts.covid.rtpcr_analysis_service import ABI7500RTPCRAnalysisService
+from clarity_ext_scripts.covid.rtpcr_analysis_service import QuantStudio7AnalysisService
 from clarity_ext_scripts.covid.rtpcr_analysis_service import DIAGNOSIS_RESULT_KEY
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
