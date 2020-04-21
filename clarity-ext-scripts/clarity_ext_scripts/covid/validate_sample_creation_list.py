@@ -1,3 +1,4 @@
+import cStringIO
 from uuid import uuid4
 import logging
 from datetime import datetime
@@ -78,8 +79,15 @@ class Extension(GeneralExtension):
 
         # 4. Create the validated list
         for ix, row in raw_sample_list.iterrows():
-            barcode = row["barcode"]
-            well = row["well"]
+            barcode = row["Sample Id"]
+            well = row["Position"]
+            # NOTE: The well is in the format "A01" etc
+            if len(well) != 3:
+                raise AssertionError(
+                        "Excpected the Position in the raw sample list to be on the format A01. Got: {}".format(well))
+            row = well[0]
+            col = int(well[1:])
+            well = "{}:{}".format(row, col)
             is_control = controls_barcode_generator.parse(barcode)
 
             if not is_control:
@@ -113,7 +121,7 @@ class Extension(GeneralExtension):
             raw_sample_list.loc[ix, "comment"] = comment.replace(
                 ";", "<SC>")  # If we have the separator in the comment
 
-        validated_sample_list = raw_sample_list.to_csv(index=False, sep=";")
+        validated_sample_list = raw_sample_list.to_csv(index=False, sep=",")
 
         timestamp = datetime.now().strftime("%y%m%dT%H%M%S")
 
@@ -129,4 +137,14 @@ class Extension(GeneralExtension):
 def get_raw_sample_list(context):
     file_name = "Raw sample list"
     f = context.local_shared_file(file_name, mode="rb")
-    return pd.read_csv(f, encoding="utf-8", sep=";")
+
+    filtered = cStringIO.StringIO()
+    # Ignore everything at or after the line that contains this text:
+    stop_condition = "Sample Tracking Report Name"
+
+    for line in f:
+        if stop_condition in line:
+            break
+        filtered.write(line + "\n")
+    filtered.seek(0)
+    return pd.read_csv(filtered, encoding="utf-8", sep=",")
