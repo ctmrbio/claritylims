@@ -19,6 +19,16 @@ COVID_RESPONSE_FAILED = "failed"
 VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
                          COVID_RESPONSE_NEGATIVE, COVID_RESPONSE_FAILED}
 
+# NOTE: When editing organization keys, one must also update the Clarity field
+# "Ordering organization"
+TESTING_ORG = "Internal testing"
+
+ORG_URI_BY_NAME = {
+    TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
+    "Karlsson and Novak": "http://uri.d-t.se/id/Identifier/i-referral-code",
+}
+
+
 
 class PartnerClientAPIException(Exception):
     pass
@@ -274,7 +284,14 @@ class PartnerAPIV7Client(object):
             log.error(e.message)
             raise e
 
-    def post_diagnosis_report(self, service_request_id, diagnosis_result, analysis_results):
+    def post_diagnosis_report(self, service_request_id, diagnosis_result, analysis_results,
+            integration_test=False):
+
+        if integration_test:
+            log.warn("Integration testing on, not reporting {} to 3rd party".format(
+                service_request_id))
+            return True
+
         try:
             payload = self._create_payload(
                 service_request_id, diagnosis_result, analysis_results)

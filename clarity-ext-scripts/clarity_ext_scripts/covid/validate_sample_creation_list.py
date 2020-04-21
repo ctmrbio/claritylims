@@ -5,21 +5,12 @@ from datetime import datetime
 import pandas as pd
 from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
+from clarity_ext_scripts.covid.partner_api_client import (
+    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
 logger = logging.getLogger(__name__)
-
-
-# NOTE: When editing organization keys, one must also update the Clarity field
-# "Ordering organization"
-TESTING_ORG = "Internal testing"
-
-ORG_URI_BY_NAME = {
-    TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
-    "Karlsson and Novak": "http://uri.d-t.se/id/Identifier/i-referral-code",
-}
 
 
 class Extension(GeneralExtension):
@@ -76,7 +67,6 @@ class Extension(GeneralExtension):
         # 3. Read the raw sample list. A semicolon separated list of `barcode;well`
         raw_sample_list = get_raw_sample_list(self.context)
 
-
         # 4. Create the validated list
         for ix, row in raw_sample_list.iterrows():
             barcode = row["Sample Id"]
@@ -84,7 +74,8 @@ class Extension(GeneralExtension):
             # NOTE: The well is in the format "A01" etc
             if len(well) != 3:
                 raise AssertionError(
-                        "Excpected the Position in the raw sample list to be on the format A01. Got: {}".format(well))
+                    "Expected the Position in the raw sample list to be on the format A01. "
+                    "Got: {}".format(well))
             row = well[0]
             col = int(well[1:])
             well = "{}:{}".format(row, col)
