@@ -123,18 +123,6 @@ class Extension(GeneralExtension):
         yield "24-43219"
 
 
-class Controls(object):
-    POSITIVE_PLASMID_CONTROL = "positive plasmid control"
-    NEGATIVE_WATER_CONTROL = "negative water control"
-    POSITIVE_VIRUS_CONTROL = "positive virus control"
-
-    ALL = {
-        POSITIVE_PLASMID_CONTROL,
-        NEGATIVE_WATER_CONTROL,
-        POSITIVE_VIRUS_CONTROL,
-    }
-
-
 def get_raw_sample_list(context):
     file_name = "Raw sample list"
     f = context.local_shared_file(file_name, mode="rb")
