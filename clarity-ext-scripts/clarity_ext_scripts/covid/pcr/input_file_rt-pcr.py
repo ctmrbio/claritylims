@@ -31,4 +31,4 @@ class Extension(TemplateExtension):
                 yield artifact
 
     def integration_tests(self):
-        yield self.test("24-39282", commit=False)
+        yield self.test("24-43214", commit=False)

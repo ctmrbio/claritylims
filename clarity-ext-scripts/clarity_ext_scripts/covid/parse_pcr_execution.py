@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from clarity_ext.domain.validation import UsageError
-
 
 class ParsePcrExecution(object):
     def __init__(self, context):
@@ -45,7 +45,7 @@ class Quant7Parser(object):
 
     def _determine_start_row(self, file_handle):
         file_stream = self.context.local_shared_file(file_handle, mode="rb")
-        data = pd.read_excel(file_stream, 'Results', index_col=None, encoding='utf-8')
+        data = pd.read_excel(file_stream, 'Results', index_col=None, header=None, encoding='utf-8')
         header_row_entry = data[(data[0] == 'Well') & (data[1] == 'Well Position')].index
         header_row_index = header_row_entry.values[0]
         return header_row_index
@@ -53,18 +53,29 @@ class Quant7Parser(object):
     def parse(self, file_handle):
         header_row_index = self._determine_start_row(file_handle)
         file_stream = self.context.local_shared_file(file_handle, mode="rb")
-        data = pd.read_excel(file_stream, 'Results', index_col=None, skiprows=header_row_index, encoding='utf-8')
+        data = pd.read_excel(file_stream, 'Results', index_col=None,
+                             skiprows=header_row_index, encoding='utf-8')
         for _, output in self.context.all_analytes:
+            try:
+                _ = data.loc[(data['Sample Name'] == output.name)]
+            except KeyError:
+                raise UsageError("Sample name could not be found in pcr output file: {}".format(output.name))
             fam_row = data.loc[(data['Sample Name'] == output.name) & (data['Reporter'] == 'FAM')]
             vic_row = data.loc[(data['Sample Name'] == output.name) & (data['Reporter'] == 'VIC')]
-            target_name = fam_row["Sample Name"]
+            target_name = fam_row["Sample Name"].values[0]
             if target_name != output.name:
                 raise AssertionError("Incorrect name of target '{}' in well '{}' in '{}'. "
                         "Expected {}".format(
                             target_name, output.well.alpha_num_key, file_handle, output.name))
 
-            fam_ct = fam_row["CT"]
-            vic_ct = vic_row["CT"]
+            fam_ct = fam_row["CT"].values[0]
+            # CT values with no signal is shown as an empty cell in the output file
+            # which in turn is interpreted as NaN by pandas.
+            if np.isnan(fam_ct):
+                fam_ct = 0
+            vic_ct = vic_row["CT"].values[0]
+            if np.isnan(vic_ct):
+                vic_ct = 0
 
             # add the measurement to the output artifact
             output.udf_map.force("FAM-CT", fam_ct)
