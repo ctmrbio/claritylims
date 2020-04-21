@@ -1,4 +1,5 @@
 import time
+import datetime
 from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext_scripts.covid.utils import UniqueBarcodeGenerator
 from clarity_ext.extensions import GeneralExtension
@@ -32,11 +33,12 @@ class Extension(GeneralExtension):
         content = ["barcode,name"]
         for ix, barcode in enumerate(gen.generate(number_of_controls)):
             content.append("{},{}-{}".format(barcode, control_abbrev, barcode))
-        file_name = "barcodes.csv"
+        timestamp = datetime.datetime.now().strftime("%y%m%dT%H%M%S")
+        file_name = "barcodes_{}.csv".format(timestamp)
         content = "\n".join(content)
         files = [(file_name, content)]
         self.context.file_service.upload_files("Barcodes", files)
 
     def integration_tests(self):
         # yield "24-23564"  # lims-dev
-        yield "24-43787"
+        yield "24-43788"

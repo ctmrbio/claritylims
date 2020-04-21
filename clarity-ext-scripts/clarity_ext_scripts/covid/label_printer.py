@@ -39,6 +39,9 @@ class LabelPrinterService(object):
                                     self.WIDTH_CUSTOM, offset, LabelPrintInfo.POS_RIGHT)
         self.append_contents(print_info)
 
+    def generate_zpl_for_control(self, name, barcode):
+        self.generate_zpl_for_container(name, barcode)
+
     def append_contents(self, label_print_info):
         """Prints to the registered printer, using a LabelPrintInfo"""
         self.printer.append_contents(label_print_info)
