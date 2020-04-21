@@ -2,8 +2,10 @@ from uuid import uuid4
 import logging
 from datetime import datetime
 import pandas as pd
+from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
+from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
 logger = logging.getLogger(__name__)
@@ -73,14 +75,14 @@ class Extension(GeneralExtension):
         # 3. Read the raw sample list. A semicolon separated list of `barcode;well`
         raw_sample_list = get_raw_sample_list(self.context)
 
+
         # 4. Create the validated list
         for ix, row in raw_sample_list.iterrows():
             barcode = row["barcode"]
             well = row["well"]
+            is_control = controls_barcode_generator.parse(barcode)
 
-            control_type = barcode if barcode in Controls.ALL else None
-
-            if not control_type:
+            if not is_control:
                 if ordering_org == TESTING_ORG:
                     service_request_id = uuid4()
                     logger.warn("Using testing org. Service request ID faked: {}".format(
@@ -114,13 +116,14 @@ class Extension(GeneralExtension):
         validated_sample_list = raw_sample_list.to_csv(index=False, sep=";")
 
         timestamp = datetime.now().strftime("%y%m%dT%H%M%S")
+
         file_name = "validated_sample_list_{}.csv".format(timestamp)
         self.context.file_service.upload(
             "Validated sample list", file_name, validated_sample_list,
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-43219"
+        yield "24-43792"
 
 
 def get_raw_sample_list(context):

@@ -1,7 +1,6 @@
 import time
 import datetime
-from clarity_ext_scripts.covid.controls import Controls
-from clarity_ext_scripts.covid.utils import UniqueBarcodeGenerator
+from clarity_ext_scripts.covid.controls import Controls, controls_barcode_generator
 from clarity_ext.extensions import GeneralExtension
 
 
@@ -29,9 +28,8 @@ class Extension(GeneralExtension):
             self.usage_error(
                 "Number of controls must be an integer in the range 1-999")
 
-        gen = UniqueBarcodeGenerator(control_key, "x")
         content = ["barcode,name"]
-        for ix, barcode in enumerate(gen.generate(number_of_controls)):
+        for barcode in controls_barcode_generator.generate(control_key, number_of_controls):
             content.append("{},{}-{}".format(barcode, control_abbrev, barcode))
         timestamp = datetime.datetime.now().strftime("%y%m%dT%H%M%S")
         file_name = "barcodes_{}.csv".format(timestamp)

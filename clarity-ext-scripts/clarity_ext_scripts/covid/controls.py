@@ -1,3 +1,7 @@
+from clarity_ext_scripts.covid.utils import UniqueBarcodeGenerator
+
+controls_barcode_generator = UniqueBarcodeGenerator("x")
+
 class Controls(object):
     MGI_NEGATIVE_CONTROL = 1
     MGI_POSITIVE_CONTROL = 2

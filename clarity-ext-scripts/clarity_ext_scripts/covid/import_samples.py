@@ -4,6 +4,7 @@ from clarity_ext.extensions import GeneralExtension
 from clarity_ext.utils import single
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.validate_sample_creation_list import Controls
+from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
 class Extension(GeneralExtension):
@@ -45,13 +46,14 @@ class Extension(GeneralExtension):
 
     def create_control(self, original_name, control_type, timestamp,
                        running_number, project, specifier):
-        name = map(str, [original_name, timestamp, running_number])
+        control_type_name = Controls.MAP_FROM_KEY_TO_ABBREVIATION[control_type]
+        name = map(str, [control_type_name, timestamp, running_number])
         if specifier:
             name.append(specifier)
         name = "_".join(name)
         control = Sample(sample_id=None, name=name, project=project)
         control.udf_map.force("Control", "Yes")
-        control.udf_map.force("Control type", control_type)
+        control.udf_map.force("Control type", control_type_name)
         return control
 
     def create_in_mem_container(
@@ -88,8 +90,11 @@ class Extension(GeneralExtension):
             well = row["well"]
             org_uri = row["org_uri"]
             service_request_id = row["service_request_id"]
-            control_type = original_name if original_name in Controls.ALL else None
-            if control_type:
+
+            control_type_tuple = controls_barcode_generator.parse(original_name)
+
+            if control_type_tuple:
+                control_type, _, _ = control_type_tuple
                 control_running += 1
                 substance = self.create_control(
                     original_name, control_type, timestamp,
@@ -170,4 +175,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield "24-43202"
+        yield "24-43792"
