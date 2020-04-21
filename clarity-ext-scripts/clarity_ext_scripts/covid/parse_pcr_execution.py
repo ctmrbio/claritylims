@@ -28,7 +28,7 @@ class ParsePcrExecution(object):
 
     @property
     def instrument(self):
-        return self.context.current_step.udf_instrument_used
+        return self.context.current_step.instrument
 
     def _has_instrument_udf(self):
         try:
