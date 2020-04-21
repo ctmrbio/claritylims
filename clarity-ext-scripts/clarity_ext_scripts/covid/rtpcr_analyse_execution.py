@@ -52,11 +52,12 @@ class RtPcrAnalyseExecution(object):
             output = artifact_dict[result["id"]]
             original_sample = output.sample()
             covid_result = result[DIAGNOSIS_RESULT_KEY]
+            rt_pcr_passed = str(covid_result not in FAILED_STATES)
             output.udf_map.force("rtPCR covid-19 result", covid_result)
-            output.udf_map.force("rtPCR Passed", covid_result not in FAILED_STATES)
+            output.udf_map.force("rtPCR Passed", rt_pcr_passed)
             original_sample.udf_map.force("rtPCR covid-19 result latest", covid_result)
             # TODO: "rtPCR Passed" may be redundant?
-            original_sample.udf_map.force("rtPCR Passed latest", covid_result not in FAILED_STATES)
+            original_sample.udf_map.force("rtPCR Passed latest", rt_pcr_passed)
             self.context.update(original_sample)
             self.context.update(output)
 
@@ -66,7 +67,7 @@ class RtPcrAnalyseExecution(object):
             if artifact_dict[name].udf_rtpcr_covid19_result ==
                FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
         ]
-        rt_pcr_passed = len(artifacts_that_failed) == 0
+        rt_pcr_passed = str(len(artifacts_that_failed) == 0)
         self.context.current_step.udf_map.force("rtPCR Passed", rt_pcr_passed)
         self.context.update(self.context.current_step)
 
