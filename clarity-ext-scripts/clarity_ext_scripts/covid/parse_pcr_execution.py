@@ -4,8 +4,6 @@ import pandas as pd
 from datetime import datetime
 from clarity_ext.domain.validation import UsageError
 
-CT_HEADER_OLD = u"Cт"
-
 
 class ParsePcrExecution(object):
     def __init__(self, context):
@@ -57,8 +55,8 @@ class Quant7Parser(object):
         file_stream = self.context.local_shared_file(file_handle, mode="rb")
         data = pd.read_excel(file_stream, 'Results', index_col=None, skiprows=header_row_index, encoding='utf-8')
         for _, output in self.context.all_analytes:
-            fam_row = data.loc[(data['Sample Name'] == 'sample1') & (data['Reporter'] == 'FAM')]
-            vic_row = data.loc[(data['Sample Name'] == 'sample1') & (data['Reporter'] == 'VIC')]
+            fam_row = data.loc[(data['Sample Name'] == output.name) & (data['Reporter'] == 'FAM')]
+            vic_row = data.loc[(data['Sample Name'] == output.name) & (data['Reporter'] == 'VIC')]
             target_name = fam_row["Sample Name"]
             if target_name != output.name:
                 raise AssertionError("Incorrect name of target '{}' in well '{}' in '{}'. "
