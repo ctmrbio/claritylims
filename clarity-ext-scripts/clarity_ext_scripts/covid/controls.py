@@ -23,9 +23,9 @@ class Controls(object):
         "MGI Negative Control": MGI_NEGATIVE_CONTROL,
         "MGI Positive Control": MGI_POSITIVE_CONTROL,
         "Negative Vircon Control": NEGATIVE_VIRCON_CONTROL,
-        "Negative water control": NEGATIVE_WATER_CONTROL,
-        "Positive plasmid control": POSITIVE_PLASMID_CONTROL,
-        "Positive virus control": POSITIVE_VIRUS_CONTROL,
+        "Negative Water Control": NEGATIVE_WATER_CONTROL,
+        "Positive Plasmid Control": POSITIVE_PLASMID_CONTROL,
+        "Positive Virus Control": POSITIVE_VIRUS_CONTROL,
     }
 
     MAP_FROM_KEY_TO_ABBREVIATION = {
