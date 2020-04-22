@@ -5,6 +5,7 @@ from clarity_ext_scripts.covid.partner_api_client import (
     PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, COVID_RESPONSE_FAILED,
     PartnerClientAPIException)
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
+from clarity_ext_scripts.covid.controls import Controls
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class Extension(GeneralExtension):
 
         org_uri = sample.udf_knm_org_uri
         service_request_id = sample.udf_knm_service_request_id
-        fam_ct = sample.udf_fam_ct
+        fam_ct = sample.udf_famct_latest
 
         if org_uri == ORG_URI_BY_NAME[TESTING_ORG]:
             logger.warn(
@@ -65,8 +66,17 @@ class Extension(GeneralExtension):
             self.context.update(sample)
             self.context.commit()
         except PartnerClientAPIException as e:
-            self.usage_error_defer("Error while uploading sample to KNM", sample.name)
+            self.usage_error_defer(
+                "Error while uploading sample to KNM", sample.name)
             logger.error(e)
+
+    def is_control(self, sample):
+        if sample.name in Controls.MAP_FROM_READABLE_TO_KEY:
+            # We recognize built in controls by their name, not the UDF.
+            return True
+        if sample.udf_control == UDF_TRUE:
+            return True
+        return False
 
     def execute(self):
         self.client = self.get_client()
@@ -78,7 +88,7 @@ class Extension(GeneralExtension):
                 except AttributeError:
                     pass
 
-                if well.artifact.sample().udf_control == UDF_TRUE:
+                if self.is_control(well.artifact.sample()):
                     continue
                 elif already_uploaded:
                     logger.info("Analyte {} has already been uploaded".format(
@@ -88,4 +98,4 @@ class Extension(GeneralExtension):
                 self.report(well.artifact)
 
     def integration_tests(self):
-        yield "24-44101"
+        yield "24-44118"
