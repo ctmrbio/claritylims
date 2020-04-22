@@ -5,12 +5,13 @@ import numpy as np
 from datetime import datetime
 from clarity_ext.domain.validation import UsageError
 
+
 class ParsePcrExecution(object):
     def __init__(self, context):
         self.context = context
 
     def execute(self):
-        if not self._has_instrument_udf():
+        if self.instrument is None:
             raise UsageError("The udf 'Instrument Used' must be filled in before running this script")
         file_handle = "Result file"
         parser = self._instantiate_parser()
@@ -29,14 +30,6 @@ class ParsePcrExecution(object):
     @property
     def instrument(self):
         return self.context.current_step.instrument
-
-    def _has_instrument_udf(self):
-        try:
-            _ = self.instrument
-        except AttributeError:
-            return False
-
-        return True
 
 
 class Quant7Parser(object):
