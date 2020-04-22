@@ -18,7 +18,7 @@ class RtPcrAnalyseExecution(object):
         if not self._has_assay_udf():
             raise UsageError("The udf 'Assay' must be filled in before running this script")
 
-        if not self._has_instrument_udf():
+        if self.instrument is None:
             raise UsageError("The udf 'Instrument Used' must be filled in before running this script")
 
         # Prepare analyse service input args
@@ -90,14 +90,6 @@ class RtPcrAnalyseExecution(object):
     @property
     def instrument(self):
         return self.context.current_step.instrument
-
-    def _has_instrument_udf(self):
-        try:
-            _ = self.instrument
-        except AttributeError:
-            return False
-
-        return True
 
     def _has_assay_udf(self):
         try:
