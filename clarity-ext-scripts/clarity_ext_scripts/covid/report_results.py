@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
     PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, COVID_RESPONSE_FAILED,
@@ -34,6 +35,7 @@ class Extension(GeneralExtension):
         return covid_result
 
     def report(self, analyte):
+        timestamp = datetime.now().strftime("%y%m%dT%H%M%S")
         sample = analyte.sample()
 
         org_uri = sample.udf_knm_org_uri
@@ -53,12 +55,13 @@ class Extension(GeneralExtension):
 
             # Update udfs
             analyte.udf_map.force("KNM result uploaded", UDF_TRUE)
-            analyte.udf_map.force("KNM result uploaded date", timestamp) 
+            analyte.udf_map.force("KNM result uploaded date", timestamp)
             self.context.update(analyte)
 
             sample.udf_map.force("KNM result uploaded", UDF_TRUE)
-            sample.udf_map.force("KNM result uploaded date", timestamp) 
-            sample.udf_map.force("KNM uploaded source", analyte.api_resource.uri) 
+            sample.udf_map.force("KNM result uploaded date", timestamp)
+            sample.udf_map.force("KNM uploaded source",
+                                 analyte.api_resource.uri)
             self.context.update(sample)
             self.context.commit()
         except PartnerClientAPIException as e:
@@ -77,7 +80,8 @@ class Extension(GeneralExtension):
                 if well.artifact.sample().udf_control == UDF_TRUE:
                     continue
                 elif already_uploaded:
-                    logger.info("Analyte {} has already been uploaded".format(well.artifact.name))
+                    logger.info("Analyte {} has already been uploaded".format(
+                        well.artifact.name))
                     continue
 
                 self.report(well.artifact)
