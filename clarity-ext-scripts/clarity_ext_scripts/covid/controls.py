@@ -2,6 +2,7 @@ from clarity_ext_scripts.covid.utils import UniqueBarcodeGenerator
 
 controls_barcode_generator = UniqueBarcodeGenerator("x")
 
+
 class Controls(object):
     MGI_NEGATIVE_CONTROL = 1
     MGI_POSITIVE_CONTROL = 2
@@ -10,6 +11,10 @@ class Controls(object):
     POSITIVE_VIRUS_CONTROL = 5
     NEGATIVE_VIRCON_CONTROL = 6
 
+    # These controls are built in clarity control types, the others are real samples:
+    NEGATIVE_PCR_CONTROL = 30
+    POSITIVE_PCR_CONTROL = 31
+
     ALL = {
         MGI_NEGATIVE_CONTROL,
         MGI_POSITIVE_CONTROL,
@@ -17,6 +22,9 @@ class Controls(object):
         NEGATIVE_WATER_CONTROL,
         POSITIVE_PLASMID_CONTROL,
         POSITIVE_VIRUS_CONTROL,
+
+        NEGATIVE_PCR_CONTROL,
+        POSITIVE_PCR_CONTROL,
     }
 
     MAP_FROM_READABLE_TO_KEY = {
@@ -26,6 +34,9 @@ class Controls(object):
         "Negative Water Control": NEGATIVE_WATER_CONTROL,
         "Positive Plasmid Control": POSITIVE_PLASMID_CONTROL,
         "Positive Virus Control": POSITIVE_VIRUS_CONTROL,
+
+        "Negative PCR Control": NEGATIVE_PCR_CONTROL,
+        "Positive PCR Control": POSITIVE_PCR_CONTROL,
     }
 
     MAP_FROM_KEY_TO_ABBREVIATION = {
@@ -35,4 +46,7 @@ class Controls(object):
         NEGATIVE_WATER_CONTROL: "water",
         POSITIVE_PLASMID_CONTROL: "pla-pos",
         POSITIVE_VIRUS_CONTROL: "vir-pos",
+
+        NEGATIVE_PCR_CONTROL: "pcr-neg",
+        POSITIVE_PCR_CONTROL: "pcr-pos",
     }
