@@ -1,5 +1,15 @@
+import logging
+from datetime import datetime
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIClient
+from clarity_ext_scripts.covid.partner_api_client import (
+    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, COVID_RESPONSE_FAILED,
+    PartnerClientAPIException)
+from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
+
+
+logger = logging.getLogger(__name__)
+
+UDF_TRUE = "Yes"
 
 
 class Extension(GeneralExtension):
@@ -7,17 +17,75 @@ class Extension(GeneralExtension):
     Reports sample results to third party partner 
     """
 
-    def execute(self):
+    def get_client(self):
+        config = {
+            key: self.config[key]
+            for key in [
+                "test_partner_base_url", "test_partner_code_system_base_url",
+                "test_partner_user", "test_partner_password"
+            ]
+        }
+        return PartnerAPIV7Client(**config)
+
+    def map_from_internal_to_external_result(self, analyte):
+        covid_result = analyte.udf_rtpcr_covid_19_result
+        # Internal values (on analyte)
+        if covid_result in FAILED_STATES:
+            return COVID_RESPONSE_FAILED
+        return covid_result
+
+    def report(self, analyte):
+        timestamp = datetime.now().strftime("%y%m%dT%H%M%S")
+        sample = analyte.sample()
+
+        org_uri = sample.udf_knm_org_uri
+        service_request_id = sample.udf_knm_service_request_id
+        fam_ct = sample.udf_fam_ct
+
+        if org_uri == ORG_URI_BY_NAME[TESTING_ORG]:
+            logger.warn(
+                "Reporting results for test org for analyte {}".format(analyte.name))
+            return
+
+        result = self.map_from_internal_to_external_result(analyte)
         try:
-            url = self.config["covid.test_partner_url"]
-            user = self.config["covid.test_partner_user"]
-            password = self.config["covid.test_partner_password"]
-        except:
-            raise AssertionError("You must provide url, username and password for the test partner")
+            self.client.post_diagnosis_report(service_request_id=service_request_id,
+                                              diagnosis_result=result,
+                                              analysis_results=[{"value": fam_ct}])
 
-        client = PartnerAPIClient(url, user, password)
-        print(client)
+            # Update udfs
+            analyte.udf_map.force("KNM result uploaded", UDF_TRUE)
+            analyte.udf_map.force("KNM result uploaded date", timestamp)
+            self.context.update(analyte)
 
+            sample.udf_map.force("KNM result uploaded", UDF_TRUE)
+            sample.udf_map.force("KNM result uploaded date", timestamp)
+            sample.udf_map.force("KNM uploaded source",
+                                 analyte.api_resource.uri)
+            self.context.update(sample)
+            self.context.commit()
+        except PartnerClientAPIException as e:
+            self.usage_error_defer("Error while uploading sample to KNM", sample.name)
+            logger.error(e)
+
+    def execute(self):
+        self.client = self.get_client()
+        for plate in self.context.input_containers:
+            for well in plate.occupied:
+                already_uploaded = False
+                try:
+                    already_uploaded = well.artifact.sample().udf_knm_result_uploaded == UDF_TRUE
+                except AttributeError:
+                    pass
+
+                if well.artifact.sample().udf_control == UDF_TRUE:
+                    continue
+                elif already_uploaded:
+                    logger.info("Analyte {} has already been uploaded".format(
+                        well.artifact.name))
+                    continue
+
+                self.report(well.artifact)
 
     def integration_tests(self):
-        yield "24-38707"
+        yield "24-44101"
