@@ -65,6 +65,7 @@ class Extension(GeneralExtension):
             self.context.update(sample)
             self.context.commit()
         except PartnerClientAPIException as e:
+            self.usage_error_defer("Error while uploading sample to KNM", sample.name)
             logger.error(e)
 
     def execute(self):
