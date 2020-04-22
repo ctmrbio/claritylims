@@ -22,7 +22,7 @@ class Extension(TemplateExtension):
         max_number_of_plates = 1  # TODO: decide max number, perhaps it is just 1 anyway?
         if len(self.context.output_containers) > max_number_of_plates:
             raise Exception("The allowed max number of plates is currently set to {}".format(max_number_of_plates))
-        for well in self.context.output_container.list_wells(Container.DOWN_FIRST):
+        for well in self.context.output_container.list_wells(Container.RIGHT_FIRST):
             yield well
 
     def integration_tests(self):
