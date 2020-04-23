@@ -23,17 +23,18 @@ class RtPcrAnalyseExecution(object):
         samples = list()
         positive_controls = list()
         negative_controls = list()
-        pos_control_name = self._get_control_name(Controls.MGI_POSITIVE_CONTROL)
-        neg_control_name = self._get_control_name(Controls.NEGATIVE_PCR_CONTROL)
+        pos_prefix = Controls.MAP_FROM_KEY_TO_ABBREVIATION[Controls.MGI_POSITIVE_CONTROL]
+        neg_prefix = Controls.MAP_FROM_KEY_TO_ABBREVIATION[Controls.NEGATIVE_PCR_CONTROL]
         for _, output in self.context.all_analytes:
             result = {
                 "id": output.id,
                 "FAM-CT": output.udf_famct,
                 udf_name_for_ct_control: output.udf_map[udf_name_for_ct_control].value,
             }
-            if output.name == pos_control_name:
+
+            if output.name.startswith(pos_prefix):
                 positive_controls.append(result)
-            elif output.name == neg_control_name:
+            elif output.name.startswith(neg_prefix):
                 negative_controls.append(result)
             else:
                 samples.append(result)
@@ -69,13 +70,6 @@ class RtPcrAnalyseExecution(object):
         rt_pcr_passed = str(len(artifacts_that_failed) == 0)
         self.context.current_step.udf_map.force("rtPCR Passed", rt_pcr_passed)
         self.context.update(self.context.current_step)
-
-    def _get_control_name(self, key):
-        key_to_readable = {
-            Controls.MAP_FROM_READABLE_TO_KEY[readable]: readable
-            for readable in Controls.MAP_FROM_READABLE_TO_KEY
-        }
-        return key_to_readable[key]
 
     def _instantiate_service(self):
         if self.instrument == 'qPCR ABI 7500':
