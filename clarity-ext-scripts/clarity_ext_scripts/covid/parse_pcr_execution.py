@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-import numpy as np
+import math
 from datetime import datetime
 from clarity_ext.domain.validation import UsageError
 
@@ -36,35 +36,56 @@ class Quant7Parser(object):
     def __init__(self, context):
         self.context = context
 
-    def _determine_start_row(self, file_handle):
-        file_stream = self.context.local_shared_file(file_handle, mode="rb")
-        data = pd.read_excel(file_stream, 'Results', index_col=None, header=None, encoding='utf-8')
-        header_row_entry = data[(data[0] == 'Well') & (data[1] == 'Well Position')].index
-        header_row_index = header_row_entry.values[0]
-        return header_row_index
+    def _determine_start_row(self, panda_contents):
+        header_row_entry = panda_contents[
+            (panda_contents[0] == 'Well') & (panda_contents[1] == 'Well Position')
+            ]
+        header_row_index = header_row_entry.index.values[0]
+        header = [header_row_entry[index].values[0] for index in header_row_entry]
+        return header_row_index, header
+
+    def _build_matrix(self, data, header):
+        """
+        This returns the data in pcr output file represented as a dict of dict
+        the outer key is "<Sample Name><Reporter>"
+        the inner key is the column name as in the file
+        example: myval = matrix['sample1FAM']['Sample Name']
+        myval --> 'sample1'
+        """
+        rows = [index for index in data.values]
+        matrix = dict()
+        for numpy_row in rows:
+            row = [d for d in numpy_row]
+            row_as_dict = dict(zip(header, row))
+            key = self._key(row_as_dict['Sample Name'], row_as_dict['Reporter'])
+            matrix[key] = row_as_dict
+        return matrix
+
+    def _key(self, sample_name, reporter):
+        return '{}{}'.format(sample_name, reporter)
+
+    def _fetch_contents(self, file_handle):
+        file_stream1 = self.context.local_shared_file(file_handle, mode="rb")
+        panda_contents = pd.read_excel(
+            file_stream1, 'Results', index_col=None, header=None, encoding='utf-8')
+        header_row_index, header = self._determine_start_row(panda_contents)
+        file_stream2 = self.context.local_shared_file(file_handle, mode="rb")
+        panda_matrix = pd.read_excel(
+            file_stream2, 'Results', index_col=None, skiprows=header_row_index,
+            encoding='utf-8')
+        return self._build_matrix(panda_matrix, header)
 
     def parse(self, file_handle):
-        header_row_index = self._determine_start_row(file_handle)
-        file_stream = self.context.local_shared_file(file_handle, mode="rb")
-        data = pd.read_excel(file_stream, 'Results', index_col=None,
-                             skiprows=header_row_index, encoding='utf-8')
+        matrix = self._fetch_contents(file_handle)
         for _, output in self.context.all_analytes:
             try:
-                _ = data.loc[(data['Sample Name'] == output.name)]
+                _ = matrix[self._key(output.name, 'FAM')]
             except KeyError:
                 raise UsageError("Sample name could not be found in pcr output file: {}".format(output.name))
-            fam_row = data.loc[(data['Sample Name'] == output.name) & (data['Reporter'] == 'FAM')]
-            vic_row = data.loc[(data['Sample Name'] == output.name) & (data['Reporter'] == 'VIC')]
-            target_name = fam_row["Sample Name"].values[0]
-            if target_name != output.name:
-                raise AssertionError("Incorrect name of target '{}' in well '{}' in '{}'. "
-                        "Expected {}".format(
-                            target_name, output.well.alpha_num_key, file_handle, output.name))
-
-            fam_ct = fam_row["CT"].values[0]
-            vic_ct = vic_row["CT"].values[0]
-            fam_ct = self._parse_ct(fam_ct)
-            vic_ct = self._parse_ct(vic_ct)
+            fam_row = matrix[self._key(output.name, 'FAM')]
+            vic_row = matrix[self._key(output.name, 'VIC')]
+            fam_ct = self._parse_ct(fam_row["CT"])
+            vic_ct = self._parse_ct(vic_row["CT"])
 
             # add the measurement to the output artifact
             output.udf_map.force("FAM-CT", fam_ct)
@@ -88,6 +109,6 @@ class Quant7Parser(object):
     def _parse_ct(self, ct):
         # CT values with no signal is shown as an empty cell in the output file
         # which in turn is interpreted as NaN by pandas.
-        if (isinstance(ct, basestring) and ct.lower() == 'undetermined') or np.isnan(ct):
+        if (isinstance(ct, basestring) and ct.lower() == 'undetermined') or math.isnan(ct):
             ct = 0
         return ct
