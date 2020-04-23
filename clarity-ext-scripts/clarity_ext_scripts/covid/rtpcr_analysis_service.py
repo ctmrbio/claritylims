@@ -64,18 +64,28 @@ class RTPCRAnalysisService(object):
 
     # TODO Later we might have to account for giving two trails over 38 as positive.
 
-    def _analyze_sample(self, sample):
+    # POS Control
+    # FAM=0 and VIC=0 => FAIL
+    # NEG Control
+    # FAM=0 and VIC=0 => NEG
+    # SAMPLE
+    # FAM=0 and VIC=0 => FAIL
+
+    def _analyze_sample(self, sample, is_neg_control=False):
         covid_ct = sample[self._covid_reporter_key]
         internal_control_ct = sample[self.internal_control_reporter_key]
         if covid_ct == 0 and internal_control_ct == 0:
-            return FAILED_BY_INTERNAL_CONTROL
+            if is_neg_control:
+                return COVID_RESPONSE_NEGATIVE
+            else:
+                return FAILED_BY_INTERNAL_CONTROL
         elif covid_ct == 0 and internal_control_ct <= self.INTERNAL_CONTROL_THRESHOLD:
             return COVID_RESPONSE_NEGATIVE
         elif covid_ct == 0 and internal_control_ct > self.INTERNAL_CONTROL_THRESHOLD:
             return FAILED_BY_INTERNAL_CONTROL
         elif covid_ct > self.COVID_CONTROL_THRESHOLD:
             return FAILED_BY_TOO_HIGH_COVID_VALUE
-        elif covid_ct <= self.COVID_CONTROL_THRESHOLD:
+        elif covid_ct <= self.COVID_CONTROL_THRESHOLD and not covid_ct == 0:
             return COVID_RESPONSE_POSITIVE
         else:
             raise AssertionError(
@@ -84,11 +94,17 @@ class RTPCRAnalysisService(object):
                                                                           self.internal_control_reporter_key,
                                                                           internal_control_ct))
 
+    def _analyze_positive_control(self, control):
+        return self._analyze_sample(control, is_neg_control=False)
+
+    def _analyze_negative_control(self, control):
+        return self._analyze_sample(control, is_neg_control=True)
+
     def _analyze_controls(self, positive_controls, negative_controls):
         errors = []
         control_results = []
         for pos_control in positive_controls:
-            res = self._analyze_sample(pos_control)
+            res = self._analyze_positive_control(pos_control)
             control_results.append({"id": pos_control["id"],
                                     DIAGNOSIS_RESULT_KEY: res})
 
@@ -99,7 +115,7 @@ class RTPCRAnalysisService(object):
                 errors.append(FailedControl("Positive control sample: {} failed with status: {}".format(pos_control["id"],
                                                                                                         res)))
         for neg_control in negative_controls:
-            res = self._analyze_sample(neg_control)
+            res = self._analyze_negative_control(neg_control)
             control_results.append({"id": neg_control["id"],
                                     DIAGNOSIS_RESULT_KEY: res})
 
