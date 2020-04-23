@@ -11,6 +11,13 @@ class RtPcrAnalyseExecution(object):
     def __init__(self, context):
         self.context = context
 
+    def _get_neg_control_name(self, key):
+        key_to_readable = {
+            Controls.MAP_FROM_READABLE_TO_KEY[readable]: readable
+            for readable in Controls.MAP_FROM_READABLE_TO_KEY
+        }
+        return key_to_readable[key]
+
     def execute(self):
         if not self._has_assay_udf():
             raise UsageError("The udf 'Assay' must be filled in before running this script")
@@ -24,7 +31,7 @@ class RtPcrAnalyseExecution(object):
         positive_controls = list()
         negative_controls = list()
         pos_prefix = Controls.MAP_FROM_KEY_TO_ABBREVIATION[Controls.MGI_POSITIVE_CONTROL]
-        neg_prefix = Controls.MAP_FROM_KEY_TO_ABBREVIATION[Controls.NEGATIVE_PCR_CONTROL]
+        neg_control_name = self._get_neg_control_name(Controls.NEGATIVE_PCR_CONTROL)
         for _, output in self.context.all_analytes:
             result = {
                 "id": output.id,
@@ -34,7 +41,7 @@ class RtPcrAnalyseExecution(object):
 
             if output.name.startswith(pos_prefix):
                 positive_controls.append(result)
-            elif output.name.startswith(neg_prefix):
+            elif output.name == neg_control_name:
                 negative_controls.append(result)
             else:
                 samples.append(result)
