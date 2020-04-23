@@ -84,7 +84,7 @@ class Extension(GeneralExtension):
             for well in plate.occupied:
                 already_uploaded = False
                 try:
-                    already_uploaded = well.artifact.sample().udf_knm_result_uploaded == UDF_TRUE
+                    already_uploaded = well.artifact.udf_knm_result_uploaded == UDF_TRUE
                 except AttributeError:
                     pass
 
