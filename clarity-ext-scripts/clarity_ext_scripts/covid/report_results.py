@@ -29,7 +29,7 @@ class Extension(GeneralExtension):
         return PartnerAPIV7Client(**config)
 
     def map_from_internal_to_external_result(self, analyte):
-        covid_result = analyte.udf_rtpcr_covid_19_result
+        covid_result = analyte.udf_rtpcr_covid19_result
         # Internal values (on analyte)
         if covid_result in FAILED_STATES:
             return COVID_RESPONSE_FAILED
