@@ -8,4 +8,4 @@ class Extension(GeneralExtension):
         runner.execute()
 
     def integration_tests(self):
-        yield "24-43214"
+        yield "24-44139"
