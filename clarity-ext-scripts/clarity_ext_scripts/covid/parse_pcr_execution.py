@@ -62,13 +62,9 @@ class Quant7Parser(object):
                             target_name, output.well.alpha_num_key, file_handle, output.name))
 
             fam_ct = fam_row["CT"].values[0]
-            # CT values with no signal is shown as an empty cell in the output file
-            # which in turn is interpreted as NaN by pandas.
-            if np.isnan(fam_ct):
-                fam_ct = 0
             vic_ct = vic_row["CT"].values[0]
-            if np.isnan(vic_ct):
-                vic_ct = 0
+            fam_ct = self._parse_ct(fam_ct)
+            vic_ct = self._parse_ct(vic_ct)
 
             # add the measurement to the output artifact
             output.udf_map.force("FAM-CT", fam_ct)
@@ -88,3 +84,10 @@ class Quant7Parser(object):
             # LIMS ID of the source of the CT measurement
             original_sample.udf_map.force("CT source", output.api_resource.uri)
             self.context.update(original_sample)
+
+    def _parse_ct(self, ct):
+        # CT values with no signal is shown as an empty cell in the output file
+        # which in turn is interpreted as NaN by pandas.
+        if (isinstance(ct, basestring) and ct.lower() == 'undetermined') or np.isnan(ct):
+            ct = 0
+        return ct
