@@ -85,7 +85,7 @@ class RTPCRAnalysisService(object):
             return FAILED_BY_INTERNAL_CONTROL
         elif covid_ct > self.COVID_CONTROL_THRESHOLD:
             return FAILED_BY_TOO_HIGH_COVID_VALUE
-        elif covid_ct <= self.COVID_CONTROL_THRESHOLD and covid_ct > 0:
+        elif 0 < covid_ct <= self.COVID_CONTROL_THRESHOLD:
             return COVID_RESPONSE_POSITIVE
         else:
             raise AssertionError(
