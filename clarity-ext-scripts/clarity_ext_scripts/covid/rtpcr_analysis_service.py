@@ -60,18 +60,21 @@ class RTPCRAnalysisService(object):
     # Failed  if CT(FAM)= >38
     # Negative if CT(FAM) = 0 and CT(HEX) = <=32
     # Failed if CT(FAM) = 0 and CT(HEX) = >32
+    # Failed if CT(FAM) = 0 and CT(HEX/VIC) = 0
 
     # TODO Later we might have to account for giving two trails over 38 as positive.
 
     def _analyze_sample(self, sample):
         covid_ct = sample[self._covid_reporter_key]
         internal_control_ct = sample[self.internal_control_reporter_key]
-        if covid_ct > self.COVID_CONTROL_THRESHOLD:
-            return FAILED_BY_TOO_HIGH_COVID_VALUE
+        if covid_ct == 0 and internal_control_ct == 0:
+            return FAILED_BY_INTERNAL_CONTROL
         elif covid_ct == 0 and internal_control_ct <= self.INTERNAL_CONTROL_THRESHOLD:
             return COVID_RESPONSE_NEGATIVE
         elif covid_ct == 0 and internal_control_ct > self.INTERNAL_CONTROL_THRESHOLD:
             return FAILED_BY_INTERNAL_CONTROL
+        elif covid_ct > self.COVID_CONTROL_THRESHOLD:
+            return FAILED_BY_TOO_HIGH_COVID_VALUE
         elif covid_ct <= self.COVID_CONTROL_THRESHOLD:
             return COVID_RESPONSE_POSITIVE
         else:
