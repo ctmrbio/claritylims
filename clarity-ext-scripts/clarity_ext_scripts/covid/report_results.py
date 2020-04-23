@@ -28,8 +28,8 @@ class Extension(GeneralExtension):
         }
         return PartnerAPIV7Client(**config)
 
-    def map_from_internal_to_external_result(self, analyte):
-        covid_result = analyte.udf_rtpcr_covid_19_result
+    def map_from_internal_to_external_result(self, sample):
+        covid_result = sample.udf_rtpcr_covid19_result_latest
         # Internal values (on analyte)
         if covid_result in FAILED_STATES:
             return COVID_RESPONSE_FAILED
@@ -45,10 +45,10 @@ class Extension(GeneralExtension):
 
         if org_uri == ORG_URI_BY_NAME[TESTING_ORG]:
             logger.warn(
-                "Reporting results for test org for analyte {}".format(analyte.name))
+                "Reporting results for test org for analyte {}".format(sample.name))
             return
 
-        result = self.map_from_internal_to_external_result(analyte)
+        result = self.map_from_internal_to_external_result(sample)
         try:
             self.client.post_diagnosis_report(service_request_id=service_request_id,
                                               diagnosis_result=result,
