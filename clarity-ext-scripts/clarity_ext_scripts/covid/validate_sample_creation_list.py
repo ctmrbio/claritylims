@@ -92,16 +92,21 @@ class Extension(GeneralExtension):
                             org_uri, barcode)
                         service_request_id = response["resource"]["id"]
                     except OrganizationReferralCodeNotFound as e:
-                        self.usage_error_defer(("Cannot find service_request_id "
-                                                "for org: {} and barcode: {}").format(org_uri, barcode))
+                        response = None
+                        service_request_id = "warning"
 
                 if service_request_id == "warning":
                     service_request_id = ""
                     status = "error"
-                    comment = response["resource"]["issue"][0]["details"][
-                        "text"]
+                    if response:
+                        comment = response["resource"]["issue"][0]["details"][
+                            "text"]
+                    else:
+                        comment = ""
                     self.usage_error_defer(
-                        "Can't find service_request_id for barcode(s)", barcode)
+                        "Can't find service_request_id in {} for barcode(s)".format(
+                            org_uri),
+                        barcode)
                 else:
                     status = "ok"
                     comment = ""
@@ -126,7 +131,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-43792"
+        yield "24-44969"
 
 
 def get_raw_sample_list(context):
