@@ -6,7 +6,7 @@ import pandas as pd
 from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME)
+    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
@@ -87,17 +87,26 @@ class Extension(GeneralExtension):
                     logger.warn("Using testing org. Service request ID faked: {}".format(
                         service_request_id))
                 else:
-                    response = client.search_for_service_request(
-                        org_uri, barcode)
-                    service_request_id = response["resource"]["id"]
+                    try:
+                        response = client.search_for_service_request(
+                            org_uri, barcode)
+                        service_request_id = response["resource"]["id"]
+                    except OrganizationReferralCodeNotFound as e:
+                        response = None
+                        service_request_id = "warning"
 
                 if service_request_id == "warning":
                     service_request_id = ""
                     status = "error"
-                    comment = response["resource"]["issue"][0]["details"][
-                        "text"]
+                    if response:
+                        comment = response["resource"]["issue"][0]["details"][
+                            "text"]
+                    else:
+                        comment = ""
                     self.usage_error_defer(
-                        "Can't find service_request_id for barcode(s)", barcode)
+                        "Can't find service_request_id in {} for barcode(s)".format(
+                            org_uri),
+                        barcode)
                 else:
                     status = "ok"
                     comment = ""
@@ -122,7 +131,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-43792"
+        yield "24-44969"
 
 
 def get_raw_sample_list(context):
