@@ -92,7 +92,7 @@ class Extension(GeneralExtension):
                             org_uri, barcode)
                         service_request_id = response["resource"]["id"]
                     except OrganizationReferralCodeNotFound as e:
-                        self.usage_error_defer(("Cannot find service_request_id"
+                        self.usage_error_defer(("Cannot find service_request_id "
                                                 "for org: {} and barcode: {}").format(org_uri, barcode))
 
                 if service_request_id == "warning":
