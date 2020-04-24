@@ -29,7 +29,6 @@ ORG_URI_BY_NAME = {
 }
 
 
-
 class PartnerClientAPIException(Exception):
     pass
 
@@ -285,7 +284,7 @@ class PartnerAPIV7Client(object):
             raise e
 
     def post_diagnosis_report(self, service_request_id, diagnosis_result, analysis_results,
-            integration_test=False):
+                              integration_test=False):
 
         if integration_test:
             log.warn("Integration testing on, not reporting {} to 3rd party".format(
@@ -345,8 +344,12 @@ class PartnerAPIV7Client(object):
             "resourceType": "Observation",
             "id": str(index),
             "status": "final",
-            "code": "v1-ct-value-mgi-real-time-fluorescent-RT-PCR-2019-nCoV",
-            "system": "http://uri.ctmr.scilifelab.se/id/CodeSystem/cs-observations",
+            "code": {
+                "coding": [
+                    {"system": "http://uri.ctmr.scilifelab.se/id/CodeSystem/cs-observations",
+                     "code": "v1-ct-value-mgi-real-time-fluorescent-RT-PCR-2019-nCoV"}
+                ]
+            },
             "valueQuantity": {
                 "value": value
             }
