@@ -209,10 +209,14 @@ class TestPartnerAPIV7Client(object):
             "contained": [
                 {
                     "resourceType": "Observation",
-                    "id": "0",
+                    "id": "1",
                     "status": "final",
-                    "code": "v1-ct-value-mgi-real-time-fluorescent-RT-PCR-2019-nCoV",
-                    "system": "http://uri.ctmr.scilifelab.se/id/CodeSystem/cs-observations",
+                    "code": {
+                        "coding": [
+                            {"system": "http://uri.ctmr.scilifelab.se/id/CodeSystem/cs-observations",
+                             "code": "v1-ct-value-mgi-real-time-fluorescent-RT-PCR-2019-nCoV"}
+                        ]
+                    },
                     "valueQuantity": {
                         "value": 25
                     }
@@ -233,7 +237,7 @@ class TestPartnerAPIV7Client(object):
             },
             "result": [
                 {
-                    "reference": "#0"
+                    "reference": "#1"
                 },
             ]
         }
