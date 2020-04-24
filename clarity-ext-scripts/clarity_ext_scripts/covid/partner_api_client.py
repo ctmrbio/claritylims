@@ -334,7 +334,7 @@ class PartnerAPIV7Client(object):
         observations = []
         for index, result in enumerate(analysis_results):
             observations.append(
-                self._create_observation(index, result["value"]))
+                self._create_observation(index+1, result["value"]))
         return observations
 
     def _create_observation(self, index, value):

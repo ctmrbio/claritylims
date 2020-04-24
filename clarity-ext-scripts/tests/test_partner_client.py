@@ -209,7 +209,7 @@ class TestPartnerAPIV7Client(object):
             "contained": [
                 {
                     "resourceType": "Observation",
-                    "id": "0",
+                    "id": "1",
                     "status": "final",
                     "code": {
                         "coding": [
@@ -237,7 +237,7 @@ class TestPartnerAPIV7Client(object):
             },
             "result": [
                 {
-                    "reference": "#0"
+                    "reference": "#1"
                 },
             ]
         }
