@@ -6,7 +6,7 @@ import pandas as pd
 from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME)
+    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
@@ -87,9 +87,13 @@ class Extension(GeneralExtension):
                     logger.warn("Using testing org. Service request ID faked: {}".format(
                         service_request_id))
                 else:
-                    response = client.search_for_service_request(
-                        org_uri, barcode)
-                    service_request_id = response["resource"]["id"]
+                    try:
+                        response = client.search_for_service_request(
+                            org_uri, barcode)
+                        service_request_id = response["resource"]["id"]
+                    except OrganizationReferralCodeNotFound as e:
+                        self.usage_error_defer(("Cannot find service_request_id"
+                                                "for org: {} and barcode: {}").format(org_uri, barcode))
 
                 if service_request_id == "warning":
                     service_request_id = ""
