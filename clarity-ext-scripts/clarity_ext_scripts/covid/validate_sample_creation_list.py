@@ -6,7 +6,7 @@ import pandas as pd
 from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound)
+    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound, PartnerClientAPIException)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
@@ -44,6 +44,30 @@ class Extension(GeneralExtension):
         * In an extreme case, e.g. given manual confirmation, the research engineer can upload a new
           validated file with manually edited information.
     """
+
+    def _search_for_id(self, client,  org_uri, barcode):
+        try:
+            response = client.search_for_service_request(
+                org_uri, barcode)
+            service_request_id = response["resource"]["id"]
+            status = "ok"
+            comment = ""
+        except OrganizationReferralCodeNotFound as e:
+            self.usage_error_defer(
+                "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
+                    org_uri), barcode)
+            service_request_id = "anonymous"
+            status = "warning"
+            comment = ("No matching request was found for this referral code. Will create an anonymous "
+                       "will create an anonymous ServiceRequest for this referral code.")
+        except PartnerClientAPIException as e:
+            self.usage_error_defer(
+                "Something was wrong with {} for barcode(s). See file validated sample list for details.".format(
+                    org_uri), barcode)
+            service_request_id = ""
+            status = "error"
+            comment = e.message
+        return service_request_id, status, comment
 
     def execute(self):
         # 1. Get the ordering organizations URI
@@ -87,29 +111,9 @@ class Extension(GeneralExtension):
                     logger.warn("Using testing org. Service request ID faked: {}".format(
                         service_request_id))
                 else:
-                    try:
-                        response = client.search_for_service_request(
-                            org_uri, barcode)
-                        service_request_id = response["resource"]["id"]
-                    except OrganizationReferralCodeNotFound as e:
-                        response = None
-                        service_request_id = "warning"
+                    service_request_id, status, comment = self._search_for_id(
+                        client, org_uri, barcode)
 
-                if service_request_id == "warning":
-                    service_request_id = ""
-                    status = "error"
-                    if response:
-                        comment = response["resource"]["issue"][0]["details"][
-                            "text"]
-                    else:
-                        comment = ""
-                    self.usage_error_defer(
-                        "Can't find service_request_id in {} for barcode(s)".format(
-                            org_uri),
-                        barcode)
-                else:
-                    status = "ok"
-                    comment = ""
                 raw_sample_list.loc[ix, "org_uri"] = org_uri
             else:
                 service_request_id = ""
