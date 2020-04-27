@@ -12,11 +12,13 @@ log = logging.getLogger(__name__)
 
 FAILED_BY_INTERNAL_CONTROL = "failed_by_internal_control"
 FAILED_BY_TOO_HIGH_COVID_VALUE = "failed_by_too_high_covid_value"
+FAILED_BY_REVIEW = "failed_by_review"
 FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL = "failed_entire_plate_by_failed_external_control"
 
 FAILED_STATES = {FAILED_BY_INTERNAL_CONTROL,
                  FAILED_BY_TOO_HIGH_COVID_VALUE,
-                 FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}
+                 FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL,
+                 FAILED_BY_REVIEW}
 
 
 class AnalysisServiceException(Exception):
