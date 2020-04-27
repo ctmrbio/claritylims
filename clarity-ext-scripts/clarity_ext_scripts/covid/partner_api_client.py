@@ -277,6 +277,65 @@ class PartnerAPIV7Client(object):
             log.error(e.message)
             raise e
 
+    def create_anonymous_service_request(self, referral_code):
+        """
+        This method can be used to create an anonymous service request, that is
+        a service request that is not tied to a particular person. This is useful
+        when a sample arrives in the lab that has not been properly registered.
+        """
+
+        # Pretty much all of this is hard coded, because we will only need to
+        # create a single patient at the time.
+        payload = {
+            "resourceType": "ServiceRequest",
+            "contained": [
+                {
+                    "resourceType": "Patient",
+                    "id": "1"
+                }
+            ],
+            "identifier": [
+                {
+                    "system": "http://{}/id/Identifier/i-referral-code".format(self._test_partner_code_system_base_url),
+                    "value": referral_code
+                }
+            ],
+            "status": "active",
+            "intent": "original-order",
+            "subject": {
+                "reference": "#1"
+            },
+            "code": {
+                "coding": [
+                    {
+                        "system": "http://{}/id/CodeSystem/cs-test-types".format(
+                            self._test_partner_code_system_base_url),
+                        "code": "covid19"
+                    }
+                ]
+            }
+        }
+        try:
+            url = "{}/ServiceRequest".format(
+                self._base_url)
+            headers = self._generate_headers()
+
+            response = requests.post(url=url,
+                                     json=payload,
+                                     headers=headers)
+
+            if response.status_code == 201:
+                response_json = response.json()
+                service_request_id = response_json["id"]
+                return service_request_id
+            else:
+                raise PartnerClientAPIException(("Did not get 201 answer from partner API."
+                                                 "Response was: {} and json: {}").format(response.status_code,
+                                                                                         response.json()))
+        except PartnerClientAPIException as e:
+            log.error(e.message)
+            raise e
+
     def post_diagnosis_report(self, service_request_id, diagnosis_result, analysis_results,
                               integration_test=False):
 
