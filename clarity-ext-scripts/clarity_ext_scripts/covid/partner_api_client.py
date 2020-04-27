@@ -219,17 +219,11 @@ class PartnerAPIV7Client(object):
     """
 
     def __init__(self, test_partner_base_url, test_partner_user, test_partner_password,
-                 test_partner_code_system_base_url, integration_test_mode=False, integration_test_should_fail=0):
+                 test_partner_code_system_base_url):
         self._base_url = test_partner_base_url
         self._user = test_partner_user
         self._password = test_partner_password
         self._test_partner_code_system_base_url = test_partner_code_system_base_url
-        if integration_test_mode:
-            self._integration_test_mode = integration_test_mode
-            self._integration_test_should_fail = integration_test_should_fail
-            self._integration_test_has_failed = 0
-        else:
-            self._integration_test_mode = False
 
     def _base64_encoded_credentials(self):
         user_and_password = "{}:{}".format(self._user, self._password)
