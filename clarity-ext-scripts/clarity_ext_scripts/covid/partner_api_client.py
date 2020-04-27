@@ -320,6 +320,9 @@ class PartnerAPIV7Client(object):
                 self._base_url)
             headers = self._generate_headers()
 
+            log.debug("Attemping to create an anonymous ServiceRequst for referral code: {}".format(
+                referral_code))
+
             response = requests.post(url=url,
                                      json=payload,
                                      headers=headers)
@@ -327,6 +330,9 @@ class PartnerAPIV7Client(object):
             if response.status_code == 201:
                 response_json = response.json()
                 service_request_id = response_json["id"]
+                log.debug(("Successfully created an anonymous ServiceRequest"
+                           " for referral code: {}, got id: {}").format(
+                    referral_code, service_request_id))
                 return service_request_id
             else:
                 raise PartnerClientAPIException(("Did not get 201 answer from partner API."
