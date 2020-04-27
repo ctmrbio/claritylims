@@ -5,6 +5,7 @@ from clarity_ext.utils import single
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.validate_sample_creation_list import Controls
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
 
 
 class Extension(GeneralExtension):
@@ -59,9 +60,9 @@ class Extension(GeneralExtension):
     def create_in_mem_container(
             self, csv, container_specifier, sample_specifier, control_specifier, date, time):
         """Creates an in-memory container with the samples
-        
+
         The name of the container will be on the form:
-            
+
            COVID_<date>_<container_specifier>_<time to sec> 
 
         The name of the samples will be:
@@ -91,7 +92,8 @@ class Extension(GeneralExtension):
             org_uri = row["org_uri"]
             service_request_id = row["service_request_id"]
 
-            control_type_tuple = controls_barcode_generator.parse(original_name)
+            control_type_tuple = controls_barcode_generator.parse(
+                original_name)
 
             if control_type_tuple:
                 control_type, _, _ = control_type_tuple
@@ -107,7 +109,23 @@ class Extension(GeneralExtension):
             container[well] = substance
         return container
 
+    def _create_anonymous_service_request(self, client, referral_code):
+        # TODO I don't know if this should do some error handling here
+        #      as well... Right now if we, e.g. get an error on one sample
+        #      the whole thing will fail.
+        service_request_id = client.create_anonymous_service_request(
+            self, referral_code)
+
     def execute(self):
+        config = {
+            key: self.config[key]
+            for key in [
+                "test_partner_base_url", "test_partner_code_system_base_url",
+                "test_partner_user", "test_partner_password"
+            ]
+        }
+        client = PartnerAPIV7Client(**config)
+
         # This is for debug reasons only. Set this to True to create samples even if they have
         # been created before. This will overwrite the field udf_created_containers.
         force = False
@@ -135,7 +153,13 @@ class Extension(GeneralExtension):
 
         errors = list()
         for ix, row in csv.iterrows():
-            if row["status"] != "ok":
+            if row["status"] == "anonymous":
+                # TODO Check if this way of assigning to the original dataframe
+                # actually works with pandas.
+                service_request_id = self._create_anonymous_service_request(
+                    client, row["original_name"])
+                csv.at[ix, "service_request_id"] = service_request_id
+            elif row["status"] != "ok":
                 errors.append(row["Sample Id"])
 
         if len(errors):

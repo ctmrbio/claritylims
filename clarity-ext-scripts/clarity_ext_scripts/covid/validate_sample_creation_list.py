@@ -57,7 +57,7 @@ class Extension(GeneralExtension):
                 "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
                     org_uri), barcode)
             service_request_id = "anonymous"
-            status = "warning"
+            status = "anonymous"
             comment = ("No matching request was found for this referral code. Will create an anonymous "
                        "will create an anonymous ServiceRequest for this referral code.")
         except PartnerClientAPIException as e:
