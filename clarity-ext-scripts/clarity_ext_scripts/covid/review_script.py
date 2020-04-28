@@ -10,14 +10,21 @@ from clarity_ext_scripts.covid.controls import Controls
 
 class Extension(GeneralExtension):
 
+    def __init__(self, *args, **kwargs):
+        super(Extension, self).__init__(*args, **kwargs)
+        self.updated_artifacts = dict()
+        self.updated_samples = dict()
+
     def execute(self):
         self._validate()
         self._update_individual_artifacts()
         self._conditionally_fail_entire_plate()
-        for artifact in self.all_outputs:
-            original_sample = artifact.sample
-            self.context.update(original_sample)
-            self.context.update(artifact)
+        # This is a fix for when different instances of the same
+        #  artifacts/samples are updated at different locations in script
+        for key in self.updated_artifacts:
+            self.context.update(self.updated_artifacts[key])
+        for key in self.updated_samples:
+            self.context.update(self.updated_samples[key])
 
     def _conditionally_fail_entire_plate(self):
         # If controls are set to failed, fail entire plate
@@ -40,6 +47,8 @@ class Extension(GeneralExtension):
                     "rtPCR covid-19 result latest", FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL)
                 original_sample.udf_map.force("rtPCR Passed latest", "False")
                 artifact.udf_map.force("rtPCR Passed", "False")
+                self.updated_artifacts[artifact.id] = artifact
+                self.updated_samples[original_sample.id] = original_sample
 
     def _update_individual_artifacts(self):
         # Update individual samples and controls
@@ -61,6 +70,8 @@ class Extension(GeneralExtension):
                 original_sample.udf_map.force(
                     "rtPCR covid-19 result latest", input.udf_rtpcr_covid19_result)
                 original_sample.udf_map.force("rtPCR Passed latest", input.udf_rtpcr_passed)
+            self.updated_artifacts[output.id] = output
+            self.updated_samples[original_sample.id] = original_sample
 
     @property
     def all_outputs(self):
