@@ -1,20 +1,1382 @@
-# Generated from https://ctmr-lims-stage.scilifelab.se/ at Tue Apr 07 10:34:51 CEST 2020
+# Generated from https://ctmr-lims-stage.scilifelab.se/ at Tue Apr 28 13:41:21 CEST 2020
 
 # Manifest was generated with Config Slicer version 3.1.14.7
 ConfigSlicerVersion=3.1.14.7
 
+# Manifest for Container Types
+ContainerTypes=\
+16 tube rack,\
+384 well plate,\
+48 tube rack individual coded,\
+81 pos box,\
+96 deepwell plate,\
+96 tube rack individual coded,\
+96 well plate,\
+BioAnalyzer DNA 1000 Chip,\
+BioAnalyzer DNA High Sensitivity Chip,\
+BioAnalyzer RNA Nano Chip,\
+BioAnalyzer RNA Pico Chip,\
+Cryobox 100 samples,\
+Cryobox 10ml,\
+Cryobox 2ml,\
+Cryobox 50ml,\
+MiSeq Reagent Cartridge,\
+Tube,\
+Tubebox 81
+
+# Manifest for Reagent Types
+ReagentTypes=\
+A701-A501 (ATCACGAC-TGAACCTT),\
+A701-A502 (ATCACGAC-TGCTAAGT),\
+A701-A503 (ATCACGAC-TGTTCTCT),\
+A701-A504 (ATCACGAC-TAAGACAC),\
+A701-A505 (ATCACGAC-CTAATCGA),\
+A701-A506 (ATCACGAC-CTAGAACA),\
+A701-A507 (ATCACGAC-TAAGTTCC),\
+A701-A508 (ATCACGAC-TAGACCTA),\
+A702-A501 (ACAGTGGT-TGAACCTT),\
+A702-A502 (ACAGTGGT-TGCTAAGT),\
+A702-A503 (ACAGTGGT-TGTTCTCT),\
+A702-A504 (ACAGTGGT-TAAGACAC),\
+A702-A505 (ACAGTGGT-CTAATCGA),\
+A702-A506 (ACAGTGGT-CTAGAACA),\
+A702-A507 (ACAGTGGT-TAAGTTCC),\
+A702-A508 (ACAGTGGT-TAGACCTA),\
+A703-A501 (CAGATCCA-TGAACCTT),\
+A703-A502 (CAGATCCA-TGCTAAGT),\
+A703-A503 (CAGATCCA-TGTTCTCT),\
+A703-A504 (CAGATCCA-TAAGACAC),\
+A703-A505 (CAGATCCA-CTAATCGA),\
+A703-A506 (CAGATCCA-CTAGAACA),\
+A703-A507 (CAGATCCA-TAAGTTCC),\
+A703-A508 (CAGATCCA-TAGACCTA),\
+A704-A501 (ACAAACGG-TGAACCTT),\
+A704-A502 (ACAAACGG-TGCTAAGT),\
+A704-A503 (ACAAACGG-TGTTCTCT),\
+A704-A504 (ACAAACGG-TAAGACAC),\
+A704-A505 (ACAAACGG-CTAATCGA),\
+A704-A506 (ACAAACGG-CTAGAACA),\
+A704-A507 (ACAAACGG-TAAGTTCC),\
+A704-A508 (ACAAACGG-TAGACCTA),\
+A705-A501 (ACCCAGCA-TGAACCTT),\
+A705-A502 (ACCCAGCA-TGCTAAGT),\
+A705-A503 (ACCCAGCA-TGTTCTCT),\
+A705-A504 (ACCCAGCA-TAAGACAC),\
+A705-A505 (ACCCAGCA-CTAATCGA),\
+A705-A506 (ACCCAGCA-CTAGAACA),\
+A705-A507 (ACCCAGCA-TAAGTTCC),\
+A705-A508 (ACCCAGCA-TAGACCTA),\
+A706-A501 (AACCCCTC-TGAACCTT),\
+A706-A502 (AACCCCTC-TGCTAAGT),\
+A706-A503 (AACCCCTC-TGTTCTCT),\
+A706-A504 (AACCCCTC-TAAGACAC),\
+A706-A505 (AACCCCTC-CTAATCGA),\
+A706-A506 (AACCCCTC-CTAGAACA),\
+A706-A507 (AACCCCTC-TAAGTTCC),\
+A706-A508 (AACCCCTC-TAGACCTA),\
+A707-A501 (CCCAACCT-TGAACCTT),\
+A707-A502 (CCCAACCT-TGCTAAGT),\
+A707-A503 (CCCAACCT-TGTTCTCT),\
+A707-A504 (CCCAACCT-TAAGACAC),\
+A707-A505 (CCCAACCT-CTAATCGA),\
+A707-A506 (CCCAACCT-CTAGAACA),\
+A707-A507 (CCCAACCT-TAAGTTCC),\
+A707-A508 (CCCAACCT-TAGACCTA),\
+A708-A501 (CACCACAC-TGAACCTT),\
+A708-A502 (CACCACAC-TGCTAAGT),\
+A708-A503 (CACCACAC-TGTTCTCT),\
+A708-A504 (CACCACAC-TAAGACAC),\
+A708-A505 (CACCACAC-CTAATCGA),\
+A708-A506 (CACCACAC-CTAGAACA),\
+A708-A507 (CACCACAC-TAAGTTCC),\
+A708-A508 (CACCACAC-TAGACCTA),\
+A709-A501 (GAAACCCA-TGAACCTT),\
+A709-A502 (GAAACCCA-TGCTAAGT),\
+A709-A503 (GAAACCCA-TGTTCTCT),\
+A709-A504 (GAAACCCA-TAAGACAC),\
+A709-A505 (GAAACCCA-CTAATCGA),\
+A709-A506 (GAAACCCA-CTAGAACA),\
+A709-A507 (GAAACCCA-TAAGTTCC),\
+A709-A508 (GAAACCCA-TAGACCTA),\
+A710-A501 (TGTGACCA-TGAACCTT),\
+A710-A502 (TGTGACCA-TGCTAAGT),\
+A710-A503 (TGTGACCA-TGTTCTCT),\
+A710-A504 (TGTGACCA-TAAGACAC),\
+A710-A505 (TGTGACCA-CTAATCGA),\
+A710-A506 (TGTGACCA-CTAGAACA),\
+A710-A507 (TGTGACCA-TAAGTTCC),\
+A710-A508 (TGTGACCA-TAGACCTA),\
+A711-A501 (AGGGTCAA-TGAACCTT),\
+A711-A502 (AGGGTCAA-TGCTAAGT),\
+A711-A503 (AGGGTCAA-TGTTCTCT),\
+A711-A504 (AGGGTCAA-TAAGACAC),\
+A711-A505 (AGGGTCAA-CTAATCGA),\
+A711-A506 (AGGGTCAA-CTAGAACA),\
+A711-A507 (AGGGTCAA-TAAGTTCC),\
+A711-A508 (AGGGTCAA-TAGACCTA),\
+A712-A501 (AGGAGTGG-TGAACCTT),\
+A712-A502 (AGGAGTGG-TGCTAAGT),\
+A712-A503 (AGGAGTGG-TGTTCTCT),\
+A712-A504 (AGGAGTGG-TAAGACAC),\
+A712-A505 (AGGAGTGG-CTAATCGA),\
+A712-A506 (AGGAGTGG-CTAGAACA),\
+A712-A507 (AGGAGTGG-TAAGTTCC),\
+A712-A508 (AGGAGTGG-TAGACCTA),\
+AD001 (ATCACG),\
+AD002 (CGATGT),\
+AD003 (TTAGGC),\
+AD004 (TGACCA),\
+AD005 (ACAGTG),\
+AD006 (GCCAAT),\
+AD007 (CAGATC),\
+AD008 (ACTTGA),\
+AD009 (GATCAG),\
+AD010 (TAGCTT),\
+AD011 (GGCTAC),\
+AD012 (CTTGTA),\
+AD013 (AGTCAA),\
+AD014 (AGTTCC),\
+AD015 (ATGTCA),\
+AD016 (CCGTCC),\
+AD018 (GTCCGC),\
+AD019 (GTGAAA),\
+AD020 (GTGGCC),\
+AD021 (GTTTCG),\
+AD022 (CGTACG),\
+AD023 (GAGTGG),\
+AD025 (ACTGAT),\
+AD027 (ATTCCT),\
+AR001 (ATCACG),\
+AR002 (CGATGT),\
+AR003 (TTAGGC),\
+AR004 (TGACCA),\
+AR005 (ACAGTG),\
+AR006 (GCCAAT),\
+AR007 (CAGATC),\
+AR008 (ACTTGA),\
+AR009 (GATCAG),\
+AR010 (TAGCTT),\
+AR011 (GGCTAC),\
+AR012 (CTTGTA),\
+AR013 (AGTCAA),\
+AR014 (AGTTCC),\
+AR015 (ATGTCA),\
+AR016 (CCGTCC),\
+AR018 (GTCCGC),\
+AR019 (GTGAAA),\
+AR020 (GTGGCC),\
+AR021 (GTTTCG),\
+AR022 (CGTACG),\
+AR023 (GAGTGG),\
+AR025 (ACTGAT),\
+AR027 (ATTCCT),\
+D701-D501 (A1),\
+D701-D502 (B1),\
+D701-D503 (C1),\
+D701-D504 (D1),\
+D701-D505 (E1),\
+D701-D506 (F1),\
+D701-D507 (G1),\
+D701-D508 (H1),\
+D702-D501 (A2),\
+D702-D502 (B2),\
+D702-D503 (C2),\
+D702-D504 (D2),\
+D702-D505 (E2),\
+D702-D506 (F2),\
+D702-D507 (G2),\
+D702-D508 (H2),\
+D703-D501 (A3),\
+D703-D502 (B3),\
+D703-D503 (C3),\
+D703-D504 (D3),\
+D703-D505 (E3),\
+D703-D506 (F3),\
+D703-D507 (G3),\
+D703-D508 (H3),\
+D704-D501 (A4),\
+D704-D502 (B4),\
+D704-D503 (C4),\
+D704-D504 (D4),\
+D704-D505 (E4),\
+D704-D506 (F4),\
+D704-D507 (G4),\
+D704-D508 (H4),\
+D705-D501 (A5),\
+D705-D502 (B5),\
+D705-D503 (C5),\
+D705-D504 (D5),\
+D705-D505 (E5),\
+D705-D506 (F5),\
+D705-D507 (G5),\
+D705-D508 (H5),\
+D706-D501 (A6),\
+D706-D502 (B6),\
+D706-D503 (C6),\
+D706-D504 (D6),\
+D706-D505 (E6),\
+D706-D506 (F6),\
+D706-D507 (G6),\
+D706-D508 (H6),\
+D707-D501 (A7),\
+D707-D502 (B7),\
+D707-D503 (C7),\
+D707-D504 (D7),\
+D707-D505 (E7),\
+D707-D506 (F7),\
+D707-D507 (G7),\
+D707-D508 (H7),\
+D708-D501 (A8),\
+D708-D502 (B8),\
+D708-D503 (C8),\
+D708-D504 (D8),\
+D708-D505 (E8),\
+D708-D506 (F8),\
+D708-D507 (G8),\
+D708-D508 (H8),\
+D709-D501 (A9),\
+D709-D502 (B9),\
+D709-D503 (C9),\
+D709-D504 (D9),\
+D709-D505 (E9),\
+D709-D506 (F9),\
+D709-D507 (G9),\
+D709-D508 (H9),\
+D710-D501 (A10),\
+D710-D502 (B10),\
+D710-D503 (C10),\
+D710-D504 (D10),\
+D710-D505 (E10),\
+D710-D506 (F10),\
+D710-D507 (G10),\
+D710-D508 (H10),\
+D711-D501 (A11),\
+D711-D502 (B11),\
+D711-D503 (C11),\
+D711-D504 (D11),\
+D711-D505 (E11),\
+D711-D506 (F11),\
+D711-D507 (G11),\
+D711-D508 (H11),\
+D712-D501 (A12),\
+D712-D502 (B12),\
+D712-D503 (C12),\
+D712-D504 (D12),\
+D712-D505 (E12),\
+D712-D506 (F12),\
+D712-D507 (G12),\
+D712-D508 (H12),\
+N701-E501 (TAAGGCGA-TAGATCGC),\
+N701-E502 (TAAGGCGA-CTCTCTAT),\
+N701-E503 (TAAGGCGA-TATCCTCT),\
+N701-E504 (TAAGGCGA-AGAGTAGA),\
+N701-E505 (TAAGGCGA-GTAAGGAG),\
+N701-E506 (TAAGGCGA-ACTGCATA),\
+N701-E507 (TAAGGCGA-AAGGAGTA),\
+N701-E508 (TAAGGCGA-CTAAGCCT),\
+N701-N501 (TAAGGCGA-TAGATCGC),\
+N701-N502 (TAAGGCGA-CTCTCTAT),\
+N701-N503 (TAAGGCGA-TATCCTCT),\
+N701-N504 (TAAGGCGA-AGAGTAGA),\
+N701-N505 (TAAGGCGA-GTAAGGAG),\
+N701-N506 (TAAGGCGA-ACTGCATA),\
+N701-N507 (TAAGGCGA-AAGGAGTA),\
+N701-N508 (TAAGGCGA-CTAAGCCT),\
+N702-E501 (CGTACTAG-TAGATCGC),\
+N702-E502 (CGTACTAG-CTCTCTAT),\
+N702-E503 (CGTACTAG-TATCCTCT),\
+N702-E504 (CGTACTAG-AGAGTAGA),\
+N702-E505 (CGTACTAG-GTAAGGAG),\
+N702-E506 (CGTACTAG-ACTGCATA),\
+N702-E507 (CGTACTAG-AAGGAGTA),\
+N702-E508 (CGTACTAG-CTAAGCCT),\
+N702-N501 (CGTACTAG-TAGATCGC),\
+N702-N502 (CGTACTAG-CTCTCTAT),\
+N702-N503 (CGTACTAG-TATCCTCT),\
+N702-N504 (CGTACTAG-AGAGTAGA),\
+N702-N505 (CGTACTAG-GTAAGGAG),\
+N702-N506 (CGTACTAG-ACTGCATA),\
+N702-N507 (CGTACTAG-AAGGAGTA),\
+N702-N508 (CGTACTAG-CTAAGCCT),\
+N703-E501 (AGGCAGAA-TAGATCGC),\
+N703-E502 (AGGCAGAA-CTCTCTAT),\
+N703-E503 (AGGCAGAA-TATCCTCT),\
+N703-E504 (AGGCAGAA-AGAGTAGA),\
+N703-E505 (AGGCAGAA-GTAAGGAG),\
+N703-E506 (AGGCAGAA-ACTGCATA),\
+N703-E507 (AGGCAGAA-AAGGAGTA),\
+N703-E508 (AGGCAGAA-CTAAGCCT),\
+N703-N501 (AGGCAGAA-TAGATCGC),\
+N703-N502 (AGGCAGAA-CTCTCTAT),\
+N703-N503 (AGGCAGAA-TATCCTCT),\
+N703-N504 (AGGCAGAA-AGAGTAGA),\
+N703-N505 (AGGCAGAA-GTAAGGAG),\
+N703-N506 (AGGCAGAA-ACTGCATA),\
+N703-N507 (AGGCAGAA-AAGGAGTA),\
+N703-N508 (AGGCAGAA-CTAAGCCT),\
+N704-E501 (TCCTGAGC-TAGATCGC),\
+N704-E502 (TCCTGAGC-CTCTCTAT),\
+N704-E503 (TCCTGAGC-TATCCTCT),\
+N704-E504 (TCCTGAGC-AGAGTAGA),\
+N704-E505 (TCCTGAGC-GTAAGGAG),\
+N704-E506 (TCCTGAGC-ACTGCATA),\
+N704-E507 (TCCTGAGC-AAGGAGTA),\
+N704-E508 (TCCTGAGC-CTAAGCCT),\
+N704-N501 (TCCTGAGC-TAGATCGC),\
+N704-N502 (TCCTGAGC-CTCTCTAT),\
+N704-N503 (TCCTGAGC-TATCCTCT),\
+N704-N504 (TCCTGAGC-AGAGTAGA),\
+N704-N505 (TCCTGAGC-GTAAGGAG),\
+N704-N506 (TCCTGAGC-ACTGCATA),\
+N704-N507 (TCCTGAGC-AAGGAGTA),\
+N704-N508 (TCCTGAGC-CTAAGCCT),\
+N705-E501 (GGACTCCT-TAGATCGC),\
+N705-E502 (GGACTCCT-CTCTCTAT),\
+N705-E503 (GGACTCCT-TATCCTCT),\
+N705-E504 (GGACTCCT-AGAGTAGA),\
+N705-E505 (GGACTCCT-GTAAGGAG),\
+N705-E506 (GGACTCCT-ACTGCATA),\
+N705-E507 (GGACTCCT-AAGGAGTA),\
+N705-E508 (GGACTCCT-CTAAGCCT),\
+N705-N501 (GGACTCCT-TAGATCGC),\
+N705-N502 (GGACTCCT-CTCTCTAT),\
+N705-N503 (GGACTCCT-TATCCTCT),\
+N705-N504 (GGACTCCT-AGAGTAGA),\
+N705-N505 (GGACTCCT-GTAAGGAG),\
+N705-N506 (GGACTCCT-ACTGCATA),\
+N705-N507 (GGACTCCT-AAGGAGTA),\
+N705-N508 (GGACTCCT-CTAAGCCT),\
+N706-E501 (TAGGCATG-TAGATCGC),\
+N706-E502 (TAGGCATG-CTCTCTAT),\
+N706-E503 (TAGGCATG-TATCCTCT),\
+N706-E504 (TAGGCATG-AGAGTAGA),\
+N706-E505 (TAGGCATG-GTAAGGAG),\
+N706-E506 (TAGGCATG-ACTGCATA),\
+N706-E507 (TAGGCATG-AAGGAGTA),\
+N706-E508 (TAGGCATG-CTAAGCCT),\
+N706-N501 (TAGGCATG-TAGATCGC),\
+N706-N502 (TAGGCATG-CTCTCTAT),\
+N706-N503 (TAGGCATG-TATCCTCT),\
+N706-N504 (TAGGCATG-AGAGTAGA),\
+N706-N505 (TAGGCATG-GTAAGGAG),\
+N706-N506 (TAGGCATG-ACTGCATA),\
+N706-N507 (TAGGCATG-AAGGAGTA),\
+N706-N508 (TAGGCATG-CTAAGCCT),\
+N707-E501 (CTCTCTAC-TAGATCGC),\
+N707-E502 (CTCTCTAC-CTCTCTAT),\
+N707-E503 (CTCTCTAC-TATCCTCT),\
+N707-E504 (CTCTCTAC-AGAGTAGA),\
+N707-E505 (CTCTCTAC-GTAAGGAG),\
+N707-E506 (CTCTCTAC-ACTGCATA),\
+N707-E507 (CTCTCTAC-AAGGAGTA),\
+N707-E508 (CTCTCTAC-CTAAGCCT),\
+N707-N501 (CTCTCTAC-TAGATCGC),\
+N707-N502 (CTCTCTAC-CTCTCTAT),\
+N707-N503 (CTCTCTAC-TATCCTCT),\
+N707-N504 (CTCTCTAC-AGAGTAGA),\
+N707-N505 (CTCTCTAC-GTAAGGAG),\
+N707-N506 (CTCTCTAC-ACTGCATA),\
+N707-N507 (CTCTCTAC-AAGGAGTA),\
+N707-N508 (CTCTCTAC-CTAAGCCT),\
+N708-E501 (CAGAGAGG-TAGATCGC),\
+N708-E502 (CAGAGAGG-CTCTCTAT),\
+N708-E503 (CAGAGAGG-TATCCTCT),\
+N708-E504 (CAGAGAGG-AGAGTAGA),\
+N708-E505 (CAGAGAGG-GTAAGGAG),\
+N708-E506 (CAGAGAGG-ACTGCATA),\
+N708-E507 (CAGAGAGG-AAGGAGTA),\
+N708-E508 (CAGAGAGG-CTAAGCCT),\
+N708-N501 (CAGAGAGG-TAGATCGC),\
+N708-N502 (CAGAGAGG-CTCTCTAT),\
+N708-N503 (CAGAGAGG-TATCCTCT),\
+N708-N504 (CAGAGAGG-AGAGTAGA),\
+N708-N505 (CAGAGAGG-GTAAGGAG),\
+N708-N506 (CAGAGAGG-ACTGCATA),\
+N708-N507 (CAGAGAGG-AAGGAGTA),\
+N708-N508 (CAGAGAGG-CTAAGCCT),\
+N709-E501 (GCTACGCT-TAGATCGC),\
+N709-E502 (GCTACGCT-CTCTCTAT),\
+N709-E503 (GCTACGCT-TATCCTCT),\
+N709-E504 (GCTACGCT-AGAGTAGA),\
+N709-E505 (GCTACGCT-GTAAGGAG),\
+N709-E506 (GCTACGCT-ACTGCATA),\
+N709-E507 (GCTACGCT-AAGGAGTA),\
+N709-E508 (GCTACGCT-CTAAGCCT),\
+N709-N501 (GCTACGCT-TAGATCGC),\
+N709-N502 (GCTACGCT-CTCTCTAT),\
+N709-N503 (GCTACGCT-TATCCTCT),\
+N709-N504 (GCTACGCT-AGAGTAGA),\
+N709-N505 (GCTACGCT-GTAAGGAG),\
+N709-N506 (GCTACGCT-ACTGCATA),\
+N709-N507 (GCTACGCT-AAGGAGTA),\
+N709-N508 (GCTACGCT-CTAAGCCT),\
+N710-E501 (CGAGGCTG-TAGATCGC),\
+N710-E502 (CGAGGCTG-CTCTCTAT),\
+N710-E503 (CGAGGCTG-TATCCTCT),\
+N710-E504 (CGAGGCTG-AGAGTAGA),\
+N710-E505 (CGAGGCTG-GTAAGGAG),\
+N710-E506 (CGAGGCTG-ACTGCATA),\
+N710-E507 (CGAGGCTG-AAGGAGTA),\
+N710-E508 (CGAGGCTG-CTAAGCCT),\
+N710-N501 (CGAGGCTG-TAGATCGC),\
+N710-N502 (CGAGGCTG-CTCTCTAT),\
+N710-N503 (CGAGGCTG-TATCCTCT),\
+N710-N504 (CGAGGCTG-AGAGTAGA),\
+N710-N505 (CGAGGCTG-GTAAGGAG),\
+N710-N506 (CGAGGCTG-ACTGCATA),\
+N710-N507 (CGAGGCTG-AAGGAGTA),\
+N710-N508 (CGAGGCTG-CTAAGCCT),\
+N711-E501 (AAGAGGCA-TAGATCGC),\
+N711-E502 (AAGAGGCA-CTCTCTAT),\
+N711-E503 (AAGAGGCA-TATCCTCT),\
+N711-E504 (AAGAGGCA-AGAGTAGA),\
+N711-E505 (AAGAGGCA-GTAAGGAG),\
+N711-E506 (AAGAGGCA-ACTGCATA),\
+N711-E507 (AAGAGGCA-AAGGAGTA),\
+N711-E508 (AAGAGGCA-CTAAGCCT),\
+N711-N501 (AAGAGGCA-TAGATCGC),\
+N711-N502 (AAGAGGCA-CTCTCTAT),\
+N711-N503 (AAGAGGCA-TATCCTCT),\
+N711-N504 (AAGAGGCA-AGAGTAGA),\
+N711-N505 (AAGAGGCA-GTAAGGAG),\
+N711-N506 (AAGAGGCA-ACTGCATA),\
+N711-N507 (AAGAGGCA-AAGGAGTA),\
+N711-N508 (AAGAGGCA-CTAAGCCT),\
+N712-E501 (GTAGAGGA-TAGATCGC),\
+N712-E502 (GTAGAGGA-CTCTCTAT),\
+N712-E503 (GTAGAGGA-TATCCTCT),\
+N712-E504 (GTAGAGGA-AGAGTAGA),\
+N712-E505 (GTAGAGGA-GTAAGGAG),\
+N712-E506 (GTAGAGGA-ACTGCATA),\
+N712-E507 (GTAGAGGA-AAGGAGTA),\
+N712-E508 (GTAGAGGA-CTAAGCCT),\
+N712-N501 (GTAGAGGA-TAGATCGC),\
+N712-N502 (GTAGAGGA-CTCTCTAT),\
+N712-N503 (GTAGAGGA-TATCCTCT),\
+N712-N504 (GTAGAGGA-AGAGTAGA),\
+N712-N505 (GTAGAGGA-GTAAGGAG),\
+N712-N506 (GTAGAGGA-ACTGCATA),\
+N712-N507 (GTAGAGGA-AAGGAGTA),\
+N712-N508 (GTAGAGGA-CTAAGCCT),\
+NoIndex,\
+Quant It dsDNA High Sensitivity,\
+RPI1 (ATCACG),\
+RPI10 (TAGCTT),\
+RPI11 (GGCTAC),\
+RPI12 (CTTGTA),\
+RPI13 (AGTCAA),\
+RPI14 (AGTTCC),\
+RPI15 (ATGTCA),\
+RPI16 (CCGTCC),\
+RPI17 (GTAGAG),\
+RPI18 (GTCCGC),\
+RPI19 (GTGAAA),\
+RPI2 (CGATGT),\
+RPI20 (GTGGCC),\
+RPI21 (GTTTCG),\
+RPI22 (CGTACG),\
+RPI23 (GAGTGG),\
+RPI24 (GGTAGC),\
+RPI25 (ACTGAT),\
+RPI26 (ATGAGC),\
+RPI27 (ATTCCT),\
+RPI28 (CAAAAG),\
+RPI29 (CAACTA),\
+RPI3 (TTAGGC),\
+RPI30 (CACCGG),\
+RPI31 (CACGAT),\
+RPI32 (CACTCA),\
+RPI33 (CAGGCG),\
+RPI34 (CATGGC),\
+RPI35 (CATTTT),\
+RPI36 (CCAACA),\
+RPI37 (CGGAAT),\
+RPI38 (CTAGCT),\
+RPI39 (CTATAC),\
+RPI4 (TGACCA),\
+RPI40 (CTCAGA),\
+RPI41 (GACGAC),\
+RPI42 (TAATCG),\
+RPI43 (TACAGC),\
+RPI44 (TATAAT),\
+RPI45 (TCATTC),\
+RPI46 (TCCCGA),\
+RPI47 (TCGAAG),\
+RPI48 (TCGGCA),\
+RPI5 (ACAGTG),\
+RPI6 (GCCAAT),\
+RPI7 (CAGATC),\
+RPI8 (ACTTGA),\
+RPI9 (GATCAG),\
+"Set A, N701-S501 (A1)",\
+"Set A, N701-S502 (B1)",\
+"Set A, N701-S503 (C1)",\
+"Set A, N701-S504 (D1)",\
+"Set A, N701-S505 (E1)",\
+"Set A, N701-S506 (F1)",\
+"Set A, N701-S507 (G1)",\
+"Set A, N701-S508 (H1)",\
+"Set A, N702-S501 (A2)",\
+"Set A, N702-S502 (B2)",\
+"Set A, N702-S503 (C2)",\
+"Set A, N702-S504 (D2)",\
+"Set A, N702-S505 (E2)",\
+"Set A, N702-S506 (F2)",\
+"Set A, N702-S507 (G2)",\
+"Set A, N702-S508 (H2)",\
+"Set A, N703-S501 (A3)",\
+"Set A, N703-S502 (B3)",\
+"Set A, N703-S503 (C3)",\
+"Set A, N703-S504 (D3)",\
+"Set A, N703-S505 (E3)",\
+"Set A, N703-S506 (F3)",\
+"Set A, N703-S507 (G3)",\
+"Set A, N703-S508 (H3)",\
+"Set A, N704-S501 (A4)",\
+"Set A, N704-S502 (B4)",\
+"Set A, N704-S503 (C4)",\
+"Set A, N704-S504 (D4)",\
+"Set A, N704-S505 (E4)",\
+"Set A, N704-S506 (F4)",\
+"Set A, N704-S507 (G4)",\
+"Set A, N704-S508 (H4)",\
+"Set A, N705-S501 (A5)",\
+"Set A, N705-S502 (B5)",\
+"Set A, N705-S503 (C5)",\
+"Set A, N705-S504 (D5)",\
+"Set A, N705-S505 (E5)",\
+"Set A, N705-S506 (F5)",\
+"Set A, N705-S507 (G5)",\
+"Set A, N705-S508 (H5)",\
+"Set A, N706-S501 (A6)",\
+"Set A, N706-S502 (B6)",\
+"Set A, N706-S503 (C6)",\
+"Set A, N706-S504 (D6)",\
+"Set A, N706-S505 (E6)",\
+"Set A, N706-S506 (F6)",\
+"Set A, N706-S507 (G6)",\
+"Set A, N706-S508 (H6)",\
+"Set A, N707-S501 (A7)",\
+"Set A, N707-S502 (B7)",\
+"Set A, N707-S503 (C7)",\
+"Set A, N707-S504 (D7)",\
+"Set A, N707-S505 (E7)",\
+"Set A, N707-S506 (F7)",\
+"Set A, N707-S507 (G7)",\
+"Set A, N707-S508 (H7)",\
+"Set A, N708-S501 (A8)",\
+"Set A, N708-S502 (B8)",\
+"Set A, N708-S503 (C8)",\
+"Set A, N708-S504 (D8)",\
+"Set A, N708-S505 (E8)",\
+"Set A, N708-S506 (F8)",\
+"Set A, N708-S507 (G8)",\
+"Set A, N708-S508 (H8)",\
+"Set A, N711-S501 (A9)",\
+"Set A, N711-S502 (B9)",\
+"Set A, N711-S503 (C9)",\
+"Set A, N711-S504 (D9)",\
+"Set A, N711-S505 (E9)",\
+"Set A, N711-S506 (F9)",\
+"Set A, N711-S507 (G9)",\
+"Set A, N711-S508 (H9)",\
+"Set A, N712-S501 (A10)",\
+"Set A, N712-S502 (B10)",\
+"Set A, N712-S503 (C10)",\
+"Set A, N712-S504 (D10)",\
+"Set A, N712-S505 (E10)",\
+"Set A, N712-S506 (F10)",\
+"Set A, N712-S507 (G10)",\
+"Set A, N712-S508 (H10)",\
+"Set A, N714-S501 (A11)",\
+"Set A, N714-S502 (B11)",\
+"Set A, N714-S503 (C11)",\
+"Set A, N714-S504 (D11)",\
+"Set A, N714-S505 (E11)",\
+"Set A, N714-S506 (F11)",\
+"Set A, N714-S507 (G11)",\
+"Set A, N714-S508 (H11)",\
+"Set A, N715-S501 (A12)",\
+"Set A, N715-S502 (B12)",\
+"Set A, N715-S503 (C12)",\
+"Set A, N715-S504 (D12)",\
+"Set A, N715-S505 (E12)",\
+"Set A, N715-S506 (F12)",\
+"Set A, N715-S507 (G12)",\
+"Set A, N715-S508 (H12)",\
+"Set B, N716-S501 (A1)",\
+"Set B, N716-S502 (B1)",\
+"Set B, N716-S503 (C1)",\
+"Set B, N716-S504 (D1)",\
+"Set B, N716-S505 (E1)",\
+"Set B, N716-S506 (F1)",\
+"Set B, N716-S507 (G1)",\
+"Set B, N716-S508 (H1)",\
+"Set B, N718-S501 (A2)",\
+"Set B, N718-S502 (B2)",\
+"Set B, N718-S503 (C2)",\
+"Set B, N718-S504 (D2)",\
+"Set B, N718-S505 (E2)",\
+"Set B, N718-S506 (F2)",\
+"Set B, N718-S507 (G2)",\
+"Set B, N718-S508 (H2)",\
+"Set B, N719-S501 (A3)",\
+"Set B, N719-S502 (B3)",\
+"Set B, N719-S503 (C3)",\
+"Set B, N719-S504 (D3)",\
+"Set B, N719-S505 (E3)",\
+"Set B, N719-S506 (F3)",\
+"Set B, N719-S507 (G3)",\
+"Set B, N719-S508 (H3)",\
+"Set B, N720-S501 (A4)",\
+"Set B, N720-S502 (B4)",\
+"Set B, N720-S503 (C4)",\
+"Set B, N720-S504 (D4)",\
+"Set B, N720-S505 (E4)",\
+"Set B, N720-S506 (F4)",\
+"Set B, N720-S507 (G4)",\
+"Set B, N720-S508 (H4)",\
+"Set B, N721-S501 (A5)",\
+"Set B, N721-S502 (B5)",\
+"Set B, N721-S503 (C5)",\
+"Set B, N721-S504 (D5)",\
+"Set B, N721-S505 (E5)",\
+"Set B, N721-S506 (F5)",\
+"Set B, N721-S507 (G5)",\
+"Set B, N721-S508 (H5)",\
+"Set B, N722-S501 (A6)",\
+"Set B, N722-S502 (B6)",\
+"Set B, N722-S503 (C6)",\
+"Set B, N722-S504 (D6)",\
+"Set B, N722-S505 (E6)",\
+"Set B, N722-S506 (F6)",\
+"Set B, N722-S507 (G6)",\
+"Set B, N722-S508 (H6)",\
+"Set B, N723-S501 (A7)",\
+"Set B, N723-S502 (B7)",\
+"Set B, N723-S503 (C7)",\
+"Set B, N723-S504 (D7)",\
+"Set B, N723-S505 (E7)",\
+"Set B, N723-S506 (F7)",\
+"Set B, N723-S507 (G7)",\
+"Set B, N723-S508 (H7)",\
+"Set B, N724-S501 (A8)",\
+"Set B, N724-S502 (B8)",\
+"Set B, N724-S503 (C8)",\
+"Set B, N724-S504 (D8)",\
+"Set B, N724-S505 (E8)",\
+"Set B, N724-S506 (F8)",\
+"Set B, N724-S507 (G8)",\
+"Set B, N724-S508 (H8)",\
+"Set B, N726-S501 (A9)",\
+"Set B, N726-S502 (B9)",\
+"Set B, N726-S503 (C9)",\
+"Set B, N726-S504 (D9)",\
+"Set B, N726-S505 (E9)",\
+"Set B, N726-S506 (F9)",\
+"Set B, N726-S507 (G9)",\
+"Set B, N726-S508 (H9)",\
+"Set B, N727-S501 (A10)",\
+"Set B, N727-S502 (B10)",\
+"Set B, N727-S503 (C10)",\
+"Set B, N727-S504 (D10)",\
+"Set B, N727-S505 (E10)",\
+"Set B, N727-S506 (F10)",\
+"Set B, N727-S507 (G10)",\
+"Set B, N727-S508 (H10)",\
+"Set B, N728-S501 (A11)",\
+"Set B, N728-S502 (B11)",\
+"Set B, N728-S503 (C11)",\
+"Set B, N728-S504 (D11)",\
+"Set B, N728-S505 (E11)",\
+"Set B, N728-S506 (F11)",\
+"Set B, N728-S507 (G11)",\
+"Set B, N728-S508 (H11)",\
+"Set B, N729-S501 (A12)",\
+"Set B, N729-S502 (B12)",\
+"Set B, N729-S503 (C12)",\
+"Set B, N729-S504 (D12)",\
+"Set B, N729-S505 (E12)",\
+"Set B, N729-S506 (F12)",\
+"Set B, N729-S507 (G12)",\
+"Set B, N729-S508 (H12)",\
+"Set C, N701-S513 (A1)",\
+"Set C, N701-S515 (B1)",\
+"Set C, N701-S516 (C1)",\
+"Set C, N701-S517 (D1)",\
+"Set C, N701-S518 (E1)",\
+"Set C, N701-S520 (F1)",\
+"Set C, N701-S521 (G1)",\
+"Set C, N701-S522 (H1)",\
+"Set C, N702-S513 (A2)",\
+"Set C, N702-S515 (B2)",\
+"Set C, N702-S516 (C2)",\
+"Set C, N702-S517 (D2)",\
+"Set C, N702-S518 (E2)",\
+"Set C, N702-S520 (F2)",\
+"Set C, N702-S521 (G2)",\
+"Set C, N702-S522 (H2)",\
+"Set C, N703-S513 (A3)",\
+"Set C, N703-S515 (B3)",\
+"Set C, N703-S516 (C3)",\
+"Set C, N703-S517 (D3)",\
+"Set C, N703-S518 (E3)",\
+"Set C, N703-S520 (F3)",\
+"Set C, N703-S521 (G3)",\
+"Set C, N703-S522 (H3)",\
+"Set C, N704-S513 (A4)",\
+"Set C, N704-S515 (B4)",\
+"Set C, N704-S516 (C4)",\
+"Set C, N704-S517 (D4)",\
+"Set C, N704-S518 (E4)",\
+"Set C, N704-S520 (F4)",\
+"Set C, N704-S521 (G4)",\
+"Set C, N704-S522 (H4)",\
+"Set C, N705-S513 (A5)",\
+"Set C, N705-S515 (B5)",\
+"Set C, N705-S516 (C5)",\
+"Set C, N705-S517 (D5)",\
+"Set C, N705-S518 (E5)",\
+"Set C, N705-S520 (F5)",\
+"Set C, N705-S521 (G5)",\
+"Set C, N705-S522 (H5)",\
+"Set C, N706-S513 (A6)",\
+"Set C, N706-S515 (B6)",\
+"Set C, N706-S516 (C6)",\
+"Set C, N706-S517 (D6)",\
+"Set C, N706-S518 (E6)",\
+"Set C, N706-S520 (F6)",\
+"Set C, N706-S521 (G6)",\
+"Set C, N706-S522 (H6)",\
+"Set C, N707-S513 (A7)",\
+"Set C, N707-S515 (B7)",\
+"Set C, N707-S516 (C7)",\
+"Set C, N707-S517 (D7)",\
+"Set C, N707-S518 (E7)",\
+"Set C, N707-S520 (F7)",\
+"Set C, N707-S521 (G7)",\
+"Set C, N707-S522 (H7)",\
+"Set C, N708-S513 (A8)",\
+"Set C, N708-S515 (B8)",\
+"Set C, N708-S516 (C8)",\
+"Set C, N708-S517 (D8)",\
+"Set C, N708-S518 (E8)",\
+"Set C, N708-S520 (F8)",\
+"Set C, N708-S521 (G8)",\
+"Set C, N708-S522 (H8)",\
+"Set C, N711-S513 (A9)",\
+"Set C, N711-S515 (B9)",\
+"Set C, N711-S516 (C9)",\
+"Set C, N711-S517 (D9)",\
+"Set C, N711-S518 (E9)",\
+"Set C, N711-S520 (F9)",\
+"Set C, N711-S521 (G9)",\
+"Set C, N711-S522 (H9)",\
+"Set C, N712-S513 (A10)",\
+"Set C, N712-S515 (B10)",\
+"Set C, N712-S516 (C10)",\
+"Set C, N712-S517 (D10)",\
+"Set C, N712-S518 (E10)",\
+"Set C, N712-S520 (F10)",\
+"Set C, N712-S521 (G10)",\
+"Set C, N712-S522 (H10)",\
+"Set C, N714-S513 (A11)",\
+"Set C, N714-S515 (B11)",\
+"Set C, N714-S516 (C11)",\
+"Set C, N714-S517 (D11)",\
+"Set C, N714-S518 (E11)",\
+"Set C, N714-S520 (F11)",\
+"Set C, N714-S521 (G11)",\
+"Set C, N714-S522 (H11)",\
+"Set C, N715-S513 (A12)",\
+"Set C, N715-S515 (B12)",\
+"Set C, N715-S516 (C12)",\
+"Set C, N715-S517 (D12)",\
+"Set C, N715-S518 (E12)",\
+"Set C, N715-S520 (F12)",\
+"Set C, N715-S521 (G12)",\
+"Set C, N715-S522 (H12)",\
+"Set D, N716-S513 (A1)",\
+"Set D, N716-S515 (B1)",\
+"Set D, N716-S516 (C1)",\
+"Set D, N716-S517 (D1)",\
+"Set D, N716-S518 (E1)",\
+"Set D, N716-S520 (F1)",\
+"Set D, N716-S521 (G1)",\
+"Set D, N716-S522 (H1)",\
+"Set D, N718-S513 (A2)",\
+"Set D, N718-S515 (B2)",\
+"Set D, N718-S516 (C2)",\
+"Set D, N718-S517 (D2)",\
+"Set D, N718-S518 (E2)",\
+"Set D, N718-S520 (F2)",\
+"Set D, N718-S521 (G2)",\
+"Set D, N718-S522 (H2)",\
+"Set D, N719-S513 (A3)",\
+"Set D, N719-S515 (B3)",\
+"Set D, N719-S516 (C3)",\
+"Set D, N719-S517 (D3)",\
+"Set D, N719-S518 (E3)",\
+"Set D, N719-S520 (F3)",\
+"Set D, N719-S521 (G3)",\
+"Set D, N719-S522 (H3)",\
+"Set D, N720-S513 (A4)",\
+"Set D, N720-S515 (B4)",\
+"Set D, N720-S516 (C4)",\
+"Set D, N720-S517 (D4)",\
+"Set D, N720-S518 (E4)",\
+"Set D, N720-S520 (F4)",\
+"Set D, N720-S521 (G4)",\
+"Set D, N720-S522 (H4)",\
+"Set D, N721-S513 (A5)",\
+"Set D, N721-S515 (B5)",\
+"Set D, N721-S516 (C5)",\
+"Set D, N721-S517 (D5)",\
+"Set D, N721-S518 (E5)",\
+"Set D, N721-S520 (F5)",\
+"Set D, N721-S521 (G5)",\
+"Set D, N721-S522 (H5)",\
+"Set D, N722-S513 (A6)",\
+"Set D, N722-S515 (B6)",\
+"Set D, N722-S516 (C6)",\
+"Set D, N722-S517 (D6)",\
+"Set D, N722-S518 (E6)",\
+"Set D, N722-S520 (F6)",\
+"Set D, N722-S521 (G6)",\
+"Set D, N722-S522 (H6)",\
+"Set D, N723-S513 (A7)",\
+"Set D, N723-S515 (B7)",\
+"Set D, N723-S516 (C7)",\
+"Set D, N723-S517 (D7)",\
+"Set D, N723-S518 (E7)",\
+"Set D, N723-S520 (F7)",\
+"Set D, N723-S521 (G7)",\
+"Set D, N723-S522 (H7)",\
+"Set D, N724-S513 (A8)",\
+"Set D, N724-S515 (B8)",\
+"Set D, N724-S516 (C8)",\
+"Set D, N724-S517 (D8)",\
+"Set D, N724-S518 (E8)",\
+"Set D, N724-S520 (F8)",\
+"Set D, N724-S521 (G8)",\
+"Set D, N724-S522 (H8)",\
+"Set D, N726-S513 (A9)",\
+"Set D, N726-S515 (B9)",\
+"Set D, N726-S516 (C9)",\
+"Set D, N726-S517 (D9)",\
+"Set D, N726-S518 (E9)",\
+"Set D, N726-S520 (F9)",\
+"Set D, N726-S521 (G9)",\
+"Set D, N726-S522 (H9)",\
+"Set D, N727-S513 (A10)",\
+"Set D, N727-S515 (B10)",\
+"Set D, N727-S516 (C10)",\
+"Set D, N727-S517 (D10)",\
+"Set D, N727-S518 (E10)",\
+"Set D, N727-S520 (F10)",\
+"Set D, N727-S521 (G10)",\
+"Set D, N727-S522 (H10)",\
+"Set D, N728-S513 (A11)",\
+"Set D, N728-S515 (B11)",\
+"Set D, N728-S516 (C11)",\
+"Set D, N728-S517 (D11)",\
+"Set D, N728-S518 (E11)",\
+"Set D, N728-S520 (F11)",\
+"Set D, N728-S521 (G11)",\
+"Set D, N728-S522 (H11)",\
+"Set D, N729-S513 (A12)",\
+"Set D, N729-S515 (B12)",\
+"Set D, N729-S516 (C12)",\
+"Set D, N729-S517 (D12)",\
+"Set D, N729-S518 (E12)",\
+"Set D, N729-S520 (F12)",\
+"Set D, N729-S521 (G12)",\
+"Set D, N729-S522 (H12)"
+
+# Manifest for Reagent Kits
+ReagentKits=\
+16S Index Plate,\
+16S Primer 341F,\
+16S Primer 805R,\
+AMPure XP Beads,\
+Buffer EB,\
+Covaris Snap-cap microTUBE,\
+Ethanol absolut,\
+Lysing Matrix A,\
+"Lysing Matrix B 96-well rack 1,2 ml",\
+"Lysing Matrix E 96-well rack 1,2 ml",\
+Lysozym buffer,\
+MGIEasy Circularisation Module,\
+MGIEasy DNA Adapters-16(Tubes) Kit,\
+MGIEasy DNA Adapters-96(Plate)Kit,\
+MGIEasy DNA Clean Beads,\
+MGIEazy FS DNA Library Prep Kit,\
+MGIEazy Universal DNA Library Prep,\
+MGISEQ2000RS Hightroughput Sequencing Kit,\
+MGISeq-2000RS Sequencing Flow Cell,\
+MiSeq Reagent Kit,\
+Nextera DNA Sample Prep Index Kit,\
+Nextera DNA Sample Prep Kit,\
+Nextera XT DNA Library Prep Kit,\
+Nextera XT Index Kit,\
+Nuclease-Free water,\
+Phusion Hot Start II High-Fidelity PCR Master Mix,\
+Proteinase K,\
+QuantIt Assay Kit,\
+Qubit Assay Kit,\
+Qubit® dsDNA BR Assay Kit,\
+Qubit® dsDNA HS Assay Kit,\
+RNA extraction kit lot #,\
+RT-PCR kit lot #,\
+SuperScript II Reverse Transcriptase,\
+TapeStation High Sensitivity D1000 Reagents,\
+TapeStation High Sensitivity D1000 ScreenTape,\
+TapeStation Kit,\
+TruSeq Custom Amplicon Kit - ACD1,\
+TruSeq Custom Amplicon Kit - ACP1,\
+TruSeq Custom Amplicon Kit - CAT,\
+TruSeq Custom Amplicon Kit - EBT,\
+TruSeq Custom Amplicon Kit - ELM4,\
+TruSeq Custom Amplicon Kit - HT1,\
+TruSeq Custom Amplicon Kit - LNA1,\
+TruSeq Custom Amplicon Kit - LNB1,\
+TruSeq Custom Amplicon Kit - LNS2,\
+TruSeq Custom Amplicon Kit - LNW1,\
+TruSeq Custom Amplicon Kit - OHS2,\
+TruSeq Custom Amplicon Kit - PMM2,\
+TruSeq Custom Amplicon Kit - SW1,\
+TruSeq Custom Amplicon Kit - TDP1,\
+TruSeq Custom Amplicon Kit - UB1,\
+TruSeq Custom Amplicon Kit - i5 Primers,\
+TruSeq Custom Amplicon Kit - i7 Primers,\
+TruSeq DNA PCR-Free Kit - Adapter Plate Box,\
+TruSeq DNA PCR-Free Kit - Core Reagents Box,\
+TruSeq DNA PCR-Free Kit - SP Beads Box,\
+TruSeq Nano HT kit,\
+TruSeq RNA Sample Prep Kit,\
+Water,\
+"ZR Bashing Bead Lysins Tubes (0,1 & 0,5 mm beads)",\
+ZR-96 Genomic DNA MagPrep,\
+ZYMO Genomic Lysis Buffer (Genomic DNA MagPrep),\
+ZYMO MagBinding Beads,\
+ZYMO Pre-Wash,\
+ZYMO g-DNA wash,\
+Zymo 2x digestion buffer,\
+Zymo BioFluid & Cell buffer II,\
+Zymo DNA elution buffer (Genomic DNA MagPrep),\
+Zymo Quick-DNA MagBinding Buffer,\
+Zymo Quick-DNA Magbead Plus kit,\
+Zymo Solid Tissue Buffer II
+
+# Manifest for Control Types
+ControlTypes=\
+Covid19 Create controls,\
+Covid19 Create samples,\
+Negative PCR Control,\
+No Template Control,\
+Positive PCR Control
+
+# Manifest for Instrument Types
+InstrumentTypes=\
+Bravo,\
+Fluent,\
+KingFisher Flex,\
+MGI SP100,\
+MGI SP960,\
+MGI Sequencer,\
+Miseq,\
+PCR machine,\
+Plate Reader,\
+RNA extraction Robot ID,\
+RT-PCR,\
+TapeStation
+
+# Manifest for Sample UDTs
+SampleUDTs=
+
+# Manifest for Sample UDFs
+SampleUDFs=\
+Biobank barcode,\
+CT latest,\
+CT latest date,\
+CT source,\
+Comment,\
+Control,\
+Control type,\
+DEVONLY CT updated at,\
+Extracted DNA,\
+FAM-CT,\
+FAM-CT latest,\
+HEX-CT latest,\
+KNM data added at,\
+KNM org URI,\
+KNM result uploaded,\
+KNM result uploaded date,\
+KNM result uploaded source,\
+KNM service request id,\
+KNM uploaded source,\
+Localisation,\
+Min. Required Reads,\
+Proceed only if QC is ok,\
+Reference Genome,\
+Reviewer result,\
+Sample Buffer,\
+Sample Conc.,\
+Sample Origin,\
+Units,\
+VIC-CT latest,\
+Volume (uL),\
+rtPCR Passed latest,\
+rtPCR covid-19 result latest
+
+# Manifest for Container UDTs
+ContainerUDTs=
+
+# Manifest for Container UDFs
+ContainerUDFs=
+
+# Manifest for Project UDTs
+ProjectUDTs=\
+plan
+
+# Manifest for Project UDFs
+ProjectUDFs=\
+CTMR Responsible,\
+Upload ethical approval under UPLOAD FILES,\
+Upload project plan under UPLOAD FILES
+
+# Manifest for Analyte UDFs
+AnalyteUDFs=\
+% Aligned R1,\
+% Aligned R2,\
+% Bases >=Q30 R1,\
+% Bases >=Q30 R2,\
+% Error Rate R1,\
+% Error Rate R2,\
+% Intensity Cycle 20 R1,\
+% Intensity Cycle 20 R2,\
+% Phasing R1,\
+% Phasing R2,\
+% Prephasing R1,\
+% Prephasing R2,\
+%PF R1,\
+%PF R2,\
+A260/280 ratio,\
+Avg Q Score R1,\
+Avg Q Score R2,\
+CT,\
+Cluster Density (K/mm^2) R1,\
+Cluster Density (K/mm^2) R2,\
+Clusters PF R1,\
+Clusters PF R2,\
+Clusters Raw R1,\
+Clusters Raw R2,\
+Comment,\
+Conc to use,\
+Conc. Units,\
+Concentration,\
+Concentration (nM),\
+FAM-CT,\
+HEX-CT,\
+Intensity Cycle 1 R1,\
+Intensity Cycle 1 R2,\
+KNM result uploaded,\
+KNM result uploaded date,\
+Link to RT-PCR Step,\
+Loading Conc. (pM),\
+Molarity,\
+Normalised Concentration (ng/uL),\
+Normalized conc. (nM),\
+Pico Conc,\
+QuantIt BR Concentration,\
+QuantIt BR Concentration (nM),\
+QuantIt HS Concentration,\
+QuantIt HS Concentration (nM),\
+Qubit Conc,\
+Qubit Concentration,\
+Qubit Concentration (nM),\
+Review comment,\
+Reviewer result,\
+SP960 Normalisation,\
+Target Concentration,\
+VIC-CT,\
+Warnings,\
+Yield PF (Gb) R1,\
+Yield PF (Gb) R2,\
+rtPCR Passed,\
+rtPCR covid-19 result
+
+# Manifest for Result File UDFs
+ResultFileUDFs=\
+# Reads,\
+% Bases >=Q30,\
+% One Mismatch Reads (Index),\
+% Perfect Index Read,\
+% of Raw Clusters Per Lane,\
+%PF,\
+28s/18s ratio,\
+A260,\
+A260/230 ratio,\
+A260/280 ratio,\
+Ave Q Score,\
+Average Fragment Size (bp),\
+BA Sample Name,\
+CT,\
+Conc. Units,\
+Concentration,\
+DIN,\
+FAM-CT,\
+HEX-CT,\
+Link to RT-PCR Step,\
+MW Units,\
+Molarity,\
+Molarity Units,\
+Normalisation Concentration (ng/uL),\
+Number of Peaks found,\
+Number of Regions found,\
+Peak 1 % Integrated Area,\
+Peak 1 Conc.,\
+Peak 1 MW,\
+Peak 1 Molarity,\
+Peak 1 Size - bp,\
+Peak 2 % Integrated Area,\
+Peak 2 Conc.,\
+Peak 2 MW,\
+Peak 2 Molarity,\
+Peak 2 Size - bp,\
+Peak 3 % Integrated Area,\
+Peak 3 Conc.,\
+Peak 3 MW,\
+Peak 3 Molarity,\
+Peak 3 Size - bp,\
+Peak 4 % Integrated Area,\
+Peak 4 Conc.,\
+Peak 4 MW,\
+Peak 4 Molarity,\
+Peak 4 Size - bp,\
+Peak 5 % Integrated Area,\
+Peak 5 Conc.,\
+Peak 5 MW,\
+Peak 5 Molarity,\
+Peak 5 Size - bp,\
+QuantIt BR Concentration,\
+QuantIt BR Concentration (nM),\
+QuantIt HS Concentration,\
+QuantIt HS Concentration (nM),\
+Qubit Concentration,\
+Qubit Concentration (nM),\
+RIN,\
+RNA Area,\
+Region 1 % of Total,\
+Region 1 Average Size - bp,\
+Region 1 Conc.,\
+Region 1 Molarity,\
+Region 2 % of Total,\
+Region 2 Average Size - bp,\
+Region 2 Conc.,\
+Region 2 Molarity,\
+Region 3 % of Total,\
+Region 3 Average Size - bp,\
+Region 3 Conc.,\
+Region 3 Molarity,\
+Region 4 % of Total,\
+Region 4 Average Size - bp,\
+Region 4 Conc.,\
+Region 4 Molarity,\
+Region 5 % of Total,\
+Region 5 Average Size - bp,\
+Region 5 Conc.,\
+Region 5 Molarity,\
+Review comment,\
+Reviewer result,\
+Sample Comment,\
+Size (bp),\
+VIC-CT,\
+Yield PF (Gb),\
+rtPCR Passed,\
+rtPCR covid-19 result
+
 # Manifest for Process Types
 ProcessTypes=\
+16S Indexing,\
+16S amplification,\
+API Demo Process,\
+Add Multiple Reagents,\
+Adenylate ends & Ligate Adapters (TruSeq DNA) 5.0,\
+Adenylate ends & Ligate Adapters (TruSeq DNA) 5.0_copy,\
+Adenylate ends & Ligate Adapters (TruSeq RNA) 5.0,\
+Aggregate QC (DNA) 5.0,\
+Aggregate QC (Library Validation) 5.0,\
+Aggregate QC (RNA) 5.0,\
+Aggregate QC LV,\
+Aliquot DNA extraction controls,\
+Aliquoting,\
+Bead Based Library Normalization 5.0,\
+Bioanalyzer QC (DNA) 5.0,\
+Bioanalyzer QC (DNA) 5.0_copy,\
+Bioanalyzer QC (RNA) 5.0,\
+CaliperGX QC 5.0,\
+Clean-up of Tagmented DNA (Nextera DNA) 5.0,\
+Covid19 Create controls v1,\
+Covid19 Create samples v1,\
 Covid19 Initial v1,\
 Covid19 RNA extraction v1,\
 Covid19 RT-PCR v1,\
-Covid19 Report results v1
+Covid19 Report results v1,\
+Covid19 Review results v1,\
+DNA purification (DNA extraction),\
+DNA purification (DNA extractioni) v2,\
+Demultiplexing (MiSeq) 5.0,\
+"Denature, Circularize, Digest (MGISeq) v1",\
+"Denature, Dilute and Load Sample (MiSeq) 5.0",\
+Destination,\
+Enrich DNA fragments (TruSeq RNA) 5.0,\
+Fragment DNA (TruSeq DNA) 5.0,\
+Fragment DNA (TruSeq DNA) 5.0_copy,\
+Hybridize Oligo Pool (TruSeq Amplicon) 5.0,\
+Library Normalization (MiSeq) 5.0,\
+Library Normalization (TruSeq Amplicon) 5.0,\
+Library Pooling (MiSeq) 5.0,\
+Library Pooling (Nextera XT) 5.0,\
+Library Pooling (TruSeq Amplicon) 5.0,\
+Lysis (DNA extarction) v3,\
+Lysis (DNA extraction),\
+Lysis (DNA extraction) v2,\
+MOPP DNA purification (DNA extraction),\
+MOPP Lysis (DNA extraction),\
+MOPP Pre-treatment (DNA extraction),\
+Make DNB (MGISeq) v1,\
+MiSeq Run (MiSeq) 5.0,\
+NanoDrop QC (DNA) 5.0,\
+NanoDrop QC (RNA) 5.0,\
+PCR Amplification (Nextera DNA) 5.0,\
+PCR Amplification (TruSeq Amplicon) 5.0,\
+PCR Clean-up (Nextera DNA) 5.0,\
+PCR Clean-up (TruSeq Amplicon) 5.0,\
+PicoGreen QC (DNA) 5.0,\
+PicoGreen QC (RNA) 5.0,\
+Pool Samples,\
+Pre-treatment (DNA extraction),\
+Process Summary Report 5.0,\
+QuantIt BroadRange,\
+QuantIt BroadRange LV,\
+QuantIt HighSensitivity,\
+QuantIt HighSensitivity LV,\
+Qubit QC (DNA) 5.0,\
+Qubit QC (RNA) 5.0,\
+Qubit QC LV,\
+Remove Oligos & Extension-Ligation (TruSeq Amplicon) 5.0,\
+Repair Ends (TruSeq DNA) 5.0,\
+Repair Ends (TruSeq DNA) 5.0_copy,\
+Repair Ends (TruSeq RNA) 5.0,\
+SP100 DNB Making v1,\
+SP960 v1,\
+Sample History Report 5.0,\
+Sample ready for registration,\
+Sample transfer (DNA extraction),\
+Sort MiSeq Samples (MiSeq) 5.0,\
+Sp100 Pooling and Circularisation v1,\
+Tagment DNA (Nextera DNA) 5.0,\
+Tagment DNA (Nextera XT DNA) 5.0,\
+Tapestation QC (DNA) 5.0,\
+Tapestation QC (RNA) 5.0,\
+Tapestation QC LV,\
+TeSTep,\
+WGS Indexing,\
+WGS Initial QC,\
+WGS Library QC,\
+biobank,\
+"mRNA Purification, Fragmentation & cDNA synthesis (TruSeq RNA) 5.0",\
+qPCR QC 5.0
 
 # Manifest for Protocols
 Protocols=\
-Covid19 v1
+16S 1step v1,\
+16S library preparation,\
+Aliquot DNA extraction controls,\
+Biobank,\
+Covid19 Create controls v1,\
+Covid19 Create samples v1,\
+Covid19 v1,\
+Covid19 v2,\
+Covid19 v3,\
+DNA Extraction 4 step,\
+DNA Extraction LIMS v1,\
+DNA Extraction LIMS v2,\
+DNA Extraction LIMS v3,\
+DNA Initial QC 5.0,\
+DNA Initial QC LIMSv1,\
+DNA Initial QC v2,\
+Extraction vaginal swabs,\
+Illumina SBS (MiSeq) 5.0 LIMS v1,\
+Illumina SBS (MiSeq) 5.0 LIMS v2,\
+Library Validation QC 5.0 LIMS v1,\
+Library Validation QC v2,\
+Library Validation QC v3,\
+MGI Easy FS DNA library preparation v1,\
+MGI Easy FS SP960 DNA library preparation v1,\
+MGIEasy FS SP100 DNA library preparation v1,\
+MGISEQ2000 Load (MGISeq) v1,\
+MOPP DNA Extraction LIMS v1,\
+Manual MGI Sequencing (MGISeq) v1,\
+Nextera DNA Library Prep 5.0 LIMS v1,\
+Nextera XT Library Prep LIMS v1,\
+RNA Initial QC 5.0,\
+Sample Normalisation Lims v1,\
+Sample reception LIMSv1,\
+Sample transfer,\
+TeSTprotocol,\
+Test-Covid19,\
+TruSeq Amplicon Library Prep 5.0 LIMS v1,\
+TruSeq DNA PCR-Free Library Prep 5.0 LIMS v1,\
+TruSeq RNA Library Prep 5.0 LIMS v1,\
+WGS Import,\
+add multiple reagents test
 
 # Manifest for Workflows
 Workflows=\
-Covid19 v1
+16S 1step library preparation,\
+16S 1step library preparation v1,\
+16S 1step library preparation v3,\
+16S 1step library preparation v4,\
+16S 1step library preparation v5,\
+16S 2-step library prep,\
+16S 2step library,\
+16S 2step library preparation,\
+Add multiple reagents test,\
+Aliquot controls,\
+Biobank,\
+Covid 19 Create controls v1,\
+Covid19 Create samples v1,\
+Covid19 v1,\
+Covid19 v2,\
+Covid19 v3,\
+DNA extraction,\
+DNA extraction 1,\
+DNA extraction 4 step,\
+DNA extraction LIMS v1,\
+DNA extraction LIMS v2,\
+DNA extraction LIMS v3,\
+DNA extraction vag swab,\
+Illumina SBS Miseq,\
+Initial QC Test,\
+MGIEasy Automated DNA library on MGISeq2000 v2,\
+MGIEasy DNA Library on MISEQ2000 v1,\
+MGIEasy DNA library on MGISeq2000 v2,\
+MOPP DNA extraction LIMS v1,\
+Nextera DNA for MiSeq 5.0,\
+Nextera Whole Genome Library Prep,\
+Nextera Whole Genome Library prep v1,\
+Nextera XT Whole Genome Library Prep,\
+Nextera XT Whole Genome Library prep v1,\
+Sample Normalisation Test,\
+Sample handling,\
+TeSTworkflow,\
+Test-Covid19,\
+Test_GLS,\
+TruSeq Amplicon for MiSeq 5.0,\
+TruSeq DNA for MiSeq 5.0,\
+TruSeq RNA for MiSeq 5.0,\
+Whole Genome Library prep,\
+Whole Genome Sequencing
 
