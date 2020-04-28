@@ -67,11 +67,11 @@ This will create a new xml package in the exports directory, which can be import
 
 First call this:
 
-    python ./slices.py import prod --validate
+    python ./slices.py import prod --validate <package file>
 
 Read through the results and ensure that there are no warnings or errors. If ready, call:
 
-    python ./slices.py import prod
+    python ./slices.py import prod <package file>
 
 ## Save the history
 
