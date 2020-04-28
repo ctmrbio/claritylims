@@ -31,13 +31,13 @@ class Extension(GeneralExtension):
         is_any_control_failed = \
             any(
                 c.udf_reviewer_result == FAILED_BY_REVIEW
-                for c in self.control_artifacts if self._has_reviewer_result_udf(c)
+                for _, c in self.control_artifacts if self._has_reviewer_result_udf(c)
             )
 
         if is_any_control_failed:
             ordinary_artifacts = [
                 artifact for artifact in self.all_outputs
-                if artifact.name not in [c.name for c in self.control_artifacts]
+                if artifact.name not in [c.name for _, c in self.control_artifacts]
             ]
             for artifact in ordinary_artifacts:
                 original_sample = artifact.sample
@@ -86,9 +86,9 @@ class Extension(GeneralExtension):
         pos_prefix = Controls.MAP_FROM_KEY_TO_ABBREVIATION[Controls.MGI_POSITIVE_CONTROL]
         neg_name = self._get_neg_control_name(Controls.NEGATIVE_PCR_CONTROL)
         control_artifacts = list()
-        for artifact in self.all_outputs:
-            if artifact.name.startswith(pos_prefix) or artifact.name == neg_name:
-                control_artifacts.append(artifact)
+        for input, output in self.context.artifact_service.all_aliquot_pairs():
+            if output.name.startswith(pos_prefix) or output.name == neg_name:
+                control_artifacts.append((input, output))
         return control_artifacts
 
     def _get_neg_control_name(self, key):
@@ -120,11 +120,10 @@ class Extension(GeneralExtension):
             raise UsageError("There are more than 1 plate in this step, which is not allowed!")
 
         # Check that no control has changed from failed to passed
-        for control in self.control_artifacts:
-            if self._has_reviewer_result_udf(control):
-                original_sample = control.sample
-                if original_sample.udf_rtpcr_covid19_result_latest in FAILED_STATES\
-                        and control.udf_reviewer_result != FAILED_BY_REVIEW:
+        for input_control, output_control in self.control_artifacts:
+            if self._has_reviewer_result_udf(output_control):
+                if input_control.udf_rtpcr_covid19_result in FAILED_STATES\
+                        and output_control.udf_reviewer_result != FAILED_BY_REVIEW:
                     raise UsageError("Passing controls that were previously failed is not yet implemented!")
 
     def _has_reviewer_result_udf(self, artifact):
@@ -137,4 +136,4 @@ class Extension(GeneralExtension):
         return True
 
     def integration_tests(self):
-        yield self.test("24-45313", commit=True)
+        yield self.test("24-45334", commit=True)
