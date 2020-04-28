@@ -14,6 +14,10 @@ class Extension(GeneralExtension):
         self._validate()
         self._update_individual_artifacts()
         self._conditionally_fail_entire_plate()
+        for artifact in self.all_outputs:
+            original_sample = artifact.sample
+            self.context.update(original_sample)
+            self.context.update(artifact)
 
     def _conditionally_fail_entire_plate(self):
         # If controls are set to failed, fail entire plate
@@ -25,32 +29,41 @@ class Extension(GeneralExtension):
 
         if is_any_control_failed:
             ordinary_artifacts = [
-                artifact for artifact in self.all_artifacts
+                artifact for artifact in self.all_outputs
                 if artifact.name not in [c.name for c in self.control_artifacts]
             ]
             for artifact in ordinary_artifacts:
                 original_sample = artifact.sample
-                artifact.udf_map.force("Reviewer result", FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL)
+                artifact.udf_map.force(
+                    "rtPCR covid-19 result", FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL)
                 original_sample.udf_map.force(
                     "rtPCR covid-19 result latest", FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL)
                 original_sample.udf_map.force("rtPCR Passed latest", "False")
-                self.context.update(original_sample)
-                self.context.update(artifact)
+                artifact.udf_map.force("rtPCR Passed", "False")
 
     def _update_individual_artifacts(self):
         # Update individual samples and controls
-        for artifact in self.all_artifacts:
-            if self._has_reviewer_result_udf(artifact):
-                original_sample = artifact.sample
+        for input, output in self.context.artifact_service.all_aliquot_pairs():
+            original_sample = output.sample
+            if self._has_reviewer_result_udf(output):
+                output.udf_map.force(
+                    "rtPCR covid-19 result", output.udf_reviewer_result)
                 original_sample.udf_map.force(
-                    "rtPCR covid-19 result latest", artifact.udf_reviewer_result)
-                rt_pcr_passed = artifact.udf_reviewer_result != FAILED_BY_REVIEW
+                    "rtPCR covid-19 result latest", output.udf_reviewer_result)
+                rt_pcr_passed = output.udf_reviewer_result != FAILED_BY_REVIEW
                 original_sample.udf_map.force("rtPCR Passed latest", str(rt_pcr_passed))
-                self.context.update(original_sample)
-                self.context.update(artifact)
+                output.udf_map.force("rtPCR Passed", str(rt_pcr_passed))
+            else:
+                # Fetch original values from previous step in case user regret a review
+                output.udf_map.force(
+                    "rtPCR covid-19 result", input.udf_rtpcr_covid19_result)
+                output.udf_map.force("rtPCR Passed", input.udf_rtpcr_passed)
+                original_sample.udf_map.force(
+                    "rtPCR covid-19 result latest", input.udf_rtpcr_covid19_result)
+                original_sample.udf_map.force("rtPCR Passed latest", input.udf_rtpcr_passed)
 
     @property
-    def all_artifacts(self):
+    def all_outputs(self):
         return [artifact for _, artifact in self.context.artifact_service.all_aliquot_pairs()]
 
     @property
@@ -62,7 +75,7 @@ class Extension(GeneralExtension):
         pos_prefix = Controls.MAP_FROM_KEY_TO_ABBREVIATION[Controls.MGI_POSITIVE_CONTROL]
         neg_name = self._get_neg_control_name(Controls.NEGATIVE_PCR_CONTROL)
         control_artifacts = list()
-        for artifact in self.all_artifacts:
+        for artifact in self.all_outputs:
             if artifact.name.startswith(pos_prefix) or artifact.name == neg_name:
                 control_artifacts.append(artifact)
         return control_artifacts
@@ -82,7 +95,7 @@ class Extension(GeneralExtension):
             FAILED_BY_REVIEW,
             FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
         ]
-        for artifact in self.all_artifacts:
+        for artifact in self.all_outputs:
             if self._has_reviewer_result_udf(artifact) \
                     and artifact.udf_reviewer_result not in valid_values:
                 raise UsageError("This sample has a not allowed value for 'Reviewer result',"
