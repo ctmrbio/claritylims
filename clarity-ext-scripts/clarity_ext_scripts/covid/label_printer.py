@@ -48,7 +48,9 @@ class LabelPrinterService(object):
 
     @property
     def contents(self):
-        return '\n'.join(self.printer.contents)
+        content = '\n'.join(self.printer.contents)
+        content = ''.join(["${", content, "}$"])
+        return content
 
     @staticmethod
     def create():
@@ -67,6 +69,7 @@ class LabelPrintInfo(object):
     POS_TOP = 2
 
     """Represents what to print, not related to any particular printer"""
+
     def __init__(self, text, barcode, height, width, offset, position):
         """
         :param text: The label's text
@@ -90,13 +93,15 @@ class ZebraLabelPrinter(object):
                   "E": (15, 28), "F": (13, 26), "G": (40, 60), "H": (13, 21), "J": (25, 32)}
 
     """Specifies both the file format needed for this printer as well as the communication mechanism"""
+
     def __init__(self, font, zoom_factor, vertical_spacing, block_width_points, label_width_points,
                  text_max_lines, space_points, chars_per_line):
         self.font = font
         self.zoom_factor = zoom_factor
         self.vertical_spacing = vertical_spacing
         self.block_width_points = block_width_points
-        self.label_width_points = label_width_points    #the length of the label in points for easy calc of positions
+        # the length of the label in points for easy calc of positions
+        self.label_width_points = label_width_points
 
         self.text_max_lines = text_max_lines
         self.space_points = space_points
@@ -107,15 +112,15 @@ class ZebraLabelPrinter(object):
         self.contents.append(self.parse(info))
 
     def _parse(self, info):
-        start            = 11 * info.width
-        data             = len(info.barcode) * 11 * info.width
-        CRC              = 11 * info.width
-        stop             = 12 * info.width
-        text_spacing     = 10 * info.width #spacing between barcode and info text
-
+        start = 11 * info.width
+        data = len(info.barcode) * 11 * info.width
+        CRC = 11 * info.width
+        stop = 12 * info.width
+        text_spacing = 10 * info.width  # spacing between barcode and info text
 
         text_width, text_height = self.FONT_SIZES[self.font]
-        text_width, text_height = text_width * self.zoom_factor, text_height * self.zoom_factor
+        text_width, text_height = text_width * \
+            self.zoom_factor, text_height * self.zoom_factor
         first_row_offset = (10, self.vertical_spacing)
         second_row_offset = (10, info.height + 2*self.vertical_spacing)
 
@@ -141,7 +146,8 @@ class ZebraLabelPrinter(object):
             yield "^FO{},{}".format(*second_row_offset)
             yield "^A0,{},{}".format(text_height, text_width)
             yield "^FB{},{},{},".format(self.label_width_points - info.offset[0] - barcode_width, self.text_max_lines, self.space_points)
-            yield "^FD{}^FS".format(self.replace_newlines(info.text)) #use built in linebreak functionality for bulk of string
+            # use built in linebreak functionality for bulk of string
+            yield "^FD{}^FS".format(self.replace_newlines(info.text))
         yield "^XZ"
 
     def replace_newlines(self, text):
