@@ -103,6 +103,8 @@ class Extension(GeneralExtension):
             row = well[0]
             col = int(well[1:])
             well = "{}:{}".format(row, col)
+            # TODO It seems that we always need controls here, which
+            #      we need to check if that will always be the case.
             is_control = controls_barcode_generator.parse(barcode)
 
             if not is_control:
@@ -137,7 +139,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-44969"
+        yield "24-44013"
 
 
 def get_raw_sample_list(context):

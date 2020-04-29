@@ -111,7 +111,8 @@ class Extension(GeneralExtension):
 
     def _create_anonymous_service_request(self, client, referral_code):
         service_request_id = client.create_anonymous_service_request(
-            self, referral_code)
+            referral_code)
+        return service_request_id
 
     def execute(self):
         config = {
@@ -152,7 +153,8 @@ class Extension(GeneralExtension):
         for ix, row in csv.iterrows():
             if row["status"] == "anonymous":
                 service_request_id = self._create_anonymous_service_request(
-                    client, row["original_name"])
+                    client, row["Sample Id"])
+                # This mutates the above csv object
                 csv.at[ix, "service_request_id"] = service_request_id
                 csv.at[ix, "org_uri"] = ORG_URI_BY_NAME[KARLSSON_AND_NOVAK]
             elif row["status"] != "ok":
@@ -195,4 +197,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield "24-43792"
+        yield "24-44013"
