@@ -59,7 +59,7 @@ class Extension(GeneralExtension):
             service_request_id = "anonymous"
             status = "anonymous"
             comment = ("No matching request was found for this referral code. Will create an anonymous "
-                       "will create an anonymous ServiceRequest for this referral code.")
+                       "ServiceRequest for this referral code.")
         except PartnerClientAPIException as e:
             self.usage_error_defer(
                 "Something was wrong with {} for barcode(s). See file validated sample list for details.".format(
@@ -108,6 +108,8 @@ class Extension(GeneralExtension):
             if not is_control:
                 if ordering_org == TESTING_ORG:
                     service_request_id = uuid4()
+                    status = "ok"
+                    comment = ""
                     logger.warn("Using testing org. Service request ID faked: {}".format(
                         service_request_id))
                 else:

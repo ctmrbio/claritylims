@@ -22,10 +22,11 @@ VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
 # NOTE: When editing organization keys, one must also update the Clarity field
 # "Ordering organization"
 TESTING_ORG = "Internal testing"
+KARLSSON_AND_NOVAK = "Karlsson and Novak"
 
 ORG_URI_BY_NAME = {
     TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
-    "Karlsson and Novak": "http://uri.d-t.se/id/Identifier/i-referral-code",
+    KARLSSON_AND_NOVAK: "http://uri.d-t.se/id/Identifier/i-referral-code"
 }
 
 
@@ -296,7 +297,7 @@ class PartnerAPIV7Client(object):
             ],
             "identifier": [
                 {
-                    "system": "http://{}/id/Identifier/i-referral-code".format(self._test_partner_code_system_base_url),
+                    "system": "{}/id/Identifier/i-referral-code".format(self._test_partner_code_system_base_url),
                     "value": referral_code
                 }
             ],
@@ -308,7 +309,7 @@ class PartnerAPIV7Client(object):
             "code": {
                 "coding": [
                     {
-                        "system": "http://{}/id/CodeSystem/cs-test-types".format(
+                        "system": "{}/id/CodeSystem/cs-test-types".format(
                             self._test_partner_code_system_base_url),
                         "code": "covid19"
                     }

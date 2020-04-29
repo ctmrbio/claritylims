@@ -5,7 +5,7 @@ from clarity_ext.utils import single
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.validate_sample_creation_list import Controls
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK
 
 
 class Extension(GeneralExtension):
@@ -110,9 +110,6 @@ class Extension(GeneralExtension):
         return container
 
     def _create_anonymous_service_request(self, client, referral_code):
-        # TODO I don't know if this should do some error handling here
-        #      as well... Right now if we, e.g. get an error on one sample
-        #      the whole thing will fail.
         service_request_id = client.create_anonymous_service_request(
             self, referral_code)
 
@@ -154,11 +151,10 @@ class Extension(GeneralExtension):
         errors = list()
         for ix, row in csv.iterrows():
             if row["status"] == "anonymous":
-                # TODO Check if this way of assigning to the original dataframe
-                # actually works with pandas.
                 service_request_id = self._create_anonymous_service_request(
                     client, row["original_name"])
                 csv.at[ix, "service_request_id"] = service_request_id
+                csv.at[ix, "org_uri"] = ORG_URI_BY_NAME[KARLSSON_AND_NOVAK]
             elif row["status"] != "ok":
                 errors.append(row["Sample Id"])
 
