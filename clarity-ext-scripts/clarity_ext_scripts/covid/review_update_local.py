@@ -13,18 +13,15 @@ class Extension(GeneralExtension):
     def __init__(self, *args, **kwargs):
         super(Extension, self).__init__(*args, **kwargs)
         self.updated_artifacts = dict()
-        self.updated_samples = dict()
 
     def execute(self):
         self._validate()
         self._update_individual_artifacts()
         self._conditionally_fail_entire_plate()
         # This is a fix for when different instances of the same
-        #  artifacts/samples are updated at different locations in script
+        #  artifacts are updated at different locations in script
         for key in self.updated_artifacts:
             self.context.update(self.updated_artifacts[key])
-        for key in self.updated_samples:
-            self.context.update(self.updated_samples[key])
 
     def _conditionally_fail_entire_plate(self):
         # If controls are set to failed, fail entire plate
@@ -40,38 +37,25 @@ class Extension(GeneralExtension):
                 if artifact.name not in [c.name for _, c in self.control_artifacts]
             ]
             for artifact in ordinary_artifacts:
-                original_sample = artifact.sample
                 artifact.udf_map.force(
                     "rtPCR covid-19 result", FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL)
-                original_sample.udf_map.force(
-                    "rtPCR covid-19 result latest", FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL)
-                original_sample.udf_map.force("rtPCR Passed latest", "False")
                 artifact.udf_map.force("rtPCR Passed", "False")
                 self.updated_artifacts[artifact.id] = artifact
-                self.updated_samples[original_sample.id] = original_sample
 
     def _update_individual_artifacts(self):
-        # Update individual samples and controls
+        # Update individual artifacts
         for input, output in self.context.artifact_service.all_aliquot_pairs():
-            original_sample = output.sample
             if self._has_reviewer_result_udf(output):
                 output.udf_map.force(
                     "rtPCR covid-19 result", output.udf_reviewer_result)
-                original_sample.udf_map.force(
-                    "rtPCR covid-19 result latest", output.udf_reviewer_result)
                 rt_pcr_passed = output.udf_reviewer_result != FAILED_BY_REVIEW
-                original_sample.udf_map.force("rtPCR Passed latest", str(rt_pcr_passed))
                 output.udf_map.force("rtPCR Passed", str(rt_pcr_passed))
             else:
                 # Fetch original values from previous step in case user regret a review
                 output.udf_map.force(
                     "rtPCR covid-19 result", input.udf_rtpcr_covid19_result)
                 output.udf_map.force("rtPCR Passed", input.udf_rtpcr_passed)
-                original_sample.udf_map.force(
-                    "rtPCR covid-19 result latest", input.udf_rtpcr_covid19_result)
-                original_sample.udf_map.force("rtPCR Passed latest", input.udf_rtpcr_passed)
             self.updated_artifacts[output.id] = output
-            self.updated_samples[original_sample.id] = original_sample
 
     @property
     def all_outputs(self):
@@ -104,7 +88,6 @@ class Extension(GeneralExtension):
             COVID_RESPONSE_POSITIVE,
             COVID_RESPONSE_NEGATIVE,
             FAILED_BY_REVIEW,
-            FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL
         ]
         for artifact in self.all_outputs:
             if self._has_reviewer_result_udf(artifact) \
