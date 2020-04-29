@@ -6,7 +6,7 @@ import pandas as pd
 from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound)
+    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound, PartnerClientAPIException)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
@@ -45,6 +45,30 @@ class Extension(GeneralExtension):
           validated file with manually edited information.
     """
 
+    def _search_for_id(self, client,  org_uri, barcode):
+        try:
+            response = client.search_for_service_request(
+                org_uri, barcode)
+            service_request_id = response["resource"]["id"]
+            status = "ok"
+            comment = ""
+        except OrganizationReferralCodeNotFound as e:
+            self.usage_error_defer(
+                "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
+                    org_uri), barcode)
+            service_request_id = "anonymous"
+            status = "anonymous"
+            comment = ("No matching request was found for this referral code. Will create an anonymous "
+                       "ServiceRequest for this referral code.")
+        except PartnerClientAPIException as e:
+            self.usage_error_defer(
+                "Something was wrong with {} for barcode(s). See file validated sample list for details.".format(
+                    org_uri), barcode)
+            service_request_id = ""
+            status = "error"
+            comment = e.message
+        return service_request_id, status, comment
+
     def execute(self):
         # 1. Get the ordering organizations URI
         try:
@@ -79,37 +103,21 @@ class Extension(GeneralExtension):
             row = well[0]
             col = int(well[1:])
             well = "{}:{}".format(row, col)
+            # TODO It seems that we always need controls here, which
+            #      we need to check if that will always be the case.
             is_control = controls_barcode_generator.parse(barcode)
 
             if not is_control:
                 if ordering_org == TESTING_ORG:
                     service_request_id = uuid4()
+                    status = "ok"
+                    comment = ""
                     logger.warn("Using testing org. Service request ID faked: {}".format(
                         service_request_id))
                 else:
-                    try:
-                        response = client.search_for_service_request(
-                            org_uri, barcode)
-                        service_request_id = response["resource"]["id"]
-                    except OrganizationReferralCodeNotFound as e:
-                        response = None
-                        service_request_id = "warning"
+                    service_request_id, status, comment = self._search_for_id(
+                        client, org_uri, barcode)
 
-                if service_request_id == "warning":
-                    service_request_id = ""
-                    status = "error"
-                    if response:
-                        comment = response["resource"]["issue"][0]["details"][
-                            "text"]
-                    else:
-                        comment = ""
-                    self.usage_error_defer(
-                        "Can't find service_request_id in {} for barcode(s)".format(
-                            org_uri),
-                        barcode)
-                else:
-                    status = "ok"
-                    comment = ""
                 raw_sample_list.loc[ix, "org_uri"] = org_uri
             else:
                 service_request_id = ""
@@ -131,7 +139,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-44969"
+        yield "24-44013"
 
 
 def get_raw_sample_list(context):

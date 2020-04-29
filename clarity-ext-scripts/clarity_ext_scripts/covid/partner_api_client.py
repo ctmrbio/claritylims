@@ -22,10 +22,11 @@ VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
 # NOTE: When editing organization keys, one must also update the Clarity field
 # "Ordering organization"
 TESTING_ORG = "Internal testing"
+KARLSSON_AND_NOVAK = "Karlsson and Novak"
 
 ORG_URI_BY_NAME = {
     TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
-    "Karlsson and Novak": "http://uri.d-t.se/id/Identifier/i-referral-code",
+    KARLSSON_AND_NOVAK: "http://uri.d-t.se/id/Identifier/i-referral-code"
 }
 
 
@@ -219,17 +220,11 @@ class PartnerAPIV7Client(object):
     """
 
     def __init__(self, test_partner_base_url, test_partner_user, test_partner_password,
-                 test_partner_code_system_base_url, integration_test_mode=False, integration_test_should_fail=0):
+                 test_partner_code_system_base_url):
         self._base_url = test_partner_base_url
         self._user = test_partner_user
         self._password = test_partner_password
         self._test_partner_code_system_base_url = test_partner_code_system_base_url
-        if integration_test_mode:
-            self._integration_test_mode = integration_test_mode
-            self._integration_test_should_fail = integration_test_should_fail
-            self._integration_test_has_failed = 0
-        else:
-            self._integration_test_mode = False
 
     def _base64_encoded_credentials(self):
         user_and_password = "{}:{}".format(self._user, self._password)
@@ -279,6 +274,71 @@ class PartnerAPIV7Client(object):
                 raise OrganizationReferralCodeNotFound(
                     ("No partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
+        except PartnerClientAPIException as e:
+            log.error(e.message)
+            raise e
+
+    def create_anonymous_service_request(self, referral_code):
+        """
+        This method can be used to create an anonymous service request, that is
+        a service request that is not tied to a particular person. This is useful
+        when a sample arrives in the lab that has not been properly registered.
+        """
+
+        # Pretty much all of this is hard coded, because we will only need to
+        # create a single patient at the time.
+        payload = {
+            "resourceType": "ServiceRequest",
+            "contained": [
+                {
+                    "resourceType": "Patient",
+                    "id": "1"
+                }
+            ],
+            "identifier": [
+                {
+                    "system": "{}/id/Identifier/i-referral-code".format(self._test_partner_code_system_base_url),
+                    "value": referral_code
+                }
+            ],
+            "status": "active",
+            "intent": "original-order",
+            "subject": {
+                "reference": "#1"
+            },
+            "code": {
+                "coding": [
+                    {
+                        "system": "{}/id/CodeSystem/cs-test-types".format(
+                            self._test_partner_code_system_base_url),
+                        "code": "covid19"
+                    }
+                ]
+            }
+        }
+        try:
+            url = "{}/ServiceRequest".format(
+                self._base_url)
+            headers = self._generate_headers()
+
+            log.debug("Attemping to create an anonymous ServiceRequst for referral code: {}".format(
+                referral_code))
+
+            response = requests.post(url=url,
+                                     json=payload,
+                                     headers=headers)
+
+            if response.status_code == 201:
+                response_json = response.json()
+                service_request_id = response_json["id"]
+                log.debug(("Successfully created an anonymous ServiceRequest"
+                           " for referral code: {}, got id: {}").format(
+                    referral_code, service_request_id))
+                return service_request_id
+            else:
+                raise PartnerClientAPIException(("Did not get 201 answer from partner API."
+                                                 "Response was: {} and json: {}").format(response.status_code,
+                                                                                         response.json()))
         except PartnerClientAPIException as e:
             log.error(e.message)
             raise e

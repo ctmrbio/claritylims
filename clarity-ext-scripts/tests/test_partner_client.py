@@ -270,3 +270,38 @@ class TestPartnerAPIV7Client(object):
                 self.client.post_diagnosis_report(service_request_id="1000",
                                                   diagnosis_result="positive",
                                                   analysis_results=[{"value": 30}])
+
+    class MockOkCreateServiceRequest(object):
+        def __init__(self):
+            self.status_code = 201
+            self.headers = {"fake": "value"}
+
+        def json(self):
+            return {"resourceType": "ServiceRequest",
+                    "id": "987"}
+
+    def test_can_create_anonymous_service_request(self):
+        mock_ok_response = self.MockOkCreateServiceRequest()
+
+        with patch('requests.post', return_value=mock_ok_response) as mock_post_response_ctl:
+            res = self.client.create_anonymous_service_request(
+                referral_code="123")
+            assert res == "987"
+            mock_post_response_ctl.assert_called_once()
+
+    class MockFailedCreateServiceRequest(object):
+        def __init__(self):
+            self.status_code = 400
+            self.headers = {"fake": "value"}
+
+        def json(self):
+            return {"reason": "Hack the planet!"}
+
+    def test_create_anonymous_service_request_raises(self):
+        mock_failed_response = self.MockFailedCreateServiceRequest()
+
+        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+            with pytest.raises(PartnerClientAPIException):
+                res = self.client.create_anonymous_service_request(
+                    referral_code="123")
+                mock_post_response_ctl.assert_called_once()

@@ -5,6 +5,7 @@ from clarity_ext.utils import single
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.validate_sample_creation_list import Controls
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK
 
 
 class Extension(GeneralExtension):
@@ -59,9 +60,9 @@ class Extension(GeneralExtension):
     def create_in_mem_container(
             self, csv, container_specifier, sample_specifier, control_specifier, date, time):
         """Creates an in-memory container with the samples
-        
+
         The name of the container will be on the form:
-            
+
            COVID_<date>_<container_specifier>_<time to sec> 
 
         The name of the samples will be:
@@ -91,7 +92,8 @@ class Extension(GeneralExtension):
             org_uri = row["org_uri"]
             service_request_id = row["service_request_id"]
 
-            control_type_tuple = controls_barcode_generator.parse(original_name)
+            control_type_tuple = controls_barcode_generator.parse(
+                original_name)
 
             if control_type_tuple:
                 control_type, _, _ = control_type_tuple
@@ -107,7 +109,21 @@ class Extension(GeneralExtension):
             container[well] = substance
         return container
 
+    def _create_anonymous_service_request(self, client, referral_code):
+        service_request_id = client.create_anonymous_service_request(
+            referral_code)
+        return service_request_id
+
     def execute(self):
+        config = {
+            key: self.config[key]
+            for key in [
+                "test_partner_base_url", "test_partner_code_system_base_url",
+                "test_partner_user", "test_partner_password"
+            ]
+        }
+        client = PartnerAPIV7Client(**config)
+
         # This is for debug reasons only. Set this to True to create samples even if they have
         # been created before. This will overwrite the field udf_created_containers.
         force = False
@@ -135,7 +151,13 @@ class Extension(GeneralExtension):
 
         errors = list()
         for ix, row in csv.iterrows():
-            if row["status"] != "ok":
+            if row["status"] == "anonymous":
+                service_request_id = self._create_anonymous_service_request(
+                    client, row["Sample Id"])
+                # This mutates the above csv object
+                csv.at[ix, "service_request_id"] = service_request_id
+                csv.at[ix, "org_uri"] = ORG_URI_BY_NAME[KARLSSON_AND_NOVAK]
+            elif row["status"] != "ok":
                 errors.append(row["Sample Id"])
 
         if len(errors):
@@ -175,4 +197,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield "24-43792"
+        yield "24-44013"
