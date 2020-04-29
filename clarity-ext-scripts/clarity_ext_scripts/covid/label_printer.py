@@ -49,7 +49,7 @@ class LabelPrinterService(object):
     @property
     def contents(self):
         content = '\n'.join(self.printer.contents)
-        content = ''.join(["${", content, "}$"])
+        content = ''.join(["\n", "${", content, "}$", "\n"])
         return content
 
     @staticmethod
