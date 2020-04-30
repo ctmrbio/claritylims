@@ -1,4 +1,4 @@
-# Generated from https://ctmr-lims-stage.scilifelab.se/ at Tue Apr 28 13:41:21 CEST 2020
+# Generated from https://c1-ctmr-lims-stage01.ki.se/ at Thu Apr 30 07:30:16 CEST 2020
 
 # Manifest was generated with Config Slicer version 3.1.14.7
 ConfigSlicerVersion=3.1.14.7
