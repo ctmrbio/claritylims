@@ -122,7 +122,8 @@ class Extension(GeneralExtension):
         except ServiceRequestAlreadyExists:
             self.usage_error_defer(
                 ("There already exists a ServiceRequest for the following barcode(s). This means something "
-                 "odd is going on. Contact your friendly sysadmin for help."), referral_code)
+                 "odd is going on. Maybe you set a sample to anonymous in the 'Validated sample list', that should not "
+                 "have been set to anonymous? Contact your friendly sysadmin for help."), referral_code)
 
     def execute(self):
         config = {
@@ -207,4 +208,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield "24-44013"
+        yield "24-44033"
