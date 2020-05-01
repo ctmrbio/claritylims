@@ -46,6 +46,14 @@ class FailedInContactingTestPartner(PartnerClientAPIException):
     pass
 
 
+class ServiceRequestAlreadyExists(PartnerClientAPIException):
+    pass
+
+
+class CouldNotCreateServiceRequest(PartnerClientAPIException):
+    pass
+
+
 def verify_test_partner_referral_code(code):
     """
     Will check if the check number of the given code is correct.
@@ -335,10 +343,21 @@ class PartnerAPIV7Client(object):
                            " for referral code: {}, got id: {}").format(
                     referral_code, service_request_id))
                 return service_request_id
+            elif response.status_code == 400:
+                raise CouldNotCreateServiceRequest(("Could not create a ServiceRequest for id: {} "
+                                                    "This is most likely because the test partner did not "
+                                                    "recognize the id.".format(
+                                                        referral_code)))
+            elif response.status_code == 409:
+                raise ServiceRequestAlreadyExists(
+                    "There appears to already exist a ServiceRequest for id: {}".format(referral_code))
             else:
-                raise PartnerClientAPIException(("Did not get 201 answer from partner API."
-                                                 "Response was: {} and json: {}").format(response.status_code,
-                                                                                         response.json()))
+                raise PartnerClientAPIException(("Did not get 201 answer from partner API. When trying to create a "
+                                                 "ServiceRequest for id: {}"
+                                                 "Response was: {} and json: {}").format(
+                                                     referral_code,
+                                                     response.status_code,
+                                                     response.json()))
         except PartnerClientAPIException as e:
             log.error(e.message)
             raise e
