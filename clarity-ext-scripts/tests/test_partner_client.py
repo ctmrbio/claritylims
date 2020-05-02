@@ -290,18 +290,36 @@ class TestPartnerAPIV7Client(object):
             mock_post_response_ctl.assert_called_once()
 
     class MockFailedCreateServiceRequest(object):
-        def __init__(self):
-            self.status_code = 400
+        def __init__(self, status_code):
+            self.status_code = status_code
             self.headers = {"fake": "value"}
 
         def json(self):
             return {"reason": "Hack the planet!"}
 
-    def test_create_anonymous_service_request_raises(self):
-        mock_failed_response = self.MockFailedCreateServiceRequest()
+    def test_create_anonymous_service_request_raises_in_general(self):
+        mock_failed_response = self.MockFailedCreateServiceRequest(500)
 
         with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
             with pytest.raises(PartnerClientAPIException):
+                res = self.client.create_anonymous_service_request(
+                    referral_code="123")
+                mock_post_response_ctl.assert_called_once()
+
+    def test_create_anonymous_service_request_raises_for_400(self):
+        mock_failed_response = self.MockFailedCreateServiceRequest(400)
+
+        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+            with pytest.raises(CouldNotCreateServiceRequest):
+                res = self.client.create_anonymous_service_request(
+                    referral_code="123")
+                mock_post_response_ctl.assert_called_once()
+
+    def test_create_anonymous_service_request_raises_for_409(self):
+        mock_failed_response = self.MockFailedCreateServiceRequest(409)
+
+        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+            with pytest.raises(ServiceRequestAlreadyExists):
                 res = self.client.create_anonymous_service_request(
                     referral_code="123")
                 mock_post_response_ctl.assert_called_once()

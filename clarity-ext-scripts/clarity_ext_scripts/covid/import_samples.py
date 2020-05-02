@@ -5,24 +5,25 @@ from clarity_ext.utils import single
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.validate_sample_creation_list import Controls
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK, \
+    ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
 
 
 class Extension(GeneralExtension):
     """
     Requires two step UDFs:
-        * Assign to workflow: Any workflow 
+        * Assign to workflow: Any workflow
         * Project: Any project
 
-    Requires a CSV file with the headers barcode;well 
+    Requires a CSV file with the headers barcode;well
 
 
     Creates two containers with samples and controls in Clarity:
         COVID_<date>_PREXT_<time>
             <sample_name_in_csv>_<timestamp w sec>
-            <control_name_in_csv>_<timestamp w sec>_<running>  
+            <control_name_in_csv>_<timestamp w sec>_<running>
             ...
-        COVID_<date>_BIOBANK_<time> 
+        COVID_<date>_BIOBANK_<time>
             <sample_name_in_csv>_<timestamp w sec>_BIOBANK
             <control_name_in_csv>_<timestamp w sec>_<running>_BIOBANK
             ...
@@ -38,7 +39,7 @@ class Extension(GeneralExtension):
         sample = Sample(sample_id=None, name=name, project=project)
         sample.udf_map.force("Control", "No")
 
-        # Add KNM data:
+        # Add KNM data:test_partner_user
         sample.udf_map.force("KNM data added at", timestamp)
         sample.udf_map.force("KNM org URI", org_uri)
         sample.udf_map.force("KNM service request id", service_request_id)
@@ -63,7 +64,7 @@ class Extension(GeneralExtension):
 
         The name of the container will be on the form:
 
-           COVID_<date>_<container_specifier>_<time to sec> 
+           COVID_<date>_<container_specifier>_<time to sec>
 
         The name of the samples will be:
 
@@ -110,9 +111,19 @@ class Extension(GeneralExtension):
         return container
 
     def _create_anonymous_service_request(self, client, referral_code):
-        service_request_id = client.create_anonymous_service_request(
-            referral_code)
-        return service_request_id
+        try:
+            service_request_id = client.create_anonymous_service_request(
+                referral_code)
+            return service_request_id
+        except CouldNotCreateServiceRequest:
+            self.usage_error_defer(
+                ("Could not create ServiceRequests for the following barcode(s). KNM probably did not "
+                 "recognize them. Please investigate the barcode(s)."), referral_code)
+        except ServiceRequestAlreadyExists:
+            self.usage_error_defer(
+                ("There already exists a ServiceRequest for the following barcode(s). This means something "
+                 "odd is going on. Maybe you set a sample to anonymous in the 'Validated sample list', that should not "
+                 "have been set to anonymous? Contact your friendly sysadmin for help."), referral_code)
 
     def execute(self):
         config = {
@@ -162,8 +173,8 @@ class Extension(GeneralExtension):
 
         if len(errors):
             msg = "There are {} errors in the sample list. " \
-                  "Check the file 'Validated sample list' for details".format(
-                      len(errors))
+                "Check the file 'Validated sample list' for details".format(
+                    len(errors))
             self.usage_error(msg)
 
         # 3. Create the two plates in memory
@@ -197,4 +208,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield "24-44013"
+        yield "24-44033"
