@@ -1,6 +1,6 @@
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext.domain import Container
-from clarity_ext_scripts.covid.label_printer import label_printer
+from clarity_ext_scripts.covid.label_printer import LabelPrinterService
 
 
 class Extension(GeneralExtension):
@@ -9,6 +9,7 @@ class Extension(GeneralExtension):
     """
 
     def create_upload_file(self, container):
+        label_printer = LabelPrinterService.create()
         file_name = 'barcode-{}.zpl'.format(container.name)
         label_printer.generate_zpl_for_containers(
             [container], lims_id_as_barcode=True)
@@ -29,8 +30,7 @@ class Extension(GeneralExtension):
             container = Container(container_id=container_id, name=container_name,
                                   container_type=Container.CONTAINER_TYPE_96_WELLS_PLATE)
             files.append(self.create_upload_file(container))
-
         self.context.file_service.upload_files("Barcodes", files)
 
     def integration_tests(self):
-        yield "24-40639"
+        yield self.test("24-44013", commit=False)
