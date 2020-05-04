@@ -11,25 +11,9 @@ class ParsePcrExecution(object):
         self.context = context
 
     def execute(self):
-        if self.instrument is None:
-            raise UsageError("The udf 'Instrument Used' must be filled in before running this script")
         file_handle = "Result file"
-        parser = self._instantiate_parser()
+        parser = Quant7Parser(self.context)
         parser.parse(file_handle)
-
-    def _instantiate_parser(self):
-        if self.instrument == 'qPCR ABI 7500':
-            raise UsageError('Parsing qPCR ABI 7500 is not implemented')
-        elif self.instrument == 'Quant Studio 7':
-            parser = Quant7Parser(self.context)
-        else:
-            raise UsageError("The instrument in 'Instrument Used' is not recognized: {}"
-                             .format(self.instrument))
-        return parser
-
-    @property
-    def instrument(self):
-        return self.context.current_step.instrument
 
 
 class Quant7Parser(object):
