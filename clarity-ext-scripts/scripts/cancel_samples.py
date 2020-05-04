@@ -1,14 +1,16 @@
 
+import sys
 import yaml
 import logging
 
 
 import click
-import retry
+from retry import retry
 from requests import ConnectionError, Timeout
 
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ServiceRequestAlreadyExists, \
-    OrganizationReferralCodeNotFound, CouldNotCreateServiceRequest, PartnerClientAPIException, COVID_RESPONSE_FAILED
+    OrganizationReferralCodeNotFound, CouldNotCreateServiceRequest, PartnerClientAPIException, COVID_RESPONSE_FAILED, \
+    MoreThanOneOrganizationReferralCodeFound
 
 log = logging.getLogger(__name__)
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
@@ -35,6 +37,7 @@ def validate(ctx, filename):
     log.info("Found {} barcodes in file.".format(len(barcodes)))
 
     service_request_ids = []
+    more_than_one_ref_found = []
     # Check if there already exists a service request
     for barcode in barcodes:
         try:
@@ -42,9 +45,13 @@ def validate(ctx, filename):
             service_request_ids.append(service_request_id)
         except OrganizationReferralCodeNotFound as e:
             pass
+        except MoreThanOneOrganizationReferralCodeFound as e:
+            more_than_one_ref_found.append(barcode)
 
     log.info("Found service requests for for {}/{} of the barcodes.".format(
-        len(service_request_ids, len(barcodes))))
+        len(service_request_ids), len(barcodes)))
+    log.info("There were multiple service requests for {} barcodes.".format(
+        len(more_than_one_ref_found)))
 
 
 # Since it will cause us a headache is we fail half way through reporting
