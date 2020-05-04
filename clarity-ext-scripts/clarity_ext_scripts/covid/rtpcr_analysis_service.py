@@ -131,7 +131,7 @@ class RTPCRAnalysisService(object):
 
         if errors:
             for e in errors:
-                log.error(e.message)
+                log.info("Error in covid result: " + e.message)
 
         return control_results, errors
 
