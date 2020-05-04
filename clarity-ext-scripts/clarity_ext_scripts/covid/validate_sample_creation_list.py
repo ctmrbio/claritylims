@@ -70,6 +70,12 @@ class Extension(GeneralExtension):
         return service_request_id, status, comment
 
     def execute(self):
+        # Validate the 'Raw biobank file' exists and is in concordance with the 'Raw sample list'
+        # if not, abort script execution
+        from clarity_ext_scripts.covid.fetch_biobank_barcodes import FetchBiobankBarcodes
+        validator = FetchBiobankBarcodes(self.context)
+        validator.validate()
+
         # 1. Get the ordering organizations URI
         try:
             ordering_org = self.context.current_step.udf_ordering_organization
