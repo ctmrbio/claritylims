@@ -1,5 +1,7 @@
 
 import yaml
+import logging
+
 
 import click
 import retry
@@ -7,6 +9,9 @@ from requests import ConnectionError, Timeout
 
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ServiceRequestAlreadyExists, \
     OrganizationReferralCodeNotFound, CouldNotCreateServiceRequest, PartnerClientAPIException, COVID_RESPONSE_FAILED
+
+log = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 
 @click.group()
@@ -23,24 +28,22 @@ def cli(ctx, config):
 @click.argument("filename")
 @click.pass_context
 def validate(ctx, filename):
-    click.echo("Validating...")
+    log.info("Validating...")
     client = ctx.obj["CLIENT"]
 
     barcodes = read_barcodes_from_file(filename)
-    click.echo("Found {} barcodes in file.".format(len(barcodes)))
+    log.info("Found {} barcodes in file.".format(len(barcodes)))
 
     service_request_ids = []
     # Check if there already exists a service request
     for barcode in barcodes:
         try:
-            search_found = client.search_for_service_request(
-                org="http://uri.d-t.se/id/Identifier/i-referral-code", org_referral_code=barcode)
-            service_request_id = search_found["resource"]["id"]
+            service_request_id = search_for_service_request(client, barcode)
             service_request_ids.append(service_request_id)
         except OrganizationReferralCodeNotFound as e:
             pass
 
-    click.echo("Found service requests for for {}/{} of the barcodes.".format(
+    log.info("Found service requests for for {}/{} of the barcodes.".format(
         len(service_request_ids, len(barcodes))))
 
 
@@ -58,60 +61,54 @@ def create_anonymous_service_request(client, barcode):
     return client.create_anonymous_service_request(barcode)
 
 
+@retry((ConnectionError, Timeout), tries=3, delay=2, backoff=2)
+def search_for_service_request(client, barcode):
+    search_found = client.search_for_service_request(
+        org="http://uri.d-t.se/id/Identifier/i-referral-code", org_referral_code=barcode)
+    service_request_id = search_found["resource"]["id"]
+    return service_request_id
+
+
 @cli.command()
 @click.argument("filename")
 @click.pass_context
 def execute(ctx, filename):
-    click.echo("Executing...")
+    log.info("Executing...")
 
     client = ctx.obj["CLIENT"]
 
     barcodes = read_barcodes_from_file(filename)
-    click.echo("Found {} barcodes in file.".format(len(barcodes)))
+    log.info("Found {} barcodes in file.".format(len(barcodes)))
 
-    service_request_ids = []
-    barcodes_without_service_request = []
     # Check if there already exists a service request
     for barcode in barcodes:
         try:
-            search_found = client.search_for_service_request(
-                org="http://uri.d-t.se/id/Identifier/i-referral-code", org_referral_code=barcode)
-            service_request_id = search_found["resource"]["id"]
-            service_request_ids.append(service_request_id)
+            service_request_id = search_for_service_request(client, barcode)
+            log.info(("Found service request for barcode {}. Service request "
+                      "id was: {}. Disregarding.").format(barcode,
+                                                          service_request_id))
         except OrganizationReferralCodeNotFound as e:
-            barcodes_without_service_request.append(barcode)
+            log.info(
+                "Did not find service request for: {}. Will create a service request.".format(barcode))
 
-    click.echo("Found service requests for for {}/{} of the barcodes.".format(
-        len(service_request_ids, len(barcodes))))
-
-    # Create service requests if not exists
-    for barcode in barcodes_without_service_request:
-        try:
             service_request_id = create_anonymous_service_request(
                 client, barcode)
-            service_request_ids.append(service_request_id)
-        except CouldNotCreateServiceRequest as e:
-            click.echo(
-                "FAILED IN CREATING SERVICE REQUEST. Could not create anonymous service request for barcode: {}".format(
-                    barcode))
-            raise e
 
-    click.echo(
-        "Created anonymous service requests for all non-registered samples...")
+            log.info("Successfully created service request for barcode: {}. Got service request id: {}".format(
+                barcode, service_request_id
+            ))
 
-    # Send a failed result.
-    try:
-        for service_request_id in service_request_ids:
+            log.info("Will try to send failed result for barcode: {} with service_request_id: {}".format(
+                barcode,
+                service_request_id))
             send_results_to_partner(client, service_request_id)
-    except PartnerClientAPIException as e:
-        click.echo("FAILED IN POST RESULTS. Exception was:")
-        raise e
 
-    # TODO What should we do if a result has already been reported on this
-    #      sample. Right now we will just fail, and I can't really think of
-    #      a better way to do it.
+            log.info("Successfully sent failed result for barcode: {} with service request id: {}".format(
+                barcode,
+                service_request_id))
 
-    click.echo("Successfully sent failed results for all barcodes in file.")
+    log.info(
+        "Successfully sent failed results for all unregistered barcodes in file.")
 
 
 def read_barcodes_from_file(filename):
@@ -122,7 +119,7 @@ def read_barcodes_from_file(filename):
                 continue
             barcodes.append(line.split("\t")[0])
 
-    click.echo("Read {} barcodes from file".format(len(barcodes)))
+    log.info("Read {} barcodes from file".format(len(barcodes)))
     return barcodes
 
 
