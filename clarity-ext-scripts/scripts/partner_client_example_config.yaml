@@ -1,0 +1,4 @@
+test_partner_base_url: https://example.com
+test_partner_code_system_base_url: http://uri.example.com
+test_partner_user: your_user
+test_partner_password: your_password
