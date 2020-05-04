@@ -108,12 +108,12 @@ class Extension(GeneralExtension):
                 substance = self.create_sample(
                     original_name, timestamp, project, sample_specifier, org_uri,
                     service_request_id)
+                if biobank_barcode_by_sample_referal_code:
+                    biobank_barcode = biobank_barcode_by_sample_referal_code[
+                        original_name
+                    ]
+                    substance.udf_map.force("Biobank barcode", biobank_barcode)
             substance.udf_map.force("Sample Buffer", "None")
-            if biobank_barcode_by_sample_referal_code:
-                biobank_barcode = biobank_barcode_by_sample_referal_code(
-                    original_name
-                )
-                substance.udf_map.force("Biobank barcode", biobank_barcode)
             container[well] = substance
         return container
 
@@ -220,4 +220,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield self.test("24-44013", commit=True)
+        yield self.test("24-44042", commit=True)

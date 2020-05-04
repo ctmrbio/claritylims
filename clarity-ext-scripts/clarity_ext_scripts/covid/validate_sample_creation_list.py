@@ -3,7 +3,6 @@ from uuid import uuid4
 import logging
 from datetime import datetime
 import pandas as pd
-from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
     PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound, PartnerClientAPIException)
