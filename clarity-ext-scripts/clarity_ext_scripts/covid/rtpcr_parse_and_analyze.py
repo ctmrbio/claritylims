@@ -11,4 +11,4 @@ class Extension(GeneralExtension):
         analyze_runner.execute()
 
     def integration_tests(self):
-        yield "24-39151"
+        yield "24-44466"
