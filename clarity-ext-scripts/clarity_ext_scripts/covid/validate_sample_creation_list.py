@@ -53,7 +53,7 @@ class Extension(GeneralExtension):
             status = "ok"
             comment = ""
         except OrganizationReferralCodeNotFound as e:
-            self.usage_error_defer(
+            self.usage_warning(
                 "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
                     org_uri), barcode)
             service_request_id = "anonymous"
@@ -139,7 +139,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-44013"
+        yield self.test("24-44013", commit=False)
 
 
 def get_raw_sample_list(context):
