@@ -2,6 +2,7 @@
 import sys
 import yaml
 import logging
+import time
 
 
 import click
@@ -113,6 +114,8 @@ def execute(ctx, filename):
             log.info("Successfully sent failed result for barcode: {} with service request id: {}".format(
                 barcode,
                 service_request_id))
+
+        time.sleep(0.1)
 
     log.info(
         "Successfully sent failed results for all unregistered barcodes in file.")
