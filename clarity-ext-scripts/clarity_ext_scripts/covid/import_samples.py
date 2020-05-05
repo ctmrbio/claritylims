@@ -188,7 +188,7 @@ class Extension(GeneralExtension):
         from clarity_ext_scripts.covid.fetch_biobank_barcodes import FetchBiobankBarcodes
         fetch_biobank_barcodes = FetchBiobankBarcodes(self.context)
         barcode_by_sample =\
-            fetch_biobank_barcodes.biobank_barcode_by_sample_referal_code()
+            fetch_biobank_barcodes.biobank_barcode_by_sample_referral_code()
         prext_plate = self.create_in_mem_container(csv,
                                                    container_specifier="PREXT",
                                                    sample_specifier="",
