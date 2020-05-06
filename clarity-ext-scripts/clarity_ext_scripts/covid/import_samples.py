@@ -59,7 +59,9 @@ class Extension(GeneralExtension):
         return control
 
     def create_in_mem_container(
-            self, csv, container_specifier, sample_specifier, control_specifier, date, time):
+            self, csv, container_specifier, sample_specifier, control_specifier, date, time,
+            biobank_barcode_by_sample_referal_code=None
+    ):
         """Creates an in-memory container with the samples
 
         The name of the container will be on the form:
@@ -106,6 +108,11 @@ class Extension(GeneralExtension):
                 substance = self.create_sample(
                     original_name, timestamp, project, sample_specifier, org_uri,
                     service_request_id)
+                if biobank_barcode_by_sample_referal_code:
+                    biobank_barcode = biobank_barcode_by_sample_referal_code[
+                        original_name
+                    ]
+                    substance.udf_map.force("Biobank barcode", biobank_barcode)
             substance.udf_map.force("Sample Buffer", "None")
             container[well] = substance
         return container
@@ -178,6 +185,10 @@ class Extension(GeneralExtension):
             self.usage_error(msg)
 
         # 3. Create the two plates in memory
+        from clarity_ext_scripts.covid.fetch_biobank_barcodes import FetchBiobankBarcodes
+        fetch_biobank_barcodes = FetchBiobankBarcodes(self.context)
+        barcode_by_sample =\
+            fetch_biobank_barcodes.biobank_barcode_by_sample_referral_code()
         prext_plate = self.create_in_mem_container(csv,
                                                    container_specifier="PREXT",
                                                    sample_specifier="",
@@ -190,7 +201,8 @@ class Extension(GeneralExtension):
                                                      sample_specifier="BIOBANK",
                                                      control_specifier="BIOBANK",
                                                      date=date,
-                                                     time=time)
+                                                     time=time,
+                                                     biobank_barcode_by_sample_referal_code=barcode_by_sample)
 
         # 4. Create the container and samples in clarity
         workflow = self.context.current_step.udf_assign_to_workflow
@@ -208,4 +220,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield "24-44033"
+        yield self.test("24-44042", commit=True)
