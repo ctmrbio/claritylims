@@ -52,22 +52,11 @@ class FetchBiobankBarcodes(object):
                 "The 'Raw sample list' name is not matching with the plate "
                 "barcode in '{}', {}".format(RAW_BIOANK_LIST, plate_barcode))
 
-        # Validate that all wells in biobank file are matched in sample list file
         file_stream2 = self.context.local_shared_file('Raw sample list')
         sample_info_by_well_barcode = \
             self._build_sample_info_by_well_barcode(file_stream2, plate_barcode)
-        for key in biobank_info_by_well_barcode:
-            if biobank_info_by_well_barcode[key]['biobank_barcode'] != 'NO TUBE' \
-                    and key not in sample_info_by_well_barcode:
-                raise UsageError(
-                    "The well references are not matching between the "
-                    "files in '{}' and 'Raw sample list, "
-                    "well '{}' has no match in the 'Raw sample list'"
-                    .format(RAW_BIOANK_LIST, biobank_info_by_well_barcode[key]['well'])
-                )
 
         # Validate that 'NO TUBE' entries in biobank file is empty in sample list
-        # Perhaps this is a little too aggressive validation?
         sample_matrix_keys = [k for k in sample_info_by_well_barcode]
         for key in biobank_info_by_well_barcode:
             if biobank_info_by_well_barcode[key]['biobank_barcode'] == 'NO TUBE' \
