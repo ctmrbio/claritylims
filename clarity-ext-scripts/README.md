@@ -26,7 +26,7 @@ and pushing the config changes. The first one is carried out by:
 
 1. Merging the `dev` branch to the `prod` branch. When this has happened, these changes should within a minute be
    pushed to the production server.
-2. Creating a release on the `prod` branch with accompaniying release notes, using the Github web interface.
+2. Creating a release on the `prod` branch with accompanying release notes, using the Github web interface.
 
 For details on how to release the configuration changes see "Exporting configuration".
 
