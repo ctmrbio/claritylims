@@ -39,4 +39,4 @@ class Extension(GeneralExtension):
 
     def integration_tests(self):
         # yield "24-23564"  # lims-dev
-        yield "24-43788"
+        yield "24-44479"
