@@ -75,8 +75,7 @@ class Extension(GeneralExtension):
         self.context.file_service.upload_files("Raw biobank list", upload_tuple)
 
         sample_list_contents = self.generate_raw_sample_list(10)
-        timestamp = self.context.start.strftime("%y%m%dT%H%M%S")
-        fname = "demo-raw-sample-list-{}.csv".format(timestamp)
+        fname = "{}.csv".format(plate_barcode)
         upload_tuple = [(fname, sample_list_contents)]
         self.context.file_service.upload_files("Raw sample list", upload_tuple)
 
