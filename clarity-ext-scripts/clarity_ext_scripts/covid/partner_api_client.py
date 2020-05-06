@@ -233,6 +233,7 @@ class PartnerAPIV7Client(object):
         self._user = test_partner_user
         self._password = test_partner_password
         self._test_partner_code_system_base_url = test_partner_code_system_base_url
+        self._session = requests.Session()
 
     def _base64_encoded_credentials(self):
         user_and_password = "{}:{}".format(self._user, self._password)
@@ -252,7 +253,7 @@ class PartnerAPIV7Client(object):
             search_url = "{}/ServiceRequest".format(self._base_url)
             headers = self._generate_headers()
 
-            response = requests.get(
+            response = self._session.get(
                 url=search_url, headers=headers, params=params)
 
             # TODO Add integration test mode
@@ -332,9 +333,9 @@ class PartnerAPIV7Client(object):
             log.debug("Attemping to create an anonymous ServiceRequst for referral code: {}".format(
                 referral_code))
 
-            response = requests.post(url=url,
-                                     json=payload,
-                                     headers=headers)
+            response = self._session.post(url=url,
+                                          json=payload,
+                                          headers=headers)
 
             if response.status_code == 201:
                 response_json = response.json()
@@ -377,9 +378,9 @@ class PartnerAPIV7Client(object):
                 self._base_url)
             headers = self._generate_headers()
 
-            response = requests.post(url=url,
-                                     json=payload,
-                                     headers=headers)
+            response = self._session.post(url=url,
+                                          json=payload,
+                                          headers=headers)
 
             # TODO Add integration test mode
             if not response.status_code == 201:
