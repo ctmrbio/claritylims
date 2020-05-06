@@ -34,7 +34,6 @@ class RtPcrAnalyseExecution(object):
                 "FAM-CT": output.udf_famct,
                 udf_name_for_ct_control: output.udf_map[udf_name_for_ct_control].value,
             }
-
             if substance_info.control_type == Controls.MGI_POSITIVE_CONTROL:
                 positive_controls.append(result)
             elif substance_info.control_type == Controls.NEGATIVE_PCR_CONTROL:
