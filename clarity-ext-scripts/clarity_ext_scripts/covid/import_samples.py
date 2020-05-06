@@ -1,10 +1,7 @@
-import re
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext.utils import single
 from clarity_ext.domain import Container, Sample
-from clarity_ext_scripts.covid.validate_sample_creation_list import Controls
-from clarity_ext_scripts.covid.controls import controls_barcode_generator
+from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK, \
     ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
 
