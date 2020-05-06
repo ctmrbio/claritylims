@@ -22,7 +22,7 @@ and make sure to `git add` these commit references in this repository.
 # Releasing to production:
 
 Releasing to the productions servers concists of two major steps. Pushing the script changes,
-and push the config changes, to the production server. The first one is carried out by:
+and pushing the config changes. The first one is carried out by:
 
 1. Merging the `dev` branch to the `prod` branch. When this has happened, these changes should within a minute be
    pushed to the production server.
