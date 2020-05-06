@@ -2,6 +2,7 @@ import datetime
 import random
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.controls import Controls, controls_barcode_generator
+from clarity_ext.domain.container import Container
 
 
 class Extension(GeneralExtension):
@@ -55,13 +56,28 @@ class Extension(GeneralExtension):
 
         return "\n".join(",".join(row) for row in rows())
 
+    def generate_raw_biobank_list(self, plate_barcode):
+        container = Container(container_type=Container.CONTAINER_TYPE_96_WELLS_PLATE)
+
+        def rows():
+            # Always fill up one entire plate
+            for well in container:
+                barcode = 'LV{}'.format(random.randint(1000000000, 9999999999))
+                yield [well.alpha_num_key, barcode, 'some text', plate_barcode]
+
+        return "\n".join(", ".join(row) for row in rows())
+
     def execute(self):
-        # TODO: Currently only creates the "Raw sample list". Should create a matching
-        # "Raw biobank list"
-        content = self.generate_raw_sample_list(10)
+        plate_barcode = 'demo_barcode_123'
+        biobank_contents = self.generate_raw_biobank_list(plate_barcode)
+        fname = 'demo_biobank_barcodes_for_plate_{}.csv'.format(plate_barcode)
+        upload_tuple = [(fname, biobank_contents)]
+        self.context.file_service.upload_files("Raw biobank list", upload_tuple)
+
+        sample_list_contents = self.generate_raw_sample_list(10)
         timestamp = self.context.start.strftime("%y%m%dT%H%M%S")
         fname = "demo-raw-sample-list-{}.csv".format(timestamp)
-        upload_tuple = [(fname, content)]
+        upload_tuple = [(fname, sample_list_contents)]
         self.context.file_service.upload_files("Raw sample list", upload_tuple)
 
     def integration_tests(self):
