@@ -4,9 +4,9 @@ Contains Clarity scripts that use the clarity-ext framework at https://github.co
 
 Usage:
 
-* install-req.sh (only when setting up)
-* Activate your virtual environment (must be python 2)
-* setup.sh
+- install-req.sh (only when setting up)
+- Activate your virtual environment (must be python 2)
+- setup.sh
 
 These scripts require the libraries clarity-ext and its version of genologics. Both are included
 as submodules, and will be updated by calling setup.sh.
@@ -18,6 +18,17 @@ branch `covid` on:
     https://github.com/Molmed/genologics
 
 and make sure to `git add` these commit references in this repository.
+
+# Releasing to production:
+
+Releasing to the productions servers concists of two major steps. Pushing the script changes,
+and push the config changes, to the production server. The first one is carried out by:
+
+1. Merging the `dev` branch to the `prod` branch. When this has happened, these changes should within a minute be
+   pushed to the production server.
+2. Creating a release on the `prod` branch with accompaniying release notes, using the Github web interface.
+
+For details on how to release the configuration changes see "Exporting configuration".
 
 # Exporting configuration:
 
@@ -38,13 +49,13 @@ Create a yaml configuration file at ~/.slices.config
 This configuration file should contain information on this format:
 
     staging:
-      server: server 
+      server: server
       username: username
-      password: password 
+      password: password
     prod:
-      server: server 
+      server: server
       username: username
-      password: password 
+      password: password
 
 ## Create a manifest file
 
