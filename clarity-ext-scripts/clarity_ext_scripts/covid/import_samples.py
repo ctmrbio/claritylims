@@ -114,6 +114,7 @@ class Extension(GeneralExtension):
                     ]
                     substance.udf_map.force("Biobank barcode", biobank_barcode)
             substance.udf_map.force("Sample Buffer", "None")
+            substance.udf_map.force("Step ID created in", self.context.current_step.id)
             container[well] = substance
         return container
 
@@ -220,4 +221,4 @@ class Extension(GeneralExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield self.test("24-44042", commit=True)
+        yield self.test("24-44042", commit=False)
