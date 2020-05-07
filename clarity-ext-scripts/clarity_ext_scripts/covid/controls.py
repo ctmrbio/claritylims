@@ -11,7 +11,7 @@ class Controls(object):
     POSITIVE_VIRUS_CONTROL = 5
     NEGATIVE_VIRCON_CONTROL = 6
 
-    # These controls are built in clarity control types, the others are real samples:
+    # These used to be built-in Clarity controls only, but now they can be either
     NEGATIVE_PCR_CONTROL = 30
     POSITIVE_PCR_CONTROL = 31
 

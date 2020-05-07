@@ -1,20 +1,14 @@
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext.domain import Container
 from clarity_ext_scripts.covid.label_printer import label_printer
+import datetime
 
 
 class Extension(GeneralExtension):
     """
     Prints barcodes for containers that are listed in the step field `Created containers`
+    The two barcodes are placed in one file
     """
-
-    def create_upload_file(self, container):
-        file_name = 'barcode-{}.zpl'.format(container.name)
-        label_printer.generate_zpl_for_containers(
-            [container], lims_id_as_barcode=True)
-        contents = label_printer.contents
-        return (file_name, contents)
-
     def execute(self):
         try:
             created_containers = self.context.current_step.udf_created_containers
@@ -23,14 +17,22 @@ class Extension(GeneralExtension):
                 "No containers have been created in this step. "
                 "Please press 'Create samples' first")
 
-        files = list()
+        containers = list()
+        today = datetime.date.today()
+        date = today.strftime("%y%m%d")
+        current_step_id = self.context.current_step.id
+        file_name = '{}_PREXT_BIOBANK_Barcodes-{}.zpl'.format(date, current_step_id)
+
         for line in created_containers.split("\n"):
             container_id, container_name = line.split(":")
             container = Container(container_id=container_id, name=container_name,
                                   container_type=Container.CONTAINER_TYPE_96_WELLS_PLATE)
-            files.append(self.create_upload_file(container))
+            containers.append(container)
+        label_printer.generate_zpl_for_containers(containers, lims_id_as_barcode=True)
 
-        self.context.file_service.upload_files("Barcodes", files)
+        contents = label_printer.contents
+        upload_packet = [(file_name, contents)]
+        self.context.file_service.upload_files("PREXT and Biobank barcodes", upload_packet)
 
     def integration_tests(self):
-        yield "24-40639"
+        yield self.test("24-44013", commit=False)

@@ -1,4 +1,6 @@
 
+from requests import Session
+
 from clarity_ext_scripts.covid.partner_api_client import *
 from mock import patch
 import pytest
@@ -187,9 +189,8 @@ class TestPartnerAPIV7Client(object):
     client = PartnerAPIV7Client(**config)
 
     def test_can_get_search_result(self):
-        mock_search_response = self.MockValidSearchResponse()
-
-        with patch('requests.get', return_value=mock_search_response) as mock_search_response_ctl:
+        mock_search_response = TestPartnerAPIV7Client.MockValidSearchResponse()
+        with patch.object(Session, 'get', return_value=mock_search_response):
             response = self.client.search_for_service_request(
                 "http://example.com/id/Identifier/i-external-lab-id/region-stockholm-karolinska", "ABC123")
             assert response == mock_search_response.json()["entry"][0]
@@ -197,7 +198,7 @@ class TestPartnerAPIV7Client(object):
     def test_raises_when_no_search_result_found(self):
         mock_search_response = self.MockNoSearchResponse()
 
-        with patch('requests.get', return_value=mock_search_response) as mock_search_response_ctl:
+        with patch.object(Session, 'get', return_value=mock_search_response):
             with pytest.raises(OrganizationReferralCodeNotFound):
                 response = self.client.search_for_service_request(
                     "http://example.com/id/Identifier/i-external-lab-id/region-stockholm-karolinska", "ABC123")
@@ -254,18 +255,16 @@ class TestPartnerAPIV7Client(object):
 
     def test_can_post_diagnosis_result(self):
         mock_ok_response = self.MockOkPostResponse()
+        with patch.object(Session, 'post', return_value=mock_ok_response):
 
-        with patch('requests.post', return_value=mock_ok_response) as mock_post_response_ctl:
             self.client.post_diagnosis_report(service_request_id="1000",
                                               diagnosis_result="positive",
                                               analysis_results=[{"value": 25}])
-            mock_post_response_ctl.assert_called_once()
 
     def test_failed_post_diagnosis_result_raises(self):
         mock_failed_response = self.MockFailedPostResponse()
 
-        # TODO Note that the analysis results may not look like this at all...
-        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+        with patch.object(Session, 'post', return_value=mock_failed_response):
             with pytest.raises(FailedInContactingTestPartner):
                 self.client.post_diagnosis_report(service_request_id="1000",
                                                   diagnosis_result="positive",
@@ -283,7 +282,7 @@ class TestPartnerAPIV7Client(object):
     def test_can_create_anonymous_service_request(self):
         mock_ok_response = self.MockOkCreateServiceRequest()
 
-        with patch('requests.post', return_value=mock_ok_response) as mock_post_response_ctl:
+        with patch.object(Session, 'post', return_value=mock_ok_response) as mock_post_response_ctl:
             res = self.client.create_anonymous_service_request(
                 referral_code="123")
             assert res == "987"
@@ -300,7 +299,7 @@ class TestPartnerAPIV7Client(object):
     def test_create_anonymous_service_request_raises_in_general(self):
         mock_failed_response = self.MockFailedCreateServiceRequest(500)
 
-        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+        with patch.object(Session, 'post', return_value=mock_failed_response) as mock_post_response_ctl:
             with pytest.raises(PartnerClientAPIException):
                 res = self.client.create_anonymous_service_request(
                     referral_code="123")
@@ -309,7 +308,7 @@ class TestPartnerAPIV7Client(object):
     def test_create_anonymous_service_request_raises_for_400(self):
         mock_failed_response = self.MockFailedCreateServiceRequest(400)
 
-        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+        with patch.object(Session, 'post', return_value=mock_failed_response) as mock_post_response_ctl:
             with pytest.raises(CouldNotCreateServiceRequest):
                 res = self.client.create_anonymous_service_request(
                     referral_code="123")
@@ -318,7 +317,7 @@ class TestPartnerAPIV7Client(object):
     def test_create_anonymous_service_request_raises_for_409(self):
         mock_failed_response = self.MockFailedCreateServiceRequest(409)
 
-        with patch('requests.post', return_value=mock_failed_response) as mock_post_response_ctl:
+        with patch.object(Session, 'post', return_value=mock_failed_response) as mock_post_response_ctl:
             with pytest.raises(ServiceRequestAlreadyExists):
                 res = self.client.create_anonymous_service_request(
                     referral_code="123")

@@ -3,7 +3,6 @@ from uuid import uuid4
 import logging
 from datetime import datetime
 import pandas as pd
-from clarity_ext_scripts.covid.controls import Controls
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
     PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound, PartnerClientAPIException)
@@ -53,7 +52,7 @@ class Extension(GeneralExtension):
             status = "ok"
             comment = ""
         except OrganizationReferralCodeNotFound as e:
-            self.usage_error_defer(
+            self.usage_warning(
                 "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
                     org_uri), barcode)
             service_request_id = "anonymous"
@@ -70,6 +69,12 @@ class Extension(GeneralExtension):
         return service_request_id, status, comment
 
     def execute(self):
+        # Validate the 'Raw biobank file' exists and is in concordance with the 'Raw sample list'
+        # if not, abort script execution
+        from clarity_ext_scripts.covid.fetch_biobank_barcodes import FetchBiobankBarcodes
+        validator = FetchBiobankBarcodes(self.context)
+        validator.validate()
+
         # 1. Get the ordering organizations URI
         try:
             ordering_org = self.context.current_step.udf_ordering_organization
@@ -139,7 +144,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-44013"
+        yield self.test("24-44013", commit=False)
 
 
 def get_raw_sample_list(context):
