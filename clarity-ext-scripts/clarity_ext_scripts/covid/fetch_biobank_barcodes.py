@@ -79,7 +79,7 @@ class FetchBiobankBarcodes(object):
         file_stream = self.context.local_shared_file(RAW_BIOANK_LIST)
         biobank_matrix = self._build_biobank_info_by_well_barcode(file_stream)
         plate_barcode = self._plate_barcode_from(biobank_matrix)
-        file_stream2 = self.get_raw_sample_list()
+        file_stream2 = self.get_raw_sample_list(self.context)
         sample_matrix = self._build_sample_info_by_well_barcode(
             file_stream2, plate_barcode)
         barcode_map = dict()
