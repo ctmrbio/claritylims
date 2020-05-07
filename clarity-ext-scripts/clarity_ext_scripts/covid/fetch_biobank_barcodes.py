@@ -3,7 +3,7 @@ from clarity_ext.service.file_service import Csv
 from clarity_ext.domain.validation import UsageError
 from clarity_ext.utils import single
 
-BIOBANK_FILE_HEADER = ['well', 'biobank_barcode', 'something_else', 'plate_barcode']
+BIOBANK_FILE_HEADER = ['well', 'biobank_barcode', 'plate_barcode']
 RAW_BIOANK_LIST = "Raw biobank list"
 
 
