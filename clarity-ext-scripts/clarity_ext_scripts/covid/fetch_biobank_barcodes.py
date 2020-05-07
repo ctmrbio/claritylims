@@ -2,8 +2,11 @@ import re
 from clarity_ext.service.file_service import Csv
 from clarity_ext.domain.validation import UsageError
 from clarity_ext.utils import single
+import panads as pd
+import cStringIO
 
-BIOBANK_FILE_HEADER = ['well', 'biobank_barcode', 'something_else', 'plate_barcode']
+BIOBANK_FILE_HEADER = ['well', 'biobank_barcode',
+                       'something_else', 'plate_barcode']
 RAW_BIOANK_LIST = "Raw biobank list"
 
 
@@ -34,7 +37,8 @@ class FetchBiobankBarcodes(object):
             raise UsageError("Please upload the file to '{}' before proceeding!"
                              .format(RAW_BIOANK_LIST))
 
-        biobank_info_by_well_barcode = self._build_biobank_info_by_well_barcode(file_stream)
+        biobank_info_by_well_barcode = self._build_biobank_info_by_well_barcode(
+            file_stream)
         plate_barcodes = {
             biobank_info_by_well_barcode[key]['plate_barcode']
             for key in biobank_info_by_well_barcode
@@ -54,7 +58,8 @@ class FetchBiobankBarcodes(object):
 
         file_stream2 = self.context.local_shared_file('Raw sample list')
         sample_info_by_well_barcode = \
-            self._build_sample_info_by_well_barcode(file_stream2, plate_barcode)
+            self._build_sample_info_by_well_barcode(
+                file_stream2, plate_barcode)
 
         # Validate that 'NO TUBE' entries in biobank file is empty in sample list
         sample_matrix_keys = [k for k in sample_info_by_well_barcode]
@@ -74,8 +79,9 @@ class FetchBiobankBarcodes(object):
         file_stream = self.context.local_shared_file(RAW_BIOANK_LIST)
         biobank_matrix = self._build_biobank_info_by_well_barcode(file_stream)
         plate_barcode = self._plate_barcode_from(biobank_matrix)
-        file_stream2 = self.context.local_shared_file('Raw sample list')
-        sample_matrix = self._build_sample_info_by_well_barcode(file_stream2, plate_barcode)
+        file_stream2 = self.get_raw_sample_list()
+        sample_matrix = self._build_sample_info_by_well_barcode(
+            file_stream2, plate_barcode)
         barcode_map = dict()
         for key in biobank_matrix:
             if biobank_matrix[key]['biobank_barcode'] == 'NO TUBE':
@@ -98,7 +104,8 @@ class FetchBiobankBarcodes(object):
             if m is None:
                 continue
             tokens = m.groupdict()
-            well_default_format = '{}{}'.format(tokens['row'], int(tokens['col']))
+            well_default_format = '{}{}'.format(
+                tokens['row'], int(tokens['col']))
             sample_info_by_well_barcode[
                 self._biobank_key(well_default_format, plate_barcode)] = row_as_dict
         return sample_info_by_well_barcode
@@ -119,7 +126,8 @@ class FetchBiobankBarcodes(object):
             row_as_dict = dict(zip(BIOBANK_FILE_HEADER, trimmed_row))
             well = row_as_dict['well']
             plate_barcode = row_as_dict['plate_barcode']
-            biobank_info_by_well_barcode[self._biobank_key(well, plate_barcode)] = row_as_dict
+            biobank_info_by_well_barcode[self._biobank_key(
+                well, plate_barcode)] = row_as_dict
         return biobank_info_by_well_barcode
 
     def _plate_barcode_from(self, biobank_matrix):
@@ -128,3 +136,20 @@ class FetchBiobankBarcodes(object):
 
     def _biobank_key(self, well, plate_barcode):
         return '{}_{}'.format(well, plate_barcode)
+
+    # TODO this has been duplicated from `validate_sample_creation_list`
+    #      fix this later.
+    def get_raw_sample_list(context):
+        file_name = "Raw sample list"
+        f = context.local_shared_file(file_name, mode="rb")
+
+        filtered = cStringIO.StringIO()
+        # Ignore everything at or after the line that contains this text:
+        stop_condition = "Sample Tracking Report Name"
+
+        for line in f:
+            if stop_condition in line:
+                break
+            filtered.write(line + "\n")
+        filtered.seek(0)
+        return pd.read_csv(filtered, encoding="utf-8", sep=",")
