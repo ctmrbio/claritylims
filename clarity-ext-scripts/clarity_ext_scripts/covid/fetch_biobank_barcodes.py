@@ -87,8 +87,8 @@ class FetchBiobankBarcodes(object):
 
         return barcode_map
 
-    def _end_of_file(self, line, stop_cretiera):
-        stop_matches = [v for v in line.values if stop_cretiera in v]
+    def _end_of_file(self, line, stop_criteria):
+        stop_matches = [v for v in line.values if stop_criteria in v]
         return len(stop_matches) > 0
 
     def _build_sample_info_by_well_barcode(self, file_stream, plate_barcode):
