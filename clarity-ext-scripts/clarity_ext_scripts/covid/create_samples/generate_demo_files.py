@@ -63,7 +63,7 @@ class Extension(GeneralExtension):
             # Always fill up one entire plate
             for well in container:
                 barcode = 'LV{}'.format(random.randint(1000000000, 9999999999))
-                yield [well.alpha_num_key, barcode, 'some text', plate_barcode]
+                yield [well.alpha_num_key, barcode, plate_barcode]
 
         return "\n".join(", ".join(row) for row in rows())
 
