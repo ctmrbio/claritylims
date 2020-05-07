@@ -3,7 +3,8 @@ from clarity_ext.service.file_service import Csv
 from clarity_ext.domain.validation import UsageError
 from clarity_ext.utils import single
 
-BIOBANK_FILE_HEADER = ['well', 'biobank_barcode', 'something_else', 'plate_barcode']
+BIOBANK_FILE_3_COLUMN_HEADER = ['well', 'biobank_barcode', 'plate_barcode']
+BIOBANK_FILE_4_COLUMN_HEADER = ['well', 'biobank_barcode', 'some text', 'plate_barcode']
 RAW_BIOANK_LIST = "Raw biobank list"
 
 
@@ -86,11 +87,18 @@ class FetchBiobankBarcodes(object):
 
         return barcode_map
 
+    def _end_of_file(self, line, stop_criteria):
+        stop_matches = [v for v in line.values if stop_criteria in v]
+        return len(stop_matches) > 0
+
     def _build_sample_info_by_well_barcode(self, file_stream, plate_barcode):
         csv = Csv(file_stream)
         sample_info_by_well_barcode = dict()
         pattern = re.compile(r"(?P<row>[A-Z])(?P<col>[0-9]+)")
+        stop_criteria = "Sample Tracking Report Name"
         for line in csv:
+            if self._end_of_file(line, stop_criteria):
+                break
             trimmed_row = map(str.strip, line.values)
             row_as_dict = dict(zip(csv.header, trimmed_row))
             well_robot_format = line['Position']
@@ -107,16 +115,27 @@ class FetchBiobankBarcodes(object):
         from pprint import pprint
         pprint(var)
 
+    def _decide_biobank_header(self, split_row):
+        if len(split_row) == len(BIOBANK_FILE_3_COLUMN_HEADER):
+            return BIOBANK_FILE_3_COLUMN_HEADER
+        elif len(split_row) == len(BIOBANK_FILE_4_COLUMN_HEADER):
+            return BIOBANK_FILE_4_COLUMN_HEADER
+        else:
+            raise UsageError("Unknown format of the '{}'".format(RAW_BIOANK_LIST))
+
     def _build_biobank_info_by_well_barcode(self, file_stream):
         contents = file_stream.read()
         rows = contents.split('\n')
         biobank_info_by_well_barcode = dict()
+        header = None
         for row in rows:
             split_row = row.split(",")
-            if len(split_row) != len(BIOBANK_FILE_HEADER):
+            if header is None:
+                header = self._decide_biobank_header(split_row)
+            if len(split_row) != len(header):
                 continue
             trimmed_row = map(str.strip, split_row)
-            row_as_dict = dict(zip(BIOBANK_FILE_HEADER, trimmed_row))
+            row_as_dict = dict(zip(header, trimmed_row))
             well = row_as_dict['well']
             plate_barcode = row_as_dict['plate_barcode']
             biobank_info_by_well_barcode[self._biobank_key(well, plate_barcode)] = row_as_dict
