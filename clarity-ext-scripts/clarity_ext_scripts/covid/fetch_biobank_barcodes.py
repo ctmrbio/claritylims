@@ -78,7 +78,7 @@ class FetchBiobankBarcodes(object):
         file_stream2 = self.context.local_shared_file('Raw sample list')
         sample_matrix = self._build_sample_info_by_well_barcode(file_stream2, plate_barcode)
         barcode_map = dict()
-        for key in biobank_matrix:
+        for key in sample_matrix:
             if biobank_matrix[key]['biobank_barcode'] == 'NO TUBE':
                 continue
             biobank_barcode = biobank_matrix[key]['biobank_barcode']
