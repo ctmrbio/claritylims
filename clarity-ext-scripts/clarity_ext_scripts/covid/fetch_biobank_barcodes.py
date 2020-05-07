@@ -86,11 +86,18 @@ class FetchBiobankBarcodes(object):
 
         return barcode_map
 
+    def _end_of_file(self, line, stop_cretiera):
+        stop_matches = [v for v in line.values if stop_cretiera in v]
+        return len(stop_matches) > 0
+
     def _build_sample_info_by_well_barcode(self, file_stream, plate_barcode):
         csv = Csv(file_stream)
         sample_info_by_well_barcode = dict()
         pattern = re.compile(r"(?P<row>[A-Z])(?P<col>[0-9]+)")
+        stop_criteria = "Sample Tracking Report Name"
         for line in csv:
+            if self._end_of_file(line, stop_criteria):
+                break
             trimmed_row = map(str.strip, line.values)
             row_as_dict = dict(zip(csv.header, trimmed_row))
             well_robot_format = line['Position']
