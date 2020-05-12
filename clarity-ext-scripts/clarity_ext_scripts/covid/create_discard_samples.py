@@ -5,6 +5,7 @@ from clarity_ext_scripts.covid.controls import controls_barcode_generator, Contr
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK, \
     ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
 
+
 class Extension(GeneralExtension):
     """
     Requires two step UDFs:
@@ -43,20 +44,18 @@ class Extension(GeneralExtension):
         return sample
 
     def create_in_mem_container(
-            self, row, container_specifier, sample_specifier, date, time):
-        """Creates an in-memory container with the samples
+            self, row, container_specifier, sample_specifier, date, time, container_running):
+        """Creates an in-memory container with a single sample. Note that currently
+        the container is a 96 well plate as a quick fix, it would make more sense to have a
+        Tube.
 
         The name of the container will be on the form:
 
            COVID_<date>_<container_specifier>_<time to sec>
 
-        The name of the samples will be:
+        The name of the sample will be:
 
             <name in csv>_<timestamp>_<sample_specifier>
-
-        The name of the controls will be on the form:
-
-            <name in csv>_<timestamp>_<control_specifier>
         """
         timestamp = date + "T" + time
 
@@ -64,23 +63,25 @@ class Extension(GeneralExtension):
         project = self.context.clarity_service.get_project_by_name(
             self.context.current_step.udf_project)
 
-        # 2. Create a Tube in memory:
-        container_type = "Tube"
-        name = "COVID_{}_{}_{}".format(date, container_specifier, time)
+        # 2. Create a plate in memory:
+        container_type = "96 well plate"
+        name = "COVID_{}_{}_{}_".format(
+            date, container_specifier, time, container_running)
         container = Container(container_type=container_type, name=name)
 
-        # 3. Create in-memory samples
-        for ix, row in csv.iterrows():
-            original_name = row["reference"]
-            org_uri = row["org_uri"]
-            service_request_id = row["service_request_id"]
+        # 3. Create in-memory sample
+        original_name = row["reference"]
+        org_uri = row["org_uri"]
+        service_request_id = row["service_request_id"]
 
-            substance = self.create_sample(
-                original_name, timestamp, project, sample_specifier, org_uri,
-                service_request_id)
-            substance.udf_map.force("Sample Buffer", "None")
-            substance.udf_map.force("Step ID created in", self.context.current_step.id)
-            container[well] = substance
+        substance = self.create_sample(
+            original_name, timestamp, project, sample_specifier, org_uri,
+            service_request_id)
+        substance.udf_map.force("Sample Buffer", "None")
+        substance.udf_map.force("Step ID created in",
+                                self.context.current_step.id)
+
+        container.append(substance)
         return container
 
     def _create_anonymous_service_request(self, client, referral_code):
@@ -99,6 +100,15 @@ class Extension(GeneralExtension):
                  "have been set to anonymous? Contact your friendly sysadmin for help."), referral_code)
 
     def execute(self):
+        try:
+            created_sample_list_file = self.context.local_shared_file(
+                "Created sample list", mode="rb")
+            if created_sample_list_file:
+                self.usage_error("Can't create samples more than once")
+        except IOError:
+            # We expect the file not to be there
+            pass
+
         config = {
             key: self.config[key]
             for key in [
@@ -119,12 +129,11 @@ class Extension(GeneralExtension):
         # 2. Read the samples from the uploaded csv and ensure they are valid
         file_name = "Validated sample list"
         f = self.context.local_shared_file(file_name, mode="rb")
-        csv = pd.read_csv(f, encoding="utf-8", sep=",", dtype=str)
-
-        print(csv)
+        validated_sample_list = pd.read_csv(
+            f, encoding="utf-8", sep=",", dtype=str)
 
         errors = list()
-        for ix, row in csv.iterrows():
+        for ix, row in validated_sample_list.iterrows():
             if row["status"] != "discard":
                 errors.append(row["reference"])
 
@@ -134,30 +143,33 @@ class Extension(GeneralExtension):
                     len(errors))
             self.usage_error(msg)
 
-        # 3. Create the two plates in memory
-        for ix, row in csv.iterrows():
-            print(ix, row)
-            tube = self.create_in_mem_container(row,
-                                                   container_specifier="DISCARD",
-                                                   sample_specifier="",
-                                                   date=date,
-                                                   time=time)
-            print(tube)
-        return
+        # 3. Create the plates in memory
+        in_mem_containers = list()
+        for ix, row in validated_sample_list.iterrows():
+            plate = self.create_in_mem_container(row,
+                                                 container_specifier="DISCARD",
+                                                 sample_specifier="DISCARD",
+                                                 date=date,
+                                                 time=time,
+                                                 container_running=ix)
+            in_mem_containers.append(plate)
+            validated_sample_list.loc[ix, "plate_name"] = plate.name
+            validated_sample_list.loc[ix,
+                                      "sample_name"] = plate["A1"].artifact.name
+        created_sample_list = validated_sample_list.to_csv(
+            index=False, sep=",")
+
         # 4. Create the container and samples in clarity
         workflow = self.context.current_step.udf_assign_to_workflow
-        prext_plate = self.context.clarity_service.create_container(
-            prext_plate, with_samples=True, assign_to=workflow)
-        biobank_plate = self.context.clarity_service.create_container(
-            biobank_plate, with_samples=True)
+        for in_mem_container in in_mem_containers:
+            created_container = self.context.clarity_service.create_container(
+                in_mem_container, with_samples=True, assign_to=workflow)
 
-        # 5. Add both containers to a UDF so they can be printed
-        for plate in [prext_plate, biobank_plate]:
-            container_log.append("{}:{}".format(plate.id, plate.name))
-
-        self.context.current_step.udf_map.force(
-            "Created containers", "\n".join(container_log))
-        self.context.update(self.context.current_step)
+        timestamp = start.strftime("%y%m%dT%H%M%S")
+        file_name = "created_sample_list_{}.csv".format(timestamp)
+        self.context.file_service.upload(
+            "Created sample list", file_name, created_sample_list,
+            self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield self.test("24-45963", commit=False)
+        yield self.test("24-45967", commit=True)
