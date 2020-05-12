@@ -35,7 +35,7 @@ class Extension(GeneralExtension):
             raw_sample_list.loc[ix, "status"] = "discard"
             raw_sample_list.loc[ix, "comment"] = comment.replace(
                 ";", "<SC>")  # If we have the separator in the comment
-        print(raw_sample_list)
+            raw_sample_list.loc[ix, "org_uri"] = org_uri
         validated_sample_list = raw_sample_list.to_csv(index=False, sep=",")
 
         timestamp = datetime.now().strftime("%y%m%dT%H%M%S")
