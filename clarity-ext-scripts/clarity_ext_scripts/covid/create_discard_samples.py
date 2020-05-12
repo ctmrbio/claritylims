@@ -4,6 +4,7 @@ from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK, \
     ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
+from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo
 
 
 class Extension(GeneralExtension):
@@ -40,6 +41,8 @@ class Extension(GeneralExtension):
         sample.udf_map.force("KNM data added at", timestamp)
         sample.udf_map.force("KNM org URI", org_uri)
         sample.udf_map.force("KNM service request id", service_request_id)
+        sample.udf_map.force("Source", "KNM")
+        sample.udf_map.force("Status", CtmrCovidSubstanceInfo.STATUS_DISCARD)
 
         return sample
 
@@ -66,7 +69,7 @@ class Extension(GeneralExtension):
         # 2. Create a plate in memory:
         container_type = "96 well plate"
         name = "COVID_{}_{}_{}_{}".format(
-            date, container_specifier, time, container_running)
+            date, container_specifier, time, container_running + 1)
         container = Container(container_type=container_type, name=name)
 
         # 3. Create in-memory sample
@@ -99,7 +102,7 @@ class Extension(GeneralExtension):
                  "odd is going on. Maybe you set a sample to anonymous in the 'Validated sample list', that should not "
                  "have been set to anonymous? Contact your friendly sysadmin for help."), referral_code)
 
-    def execute(self):
+    def raise_if_already_created(self):
         try:
             created_sample_list_file = self.context.local_shared_file(
                 "Created sample list", mode="rb")
@@ -109,6 +112,9 @@ class Extension(GeneralExtension):
             # We expect the file not to be there
             pass
 
+    def execute(self):
+        self.raise_if_already_created()
+
         config = {
             key: self.config[key]
             for key in [
@@ -117,10 +123,6 @@ class Extension(GeneralExtension):
             ]
         }
         client = PartnerAPIV7Client(**config)
-
-        # This is for debug reasons only. Set this to True to create samples even if they have
-        # been created before. This will overwrite the field udf_created_containers.
-        force = False
 
         start = self.context.start
         date = start.strftime("%y%m%d")

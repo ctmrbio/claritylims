@@ -82,6 +82,10 @@ class CtmrCovidSubstanceInfo(object):
     will also work as well with a built in clarity control as a control that's in fact a sample.
     """
 
+    STATUS_DISCARD = "DISCARD"
+    STATUS_DISCARDED_AND_REPORTED = "DISCARDED_AND_REPORTED"
+    
+
     def __init__(self, substance):
         """
         :substance: A sample, analyte or a built-in control
