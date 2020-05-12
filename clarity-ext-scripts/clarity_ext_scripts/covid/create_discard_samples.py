@@ -65,7 +65,7 @@ class Extension(GeneralExtension):
 
         # 2. Create a plate in memory:
         container_type = "96 well plate"
-        name = "COVID_{}_{}_{}_".format(
+        name = "COVID_{}_{}_{}_{}".format(
             date, container_specifier, time, container_running)
         container = Container(container_type=container_type, name=name)
 
