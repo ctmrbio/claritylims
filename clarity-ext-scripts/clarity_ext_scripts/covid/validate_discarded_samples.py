@@ -10,6 +10,7 @@ class Extension(GeneralExtension):
     """
     TODO: Add description
     """
+
     def execute(self):
         try:
             ordering_org = self.context.current_step.udf_ordering_organization
@@ -26,16 +27,16 @@ class Extension(GeneralExtension):
         client = PartnerAPIV7Client(**config)
 
         raw_sample_list = get_raw_sample_list(self.context)
-        print(raw_sample_list)
         for ix, row in raw_sample_list.iterrows():
             barcode = row["reference"]
 
-            service_request_id, status, comment = self._search_for_id(client, org_uri, barcode)
+            service_request_id, status, comment = self._search_for_id(
+                client, org_uri, barcode)
             raw_sample_list.loc[ix, "service_request_id"] = service_request_id
             raw_sample_list.loc[ix, "status"] = "discard"
             raw_sample_list.loc[ix, "comment"] = comment.replace(
                 ";", "<SC>")  # If we have the separator in the comment
-        print(raw_sample_list)
+            raw_sample_list.loc[ix, "org_uri"] = org_uri
         validated_sample_list = raw_sample_list.to_csv(index=False, sep=",")
 
         timestamp = datetime.now().strftime("%y%m%dT%H%M%S")
@@ -70,8 +71,8 @@ class Extension(GeneralExtension):
         return service_request_id, status, comment
 
     def integration_tests(self):
-        # TODO: Replace with a valid step ID
-        yield "24-44671"
+        yield "24-45967"
+
 
 def get_raw_sample_list(context):
     file_name = "Raw sample list"
