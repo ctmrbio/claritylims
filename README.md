@@ -62,5 +62,11 @@ Scripts in Python are much easier to write with the [SciLifeLab Genologics packa
 
 The config file for this package is found at `/etc/genologics.conf`, owned by root but readable for other users.
 
+## The clarity-ext package
+
+The [clarity-ext](https://github.com/molmed/clarity-ext) package is designed to make writing extensions that are easier to read an simple to write. They have a higher level of abstraction than the genologics package, which has a 1-1 mapping to the REST API. Some of the scripts (all related to Covid19) are written using that framework.
+
+Extensions that use this framework are all in ./clarity-ext-scripts. Refer to the [README](./clarity-ext-scripts/README.md) for more information on this package.
+
 ## More information
 More information about the LIMS system including details on the Miniconda installation and starting the server may be found [here](https://github.com/ctmrbio/wiki/wiki/CTMR-LIMS-(PROD-and-STAGE)).

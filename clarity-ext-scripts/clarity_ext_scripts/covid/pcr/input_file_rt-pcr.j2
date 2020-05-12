@@ -1,0 +1,4 @@
+Well	Sample Name	Well Position
+{% for well in ext.artifacts() -%}
+{{ well.index_right_first }}	{{ well.artifact.name }}	{{ well.alpha_num_key }}
+{% endfor %}
