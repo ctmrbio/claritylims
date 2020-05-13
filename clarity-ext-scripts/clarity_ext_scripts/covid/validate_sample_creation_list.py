@@ -11,8 +11,43 @@ from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 logger = logging.getLogger(__name__)
 
+class BaseValidateExtension(GeneralExtension):
+    def _search_for_id(self, client, ordering_org, barcode):
+        org_uri = ORG_URI_BY_NAME[ordering_org]
 
-class Extension(GeneralExtension):
+        if ordering_org == TESTING_ORG:
+            service_request_id = uuid4()
+            status = "ok"
+            comment = ""
+            logger.warn("Using testing org. Service request ID faked: {}".format(
+                service_request_id))
+            return service_request_id, status, comment
+
+        try:
+            response = client.search_for_service_request(
+                org_uri, str(barcode))
+            service_request_id = response["resource"]["id"]
+            status = "ok"
+            comment = ""
+        except OrganizationReferralCodeNotFound as e:
+            self.usage_warning(
+                "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
+                    org_uri), barcode)
+            service_request_id = "anonymous"
+            status = "anonymous"
+            comment = ("No matching request was found for this referral code. Will create an anonymous "
+                       "ServiceRequest for this referral code.")
+        except PartnerClientAPIException as e:
+            self.usage_error_defer(
+                "Something was wrong with {} for barcode(s). See file validated sample list for details.".format(
+                    org_uri), barcode)
+            service_request_id = ""
+            status = "error"
+            comment = e.message
+        return service_request_id, status, comment
+
+
+class Extension(BaseValidateExtension):
     """
     Validates all samples in a sample creation list.
 
@@ -44,30 +79,6 @@ class Extension(GeneralExtension):
           validated file with manually edited information.
     """
 
-    def _search_for_id(self, client,  org_uri, barcode):
-        try:
-            response = client.search_for_service_request(
-                org_uri, barcode)
-            service_request_id = response["resource"]["id"]
-            status = "ok"
-            comment = ""
-        except OrganizationReferralCodeNotFound as e:
-            self.usage_warning(
-                "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
-                    org_uri), barcode)
-            service_request_id = "anonymous"
-            status = "anonymous"
-            comment = ("No matching request was found for this referral code. Will create an anonymous "
-                       "ServiceRequest for this referral code.")
-        except PartnerClientAPIException as e:
-            self.usage_error_defer(
-                "Something was wrong with {} for barcode(s). See file validated sample list for details.".format(
-                    org_uri), barcode)
-            service_request_id = ""
-            status = "error"
-            comment = e.message
-        return service_request_id, status, comment
-
     def execute(self):
         # Validate the 'Raw biobank file' exists and is in concordance with the 'Raw sample list'
         # if not, abort script execution
@@ -80,7 +91,6 @@ class Extension(GeneralExtension):
             ordering_org = self.context.current_step.udf_ordering_organization
         except AttributeError:
             self.usage_error("You must select an ordering organization")
-        org_uri = ORG_URI_BY_NAME[ordering_org]
 
         # 2. Create an API client
         #    Make sure that there is a config at ~/.config/clarity-ext/clarity-ext.config
@@ -113,16 +123,9 @@ class Extension(GeneralExtension):
             is_control = controls_barcode_generator.parse(barcode)
 
             if not is_control:
-                if ordering_org == TESTING_ORG:
-                    service_request_id = uuid4()
-                    status = "ok"
-                    comment = ""
-                    logger.warn("Using testing org. Service request ID faked: {}".format(
-                        service_request_id))
-                else:
-                    service_request_id, status, comment = self._search_for_id(
-                        client, org_uri, barcode)
-
+                service_request_id, status, comment = self._search_for_id(
+                    client, ordering_org, barcode)
+                org_uri = ORG_URI_BY_NAME[ordering_org]
                 raw_sample_list.loc[ix, "org_uri"] = org_uri
             else:
                 service_request_id = ""
@@ -144,7 +147,7 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield self.test("24-44013", commit=False)
+        yield self.test("24-45979", commit=True)
 
 
 def get_raw_sample_list(context):
