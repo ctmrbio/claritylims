@@ -30,13 +30,12 @@ class Extension(BaseValidateExtension):
         raw_sample_list = get_raw_sample_list(self.context)
         for ix, row in raw_sample_list.iterrows():
             barcode = row["reference"]
-            service_request_id, status, comment = self._search_for_id(
+            service_request_id, status, comment, org_uri = self._search_for_id(
                 client, ordering_org, barcode)
             raw_sample_list.loc[ix, "service_request_id"] = service_request_id
             raw_sample_list.loc[ix, "status"] = "discard"
             raw_sample_list.loc[ix, "comment"] = comment.replace(
                 ",", "<SC>")  # If we have the separator in the comment
-            org_uri = ORG_URI_BY_NAME[ordering_org]
             raw_sample_list.loc[ix, "org_uri"] = org_uri
         validated_sample_list = raw_sample_list.to_csv(index=False, sep=",")
 
