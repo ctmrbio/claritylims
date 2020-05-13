@@ -6,7 +6,8 @@ import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
     PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound,
-    PartnerClientAPIException, ServiceRequestAlreadyExists, CouldNotCreateServiceRequest)
+    PartnerClientAPIException, ServiceRequestAlreadyExists, CouldNotCreateServiceRequest,
+    KARLSSON_AND_NOVAK)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
@@ -43,6 +44,7 @@ class BaseValidateExtension(GeneralExtension):
             (service_request_id, status, comment, org_uri)
         """
         org_uri = ORG_URI_BY_NAME[ordering_org]
+        barcode = str(barcode)
 
         if ordering_org == TESTING_ORG:
             service_request_id = uuid4()
