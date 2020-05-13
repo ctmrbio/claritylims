@@ -35,7 +35,7 @@ class Extension(BaseValidateExtension):
             raw_sample_list.loc[ix, "service_request_id"] = service_request_id
             raw_sample_list.loc[ix, "status"] = "discard"
             raw_sample_list.loc[ix, "comment"] = comment.replace(
-                ";", "<SC>")  # If we have the separator in the comment
+                ",", "<SC>")  # If we have the separator in the comment
             org_uri = ORG_URI_BY_NAME[ordering_org]
             raw_sample_list.loc[ix, "org_uri"] = org_uri
         validated_sample_list = raw_sample_list.to_csv(index=False, sep=",")
