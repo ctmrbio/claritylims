@@ -12,9 +12,10 @@ logger = logging.getLogger(__name__)
 
 UDF_TRUE = "Yes"
 
+
 class Extension(GeneralExtension):
     """
-    Reports sample results to third party partner
+    Reports discarded samples to third party partner
     """
 
     def get_client(self):
@@ -38,24 +39,26 @@ class Extension(GeneralExtension):
             logger.warn(
                 "Reporting results for test org for analyte {}".format(sample.name))
             return
-#       ToDo: Anonymous samples?
         try:
             self.client.post_diagnosis_report(service_request_id=service_request_id,
-                                 diagnosis_result=COVID_RESPONSE_FAILED,
-                                 analysis_results=[{"value": -1}])
+                                              diagnosis_result=COVID_RESPONSE_FAILED,
+                                              analysis_results=[{"value": -1}])
 
             # Update udfs
             analyte.udf_map.force("KNM result uploaded", UDF_TRUE)
             analyte.udf_map.force("KNM result uploaded date", timestamp)
-            analyte.udf_map.force("Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
+            analyte.udf_map.force(
+                "Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
             self.context.update(analyte)
 
             sample.udf_map.force("KNM result uploaded", UDF_TRUE)
             sample.udf_map.force("KNM result uploaded date", timestamp)
             sample.udf_map.force("KNM uploaded source",
                                  analyte.api_resource.uri)
-            sample.udf_map.force("Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
-            sample.udf_map.force("Status artifact source", analyte.api_resource.uri)
+            sample.udf_map.force(
+                "Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
+            sample.udf_map.force("Status artifact source",
+                                 analyte.api_resource.uri)
             self.context.update(sample)
             self.context.commit()
         except PartnerClientAPIException as e:
@@ -81,5 +84,4 @@ class Extension(GeneralExtension):
                 self.report(well.artifact)
 
     def integration_tests(self):
-        # TODO: Replace with a valid step ID
-        yield "24-45972"
+        yield "24-45987"
