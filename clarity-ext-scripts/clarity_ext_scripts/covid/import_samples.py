@@ -115,21 +115,6 @@ class Extension(GeneralExtension):
             container[well] = substance
         return container
 
-    def _create_anonymous_service_request(self, client, referral_code):
-        try:
-            service_request_id = client.create_anonymous_service_request(
-                referral_code)
-            return service_request_id
-        except CouldNotCreateServiceRequest:
-            self.usage_error_defer(
-                ("Could not create ServiceRequests for the following barcode(s). KNM probably did not "
-                 "recognize them. Please investigate the barcode(s)."), referral_code)
-        except ServiceRequestAlreadyExists:
-            self.usage_error_defer(
-                ("There already exists a ServiceRequest for the following barcode(s). This means something "
-                 "odd is going on. Maybe you set a sample to anonymous in the 'Validated sample list', that should not "
-                 "have been set to anonymous? Contact your friendly sysadmin for help."), referral_code)
-
     def execute(self):
         config = {
             key: self.config[key]
@@ -167,13 +152,7 @@ class Extension(GeneralExtension):
 
         errors = list()
         for ix, row in csv.iterrows():
-            if row["status"] == "anonymous":
-                service_request_id = self._create_anonymous_service_request(
-                    client, row["Sample Id"])
-                # This mutates the above csv object
-                csv.at[ix, "service_request_id"] = service_request_id
-                csv.at[ix, "org_uri"] = ORG_URI_BY_NAME[KARLSSON_AND_NOVAK]
-            elif row["status"] != "ok":
+            if row["status"] != "ok":
                 errors.append(row["Sample Id"])
 
         if len(errors):

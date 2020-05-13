@@ -11,40 +11,75 @@ from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 logger = logging.getLogger(__name__)
 
+
 class BaseValidateExtension(GeneralExtension):
+    STATUS_OK = "ok"
+    STATUS_ERROR = "error"
+    STATUS_ANONYMOUS = "anonymous"
+
+    def _create_anonymous_service_request(self, client, referral_code):
+        try:
+            service_request_id = client.create_anonymous_service_request(
+                referral_code)
+            return service_request_id
+        except CouldNotCreateServiceRequest:
+            self.usage_error_defer(
+                ("Could not create ServiceRequests for the following barcode(s). "
+                 "KNM probably did not recognize them. "
+                 "Please investigate the barcode(s)."), referral_code)
+        except ServiceRequestAlreadyExists:
+            self.usage_error_defer(
+                ("There already exists a ServiceRequest for the following barcode(s). This means something "
+                 "odd is going on. Maybe you set a sample to anonymous in the 'Validated sample list', that should not "
+                 "have been set to anonymous? Contact your friendly sysadmin for help."), referral_code)
+        return None
+
     def _search_for_id(self, client, ordering_org, barcode):
+        """
+        Searches for an ID for this ordering_org and barcode.
+
+        Returns the tuple:
+            (service_request_id, status, comment, org_uri)
+        """
         org_uri = ORG_URI_BY_NAME[ordering_org]
 
         if ordering_org == TESTING_ORG:
             service_request_id = uuid4()
-            status = "ok"
+            status = self.STATUS_OK
             comment = ""
             logger.warn("Using testing org. Service request ID faked: {}".format(
                 service_request_id))
-            return service_request_id, status, comment
+            return service_request_id, status, comment, org_uri
 
         try:
             response = client.search_for_service_request(
                 org_uri, str(barcode))
             service_request_id = response["resource"]["id"]
-            status = "ok"
+            status = self.STATUS_OK
             comment = ""
         except OrganizationReferralCodeNotFound as e:
             self.usage_warning(
-                "Can't find service_request_id in {} for barcode(s). Will set them to anonymous.".format(
+                "Can't find service_request_id in {} for barcode(s). Set them to anonymous.".format(
                     org_uri), barcode)
-            service_request_id = "anonymous"
-            status = "anonymous"
-            comment = ("No matching request was found for this referral code. Will create an anonymous "
+            service_request_id = self._create_anonymous_service_request(
+                client, barcode)
+            if service_request_id:
+                # Overwrite the org_uri for anonymous samples
+                org_uri = ORG_URI_BY_NAME[KARLSSON_AND_NOVAK]
+                status = self.STATUS_ANONYMOUS
+            else:
+                status = self.STATUS_ERROR
+
+            comment = ("No matching request was found for this referral code. Created an anonymous "
                        "ServiceRequest for this referral code.")
         except PartnerClientAPIException as e:
             self.usage_error_defer(
                 "Something was wrong with {} for barcode(s). See file validated sample list for details.".format(
                     org_uri), barcode)
             service_request_id = ""
-            status = "error"
+            status = self.STATUS_ERROR
             comment = e.message
-        return service_request_id, status, comment
+        return service_request_id, status, comment, org_uri
 
 
 class Extension(BaseValidateExtension):
@@ -123,9 +158,8 @@ class Extension(BaseValidateExtension):
             is_control = controls_barcode_generator.parse(barcode)
 
             if not is_control:
-                service_request_id, status, comment = self._search_for_id(
+                service_request_id, status, comment, org_uri = self._search_for_id(
                     client, ordering_org, barcode)
-                org_uri = ORG_URI_BY_NAME[ordering_org]
                 raw_sample_list.loc[ix, "org_uri"] = org_uri
             else:
                 service_request_id = ""
