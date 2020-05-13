@@ -35,36 +35,39 @@ class Extension(GeneralExtension):
         org_uri = sample.udf_knm_org_uri
         service_request_id = sample.udf_knm_service_request_id
 
-        if org_uri == ORG_URI_BY_NAME[TESTING_ORG]:
+        test_mode = org_uri == ORG_URI_BY_NAME[TESTING_ORG]
+
+        if not test_mode:
+            try:
+                self.client.post_diagnosis_report(service_request_id=service_request_id,
+                                                  diagnosis_result=COVID_RESPONSE_FAILED,
+                                                  analysis_results=[{"value": -1}])
+            except PartnerClientAPIException as e:
+                self.usage_error_defer(
+                    "Error while uploading sample to KNM", sample.name)
+                logger.error(e)
+                # This sample will be retried next time
+                return
+        else:
             logger.warn(
                 "Reporting results for test org for analyte {}".format(sample.name))
-            return
-        try:
-            self.client.post_diagnosis_report(service_request_id=service_request_id,
-                                              diagnosis_result=COVID_RESPONSE_FAILED,
-                                              analysis_results=[{"value": -1}])
 
-            # Update udfs
-            analyte.udf_map.force("KNM result uploaded", UDF_TRUE)
-            analyte.udf_map.force("KNM result uploaded date", timestamp)
-            analyte.udf_map.force(
-                "Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
-            self.context.update(analyte)
+        # Update udfs
+        analyte.udf_map.force("KNM result uploaded", UDF_TRUE)
+        analyte.udf_map.force("KNM result uploaded date", timestamp)
+        analyte.udf_map.force(
+            "Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
+        self.context.update(analyte)
 
-            sample.udf_map.force("KNM result uploaded", UDF_TRUE)
-            sample.udf_map.force("KNM result uploaded date", timestamp)
-            sample.udf_map.force("KNM uploaded source",
-                                 analyte.api_resource.uri)
-            sample.udf_map.force(
-                "Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
-            sample.udf_map.force("Status artifact source",
-                                 analyte.api_resource.uri)
-            self.context.update(sample)
-            self.context.commit()
-        except PartnerClientAPIException as e:
-            self.usage_error_defer(
-                "Error while uploading sample to KNM", sample.name)
-            logger.error(e)
+        sample.udf_map.force("KNM result uploaded", UDF_TRUE)
+        sample.udf_map.force("KNM result uploaded date", timestamp)
+        sample.udf_map.force("KNM uploaded source", analyte.api_resource.uri)
+        sample.udf_map.force(
+            "Status", CtmrCovidSubstanceInfo.STATUS_DISCARDED_AND_REPORTED)
+        sample.udf_map.force("Status artifact source",
+                             analyte.api_resource.uri)
+        self.context.update(sample)
+        self.context.commit()
 
     def execute(self):
         self.client = self.get_client()
@@ -84,4 +87,4 @@ class Extension(GeneralExtension):
                 self.report(well.artifact)
 
     def integration_tests(self):
-        yield "24-45987"
+        yield "24-45997"
