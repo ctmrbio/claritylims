@@ -87,21 +87,6 @@ class Extension(GeneralExtension):
         container.append(substance)
         return container
 
-    def _create_anonymous_service_request(self, client, referral_code):
-        try:
-            service_request_id = client.create_anonymous_service_request(
-                referral_code)
-            return service_request_id
-        except CouldNotCreateServiceRequest:
-            self.usage_error_defer(
-                ("Could not create ServiceRequests for the following barcode(s). KNM probably did not "
-                 "recognize them. Please investigate the barcode(s)."), referral_code)
-        except ServiceRequestAlreadyExists:
-            self.usage_error_defer(
-                ("There already exists a ServiceRequest for the following barcode(s). This means something "
-                 "odd is going on. Maybe you set a sample to anonymous in the 'Validated sample list', that should not "
-                 "have been set to anonymous? Contact your friendly sysadmin for help."), referral_code)
-
     def raise_if_already_created(self):
         try:
             created_sample_list_file = self.context.local_shared_file(

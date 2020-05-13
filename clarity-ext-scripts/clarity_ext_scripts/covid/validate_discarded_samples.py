@@ -47,7 +47,7 @@ class Extension(BaseValidateExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-45977"
+        yield "24-45999"
 
 
 def get_raw_sample_list(context):

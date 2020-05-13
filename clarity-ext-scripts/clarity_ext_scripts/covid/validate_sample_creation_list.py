@@ -5,7 +5,8 @@ from datetime import datetime
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound, PartnerClientAPIException)
+    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound,
+    PartnerClientAPIException, ServiceRequestAlreadyExists, CouldNotCreateServiceRequest)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 
 
@@ -59,7 +60,7 @@ class BaseValidateExtension(GeneralExtension):
             comment = ""
         except OrganizationReferralCodeNotFound as e:
             self.usage_warning(
-                "Can't find service_request_id in {} for barcode(s). Set them to anonymous.".format(
+                "Can't find service_request_id in {} for barcode(s). Setting them to anonymous.".format(
                     org_uri), barcode)
             service_request_id = self._create_anonymous_service_request(
                 client, barcode)

@@ -2,8 +2,8 @@ import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK, \
-    ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
+from clarity_ext_scripts.covid.partner_api_client import (
+    PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK)
 
 
 class Extension(GeneralExtension):
@@ -111,7 +111,8 @@ class Extension(GeneralExtension):
                     ]
                     substance.udf_map.force("Biobank barcode", biobank_barcode)
             substance.udf_map.force("Sample Buffer", "None")
-            substance.udf_map.force("Step ID created in", self.context.current_step.id)
+            substance.udf_map.force(
+                "Step ID created in", self.context.current_step.id)
             container[well] = substance
         return container
 
