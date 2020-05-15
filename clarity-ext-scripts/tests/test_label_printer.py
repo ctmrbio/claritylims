@@ -19,9 +19,9 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container1, container2], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD123^FS^FO7,40^A0,32,25^FB380," \
+        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD123^FS^FO7,40^A0,32,25^FB380,1," \
                            "^FDcontainer1^FS^XZ\n" \
-                           "^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD124^FS^FO7,40^A0,32,25^FB380," \
+                           "^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD124^FS^FO7,40^A0,32,25^FB380,1," \
                            "^FDcontainer2^FS^XZ}$\n"
 
     def test_single_container__with_name_as_barcode(self):
