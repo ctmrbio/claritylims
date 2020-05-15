@@ -93,4 +93,4 @@ class Extension(GeneralExtension):
         self.context.file_service.upload_files("Raw sample list", upload_tuple)
 
     def integration_tests(self):
-        yield "24-46721"
+        yield "24-46735"

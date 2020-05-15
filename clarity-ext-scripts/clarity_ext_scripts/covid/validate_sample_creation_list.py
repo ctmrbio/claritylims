@@ -150,4 +150,4 @@ class Extension(BaseValidateRawSampleListExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield self.test("24-46721", commit=True)
+        yield self.test("24-46735", commit=True)

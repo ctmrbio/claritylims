@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 UDF_TRUE = "Yes"
 
 
-# TODO: This is WIP
 class Extension(BaseCreateSamplesExtension):
     """
     Reports discarded samples to third party partner
