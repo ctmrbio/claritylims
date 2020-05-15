@@ -2,12 +2,14 @@ import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK, \
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, KARLSSON_AND_NOVAK, \
     ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
 from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo
+from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension 
 
 
-class Extension(GeneralExtension):
+# TODO: This is work in progress!
+class Extension(BaseCreateSamplesExtension):
     """
     Requires two step UDFs:
         * Assign to workflow: Any workflow
@@ -100,35 +102,12 @@ class Extension(GeneralExtension):
     def execute(self):
         self.raise_if_already_created()
 
-        config = {
-            key: self.config[key]
-            for key in [
-                "test_partner_base_url", "test_partner_code_system_base_url",
-                "test_partner_user", "test_partner_password"
-            ]
-        }
-        client = PartnerAPIV7Client(**config)
-
         start = self.context.start
         date = start.strftime("%y%m%d")
         time = start.strftime("%H%M%S")
 
         # 2. Read the samples from the uploaded csv and ensure they are valid
-        file_name = "Validated sample list"
-        f = self.context.local_shared_file(file_name, mode="rb")
-        validated_sample_list = pd.read_csv(
-            f, encoding="utf-8", sep=",", dtype=str)
-
-        errors = list()
-        for ix, row in validated_sample_list.iterrows():
-            if row["status"] != "discard":
-                errors.append(row["reference"])
-
-        if len(errors):
-            msg = "There are {} samples which are not marked as 'discard' in the sample list. " \
-                "Check the file 'Validated sample list' for details".format(
-                    len(errors))
-            self.usage_error(msg)
+        validated_sample_list = self.get_validated_sample_list()
 
         # 3. Create the plates in memory
         in_mem_containers = list()
@@ -159,4 +138,4 @@ class Extension(GeneralExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield self.test("24-45967", commit=True)
+        yield self.test("24-46719", commit=True)

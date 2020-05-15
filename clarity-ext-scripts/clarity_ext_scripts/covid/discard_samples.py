@@ -6,27 +6,19 @@ from clarity_ext_scripts.covid.partner_api_client import (
     PartnerClientAPIException)
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
 from clarity_ext_scripts.covid.controls import Controls
-from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo
+from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo, KNMClient
+from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension
 
 logger = logging.getLogger(__name__)
 
 UDF_TRUE = "Yes"
 
 
-class Extension(GeneralExtension):
+# TODO: This is WIP
+class Extension(BaseCreateSamplesExtension):
     """
     Reports discarded samples to third party partner
     """
-
-    def get_client(self):
-        config = {
-            key: self.config[key]
-            for key in [
-                "test_partner_base_url", "test_partner_code_system_base_url",
-                "test_partner_user", "test_partner_password"
-            ]
-        }
-        return PartnerAPIV7Client(**config)
 
     def report(self, analyte):
         timestamp = datetime.now().strftime("%y%m%dT%H%M%S")
@@ -70,7 +62,7 @@ class Extension(GeneralExtension):
         self.context.commit()
 
     def execute(self):
-        self.client = self.get_client()
+        self.client = KNMClient(self)
         for plate in self.context.input_containers:
             for well in plate.occupied:
                 already_uploaded = False
