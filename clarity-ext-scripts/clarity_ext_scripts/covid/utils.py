@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import datetime
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
 
 
 class UniqueBarcodeGenerator(object):
@@ -132,3 +133,17 @@ class CtmrCovidSubstanceInfo(object):
         else:
             raise NotImplementedError("Not implemented substance type {}".format(
                 type(self.substance)))
+
+
+
+def KNMClient(extension):
+    # A factory for a KnmClient from an extension
+    config = {
+        key: extension.config[key]
+        for key in [
+            "test_partner_base_url", "test_partner_code_system_base_url",
+            "test_partner_user", "test_partner_password"
+        ]
+    }
+    return PartnerAPIV7Client(**config)
+
