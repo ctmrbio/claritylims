@@ -1,17 +1,12 @@
 import cStringIO
-from uuid import uuid4
 import logging
 from datetime import datetime
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, OrganizationReferralCodeNotFound,
-    PartnerClientAPIException, ServiceRequestAlreadyExists, CouldNotCreateServiceRequest,
-    KARLSSON_AND_NOVAK)
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
 from clarity_ext_scripts.covid.utils import KNMClient
 from clarity_ext_scripts.covid.create_samples.common import (
-	BaseRawSampleListFile, ValidatedSampleListFile,
-        BaseValidateRawSampleListExtension
+    BaseRawSampleListFile, ValidatedSampleListFile,
+    BaseValidateRawSampleListExtension
 )
 
 
@@ -26,12 +21,12 @@ class RawSampleListColumns(object):
     HEADERS = ["Rack Id", "Cavity Id",
                COLUMN_POSITION, COLUMN_REFERENCE,
                "CONCENTRATION", "CONCENTRATIONUNIT", "VOLUME",
-               COLUMN_USER_DEFINED1,  # Contains a control name or the integration test knm status 
+               COLUMN_USER_DEFINED1,  # Contains a control name or the integration test knm status
                "USERDEFINED2", "USERDEFINED3", "USERDEFINED4", "USERDEFINED5",
                "PlateErrors", "SampleErrors", "SAMPLEINSTANCEID", "SAMPLEID"]
 
     # The column from which we can get the fake status in integration tests
-    COLUMN_FAKE_STATUS = COLUMN_USER_DEFINED1 
+    COLUMN_FAKE_STATUS = COLUMN_USER_DEFINED1
 
 
 class RawSampleListFile(RawSampleListColumns, BaseRawSampleListFile):
@@ -124,7 +119,7 @@ class Extension(BaseValidateRawSampleListExtension):
 
             if not is_control:
                 service_request_id, status, comment, org_uri = self._search_for_id(
-                        validated_sample_list, client, ordering_org, row)
+                    validated_sample_list, client, ordering_org, row)
                 validated_sample_list.csv.loc[ix,
                                               validated_sample_list.COLUMN_ORG_URI] = org_uri
             else:
@@ -150,4 +145,4 @@ class Extension(BaseValidateRawSampleListExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield self.test("24-46735", commit=True)
+        yield self.test("24-46746", commit=True)

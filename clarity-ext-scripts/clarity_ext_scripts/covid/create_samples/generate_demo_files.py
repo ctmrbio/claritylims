@@ -1,4 +1,3 @@
-import datetime
 import random
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.controls import Controls, controls_barcode_generator

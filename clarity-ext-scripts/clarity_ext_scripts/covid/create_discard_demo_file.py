@@ -1,8 +1,5 @@
-import datetime
 import random
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext_scripts.covid.controls import Controls, controls_barcode_generator
-from clarity_ext.domain.container import Container
 from clarity_ext_scripts.covid.create_samples.common import ValidatedSampleListFile
 
 
@@ -21,7 +18,6 @@ class Extension(GeneralExtension):
                 return [(str(random.randint(1000000000, 9999999999)), reason)
                         for _ in range(num)]
 
-            timestamp = self.context.start.strftime("%y%m%dT%H%M%S")
             headers = ["reference", "source", "reason"]
             yield headers
 

@@ -1,9 +1,8 @@
-import pandas as pd
-from clarity_ext.extensions import GeneralExtension
+"""
+Extension for creating discarded samples from a validated file
+"""
+
 from clarity_ext.domain import Container, Sample
-from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, KARLSSON_AND_NOVAK, \
-    ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
 from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo
 from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension
 
@@ -30,7 +29,12 @@ class Extension(BaseCreateSamplesExtension):
     The <running> part of the names is a running number for controls.
     """
 
-    def create_sample(self, original_name, timestamp, project, specifier, org_uri, service_request_id):
+    @staticmethod
+    def create_sample(original_name, timestamp, project, specifier, org_uri,
+                      service_request_id):
+        """
+        Creates the sample in memory
+        """
         name = map(str, [original_name, timestamp])
         if specifier:
             name.append(specifier)
@@ -89,6 +93,10 @@ class Extension(BaseCreateSamplesExtension):
         return container
 
     def raise_if_already_created(self):
+        """
+        Raises an exception if the samples have already been created, indicated by that
+        there exists a file on the file handle 'Created sample list'
+        """
         try:
             created_sample_list_file = self.context.local_shared_file(
                 "Created sample list", mode="rb")
@@ -99,6 +107,9 @@ class Extension(BaseCreateSamplesExtension):
             pass
 
     def execute(self):
+        """
+        Create discard samples based on a validated list of samples.
+        """
         self.raise_if_already_created()
 
         start = self.context.start
@@ -113,16 +124,16 @@ class Extension(BaseCreateSamplesExtension):
 
         # 3. Create the plates in memory
         in_mem_containers = list()
-        for ix, row in created_sample_list.iterrows():
+        for index, row in created_sample_list.iterrows():
             plate = self.create_in_mem_container(row,
                                                  container_specifier="DISCARD",
                                                  sample_specifier="DISCARD",
                                                  date=date,
                                                  time=time,
-                                                 container_running=ix)
+                                                 container_running=index)
             in_mem_containers.append(plate)
-            created_sample_list.loc[ix, "plate_name"] = plate.name
-            created_sample_list.loc[ix,
+            created_sample_list.loc[index, "plate_name"] = plate.name
+            created_sample_list.loc[index,
                                     "sample_name"] = plate["A1"].artifact.name
         created_sample_list_content = created_sample_list.to_csv(
             index=False, sep=",")
@@ -130,7 +141,7 @@ class Extension(BaseCreateSamplesExtension):
         # 4. Create the container and samples in clarity
         workflow = self.context.current_step.udf_assign_to_workflow
         for in_mem_container in in_mem_containers:
-            created_container = self.context.clarity_service.create_container(
+            _ = self.context.clarity_service.create_container(
                 in_mem_container, with_samples=True, assign_to=workflow)
 
         timestamp = start.strftime("%y%m%dT%H%M%S")
