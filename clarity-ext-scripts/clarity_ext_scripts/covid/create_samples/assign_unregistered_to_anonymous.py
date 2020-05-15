@@ -2,7 +2,8 @@ from uuid import uuid4
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.create_samples.common import ValidatedSampleListFile
 from clarity_ext_scripts.covid.utils import KNMClient
-from clarity_ext_scripts.covid.partner_api_client import ORG_URI_BY_NAME, TESTING_ORG
+from clarity_ext_scripts.covid.partner_api_client import (
+        ORG_URI_BY_NAME, TESTING_ORG, CouldNotCreateServiceRequest, ServiceRequestAlreadyExists)
 
 
 class Extension(GeneralExtension):
@@ -75,4 +76,4 @@ class Extension(GeneralExtension):
         return None, "Could not fetch an anonymous request ID for unregistered sample"
 
     def integration_tests(self):
-        yield "24-46737"
+        yield "24-46746"

@@ -13,13 +13,13 @@ There are several extensions that all use this logic:
 These will for example share common files.
 """
 
-import pandas as pd
 import logging
+from uuid import uuid4
+import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, COVID_RESPONSE_FAILED,
-    PartnerClientAPIException)
-from uuid import uuid4
+    TESTING_ORG, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK,
+    OrganizationReferralCodeNotFound, PartnerClientAPIException)
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class PandasWrapper(object):
 
     @classmethod
     def parse_to_csv(cls, file_like):
-        return pd.read_csv(file_like, encoding="utf-8", sep=cls.SEPARATOR)
+        return pd.read_csv(file_like, encoding="utf-8", sep=cls.SEPARATOR, dtype="string")
 
     @staticmethod
     def filter_before_parse(file_like):
@@ -178,7 +178,8 @@ class BaseCreateSamplesExtension(GeneralExtension):
 
         NOTE: Anonymous service requests are given a name from KNM here 
         """
-        validated_sample_list = ValidatedSampleListFile.create_from_context(self.context)
+        validated_sample_list = ValidatedSampleListFile.create_from_context(
+            self.context)
 
         errors = list()
         unregistered = list()
@@ -200,4 +201,3 @@ class BaseCreateSamplesExtension(GeneralExtension):
             self.usage_error(msg)
 
         return validated_sample_list
-

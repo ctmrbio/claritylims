@@ -1,13 +1,7 @@
-import pandas as pd
-from clarity_ext.extensions import GeneralExtension
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
-from clarity_ext_scripts.covid.partner_api_client import (
-    ServiceRequestAlreadyExists, CouldNotCreateServiceRequest,
-    PartnerAPIV7Client, ORG_URI_BY_NAME, KARLSSON_AND_NOVAK)
 from clarity_ext_scripts.covid.utils import KNMClient
-from clarity_ext_scripts.covid.create_samples.common import (ValidatedSampleListFile, 
-    BaseCreateSamplesExtension)
+from clarity_ext_scripts.covid.create_samples.common import BaseCreateSamplesExtension
 
 
 class Extension(BaseCreateSamplesExtension):
@@ -121,7 +115,10 @@ class Extension(BaseCreateSamplesExtension):
         return container
 
     def execute(self):
-        self.client = KNMClient(self) 
+        """
+        Creates samples from a validated import file
+        """
+        self.client = KNMClient(self)
 
         # This is for debug reasons only. Set this to True to create samples even if they have
         # been created before. This will overwrite the field udf_created_containers.
@@ -145,7 +142,7 @@ class Extension(BaseCreateSamplesExtension):
 
         # 2. Read the samples from the uploaded csv and ensure they are valid
         validated_sample_list = self.get_validated_sample_list()
-        
+
         # 3. Create the two plates in memory
         from clarity_ext_scripts.covid.fetch_biobank_barcodes import FetchBiobankBarcodes
         fetch_biobank_barcodes = FetchBiobankBarcodes(self.context)
@@ -158,13 +155,14 @@ class Extension(BaseCreateSamplesExtension):
                                                    date=date,
                                                    time=time)
 
-        biobank_plate = self.create_in_mem_container(validated_sample_list,
-                                                     container_specifier="BIOBANK",
-                                                     sample_specifier="BIOBANK",
-                                                     control_specifier="BIOBANK",
-                                                     date=date,
-                                                     time=time,
-                                                     biobank_barcode_by_sample_referal_code=barcode_by_sample)
+        biobank_plate = self.create_in_mem_container(
+            validated_sample_list,
+            container_specifier="BIOBANK",
+            sample_specifier="BIOBANK",
+            control_specifier="BIOBANK",
+            date=date,
+            time=time,
+            biobank_barcode_by_sample_referal_code=barcode_by_sample)
 
         # 4. Create the container and samples in clarity
         workflow = self.context.current_step.udf_assign_to_workflow
@@ -182,4 +180,4 @@ class Extension(BaseCreateSamplesExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield self.test("24-46735", commit=True)
+        yield self.test("24-46746", commit=True)
