@@ -182,4 +182,4 @@ class Extension(BaseCreateSamplesExtension):
         self.context.update(self.context.current_step)
 
     def integration_tests(self):
-        yield self.test("24-46721", commit=True)
+        yield self.test("24-46735", commit=True)

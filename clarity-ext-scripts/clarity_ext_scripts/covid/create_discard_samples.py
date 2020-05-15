@@ -5,10 +5,9 @@ from clarity_ext_scripts.covid.controls import controls_barcode_generator, Contr
 from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client, KARLSSON_AND_NOVAK, \
     ServiceRequestAlreadyExists, CouldNotCreateServiceRequest
 from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo
-from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension 
+from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension
 
 
-# TODO: This is work in progress!
 class Extension(BaseCreateSamplesExtension):
     """
     Requires two step UDFs:
@@ -109,9 +108,12 @@ class Extension(BaseCreateSamplesExtension):
         # 2. Read the samples from the uploaded csv and ensure they are valid
         validated_sample_list = self.get_validated_sample_list()
 
+        # TODO: create a wrapper for this too
+        created_sample_list = validated_sample_list.csv
+
         # 3. Create the plates in memory
         in_mem_containers = list()
-        for ix, row in validated_sample_list.iterrows():
+        for ix, row in created_sample_list.iterrows():
             plate = self.create_in_mem_container(row,
                                                  container_specifier="DISCARD",
                                                  sample_specifier="DISCARD",
@@ -119,10 +121,10 @@ class Extension(BaseCreateSamplesExtension):
                                                  time=time,
                                                  container_running=ix)
             in_mem_containers.append(plate)
-            validated_sample_list.loc[ix, "plate_name"] = plate.name
-            validated_sample_list.loc[ix,
-                                      "sample_name"] = plate["A1"].artifact.name
-        created_sample_list = validated_sample_list.to_csv(
+            created_sample_list.loc[ix, "plate_name"] = plate.name
+            created_sample_list.loc[ix,
+                                    "sample_name"] = plate["A1"].artifact.name
+        created_sample_list_content = created_sample_list.to_csv(
             index=False, sep=",")
 
         # 4. Create the container and samples in clarity
@@ -134,8 +136,8 @@ class Extension(BaseCreateSamplesExtension):
         timestamp = start.strftime("%y%m%dT%H%M%S")
         file_name = "created_sample_list_{}.csv".format(timestamp)
         self.context.file_service.upload(
-            "Created sample list", file_name, created_sample_list,
+            "Created sample list", file_name, created_sample_list_content,
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield self.test("24-46719", commit=True)
+        yield self.test("24-46737", commit=True)

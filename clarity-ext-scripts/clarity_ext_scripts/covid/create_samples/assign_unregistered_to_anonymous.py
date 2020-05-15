@@ -75,4 +75,4 @@ class Extension(GeneralExtension):
         return None, "Could not fetch an anonymous request ID for unregistered sample"
 
     def integration_tests(self):
-        yield "24-46721"
+        yield "24-46737"
