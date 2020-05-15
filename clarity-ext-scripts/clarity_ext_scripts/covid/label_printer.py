@@ -60,7 +60,7 @@ class LabelPrinterService(object):
     def create_printer():
         # Creates the default production version of a printer:
         return ZebraLabelPrinter(font="J", zoom_factor=1, vertical_spacing=5,
-                                 block_width_points=850, label_width_points=1240, text_max_lines=4,
+                                 block_width_points=850, label_width_points=1240, text_max_lines=1,
                                  space_points=20, chars_per_line=28)
 
 
@@ -79,12 +79,12 @@ class LabelPrintInfo(object):
         :param offset: Offset as an (x, y) tuple
         :param position: Either POS_RIGHT, for aligning the text to the right of the barcode or POS_TOP.
         """
-        self.text = text
+        self.text = text                # container name
         self.barcode = barcode
-        self.height = height
-        self.width = width
-        self.offset = offset
-        self.position = position
+        self.height = height            # LabelPrinterService.HEIGHT_CUSTOM = 30
+        self.width = width              # LabelPrinterService.WIDTH_CUSTOM = 2
+        self.offset = offset            # (0, 0)
+        self.position = position        # self.POS_RIGHT = 1
 
 
 class ZebraLabelPrinter(object):
@@ -96,58 +96,63 @@ class ZebraLabelPrinter(object):
 
     def __init__(self, font, zoom_factor, vertical_spacing, block_width_points, label_width_points,
                  text_max_lines, space_points, chars_per_line):
-        self.font = font
-        self.zoom_factor = zoom_factor
-        self.vertical_spacing = vertical_spacing
-        self.block_width_points = block_width_points
+        self.font = font                                    # J
+        self.zoom_factor = zoom_factor                      # 1
+        self.vertical_spacing = vertical_spacing            # 5
+        self.block_width_points = block_width_points        # 850
         # the length of the label in points for easy calc of positions
-        self.label_width_points = label_width_points
+        self.label_width_points = label_width_points        # 1240
 
-        self.text_max_lines = text_max_lines
-        self.space_points = space_points
-        self.chars_per_line = chars_per_line
+        self.text_max_lines = text_max_lines                # 1
+        self.space_points = space_points                    # 20
+        self.chars_per_line = chars_per_line                # 28
         self.contents = list()
 
     def append_contents(self, info):
         self.contents.append(self.parse(info))
 
     def _parse(self, info):
-        start = 11 * info.width
-        data = len(info.barcode) * 11 * info.width
-        CRC = 11 * info.width
-        stop = 12 * info.width
-        text_spacing = 10 * info.width  # spacing between barcode and info text
+#        start = 11 * info.width                             # 11 * LabelPrintInfo.width = LabelPrinterService.WIDTH_CUSTOM = 2
+#        data = len(info.barcode) * 11 * info.width          # len(barcode) * start
+#        CRC = 11 * info.width                               # = start
+#        stop = 12 * info.width                              # 12 * LabelPrintInfo.width = LabelPrinterService.WIDTH_CUSTOM = 2 (start + LabelPrintInfo.width = LabelPrinterService.WIDTH_CUSTOM = 2)
+#        text_spacing = 10 * info.width                      # 10 * LabelPrintInfo.width = LabelPrinterService.WIDTH_CUSTOM = 2 (start - LabelPrintInfo.width = LabelPrinterService.WIDTH_CUSTOM = 2)
+                                                            # spacing between barcode and info text
 
-        text_width, text_height = self.FONT_SIZES[self.font]
+        text_width, text_height = self.FONT_SIZES[self.font]                # (25, 32) self.FONT_SIZES['J']
         text_width, text_height = text_width * \
             self.zoom_factor, text_height * self.zoom_factor
-        first_row_offset = (10, self.vertical_spacing)
-        second_row_offset = (10, info.height + 2*self.vertical_spacing)
+        first_row_offset = (7, self.vertical_spacing)                       # (7, 5)
+        second_row_offset = (7, info.height + 2*self.vertical_spacing)      # (7, 30 + 2 * 5)
 
         yield "^XA"
-        yield "^LH{},{}".format(*info.offset)
+        yield "^LH{},{}".format(*info.offset)                               # (0, 0)
 
-        if info.position == LabelPrintInfo.POS_TOP:
-            yield "^A{font}{height},{width}".format(font=self.font, height=text_height, width=text_width)
-            yield "^FO{},{}".format(0, 0)
-            yield "^FD{}^FS".format(info.text)
+#        if info.position == LabelPrintInfo.POS_TOP:                         # LabelPrintInfo.POS_RIGHT == LabelPrintInfo.POS_TOP => 1 == 2 => Always false?
+#            yield "^A{font}{height},{width}".format(font=self.font, height=text_height, width=text_width)
+#            yield "^FO{},{}".format(0, 0)
+#            yield "^FD{}^FS".format(info.text)
 
-        yield "^FO{},{}".format(*first_row_offset)
+        yield "^FO{},{}".format(*first_row_offset)                          # (7, 5)
 
-        yield "^BY{}".format(info.width)
-        yield "^BCN,{},N,N,N".format(info.height)
+#        yield "^BY{}".format(info.width)                                   # 2     LabelPrinterService.WIDTH_CUSTOM = 2
+#        yield "^BCN,{},N,N,N".format(info.height)                          # 30    LabelPrinterService.HEIGHT_CUSTOM = 30
+        yield "^BY1,"
+        yield "^BCN,{},N,".format(info.height)
         yield "^FD{}^FS".format(info.barcode)
 
-        if info.position == LabelPrintInfo.POS_RIGHT:
-            if info.width <= 4:
-                barcode_width = start + data + CRC + stop + text_spacing
-            else:
-                barcode_width = len(info.barcode) * info.width * 7 + 200
-            yield "^FO{},{}".format(*second_row_offset)
-            yield "^A0,{},{}".format(text_height, text_width)
-            yield "^FB{},{},{},".format(self.label_width_points - info.offset[0] - barcode_width, self.text_max_lines, self.space_points)
+#        if info.position == LabelPrintInfo.POS_RIGHT:                       # LabelPrintInfo.POS_RIGHT == LabelPrintInfo.POS_RIGHT => 1 == 1 => Always TRUE?
+#            if info.width <= 4:                                             # (LabelPrinterService.WIDTH_CUSTOM = 2) <= 4 ALWAYS TRUE?
+#                barcode_width = start + data + CRC + stop + text_spacing    # 22 + len(barcode)*22 + 22 + 22 + 2 + 22 - 2
+#            else:
+#                barcode_width = len(info.barcode) * info.width * 7 + 200    #
+        yield "^FO{},{}".format(*second_row_offset)
+        yield "^A0,{},{}".format(text_height, text_width)
+#            yield "^FB{},{},{},".format(self.label_width_points - info.offset[0] - barcode_width, self.text_max_lines, self.space_points)
+        yield "^FB380,1,"    # Labels 50x9 mm can't have more then 380 points width per field (Under default dpi). Fields are always 1 line, line spacing is senseless in this case
             # use built in linebreak functionality for bulk of string
-            yield "^FD{}^FS".format(self.replace_newlines(info.text))
+        yield "^FD{}^FS".format(self.replace_newlines(info.text))
+
         yield "^XZ"
 
     def replace_newlines(self, text):
