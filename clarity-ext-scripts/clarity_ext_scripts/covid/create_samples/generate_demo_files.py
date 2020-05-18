@@ -45,16 +45,18 @@ class Extension(GeneralExtension):
                 samples_and_controls.append((generated, abbreviation))
 
             for ix, sample_or_control_info in enumerate(samples_and_controls):
-                sample_or_control_id, sample_or_control_name = sample_or_control_info
+                sample_or_control_id, extra_info = sample_or_control_info
                 rack_id = "LVL" + timestamp
                 row = chr(ix % rows + ord("A"))
                 col = ix / rows + 1
                 cavity_id = "{}_{}{:03d}".format(rack_id, row, col)
                 pos = "{}{:02d}".format(row, col)
+
                 yield ([rack_id, cavity_id, pos, sample_or_control_id] +
-                       [""] * 3 +
-                       [sample_or_control_name] +
-                       [""] * 8)
+                       [""] * 3 +  # "CONCENTRATION", "CONCENTRATIONUNIT", "VOLUME"
+                       [""] * 4 +  # COLUMN_USER_DEFINED1-4 
+                       [extra_info] +  # COLUMN_USER_DEFINED5, info only
+                       [""] * 4)
 
             # Add postfix rows that should be ignored later
             extra_cols = [""] * (len(RawSampleListFile.HEADERS) - 1)

@@ -17,16 +17,18 @@ class RawSampleListColumns(object):
     COLUMN_REFERENCE = "Sample Id"
     COLUMN_POSITION = "Position"
     COLUMN_USER_DEFINED1 = "USERDEFINED1"
+    COLUMN_USER_DEFINED5 = "USERDEFINED5"
 
     HEADERS = ["Rack Id", "Cavity Id",
                COLUMN_POSITION, COLUMN_REFERENCE,
                "CONCENTRATION", "CONCENTRATIONUNIT", "VOLUME",
-               COLUMN_USER_DEFINED1,  # Contains a control name or the integration test knm status
-               "USERDEFINED2", "USERDEFINED3", "USERDEFINED4", "USERDEFINED5",
+               COLUMN_USER_DEFINED1,
+               "USERDEFINED2", "USERDEFINED3", "USERDEFINED4",
+               COLUMN_USER_DEFINED5,  # Contains a control name or the integration test knm status
                "PlateErrors", "SampleErrors", "SAMPLEINSTANCEID", "SAMPLEID"]
 
     # The column from which we can get the fake status in integration tests
-    COLUMN_FAKE_STATUS = COLUMN_USER_DEFINED1
+    COLUMN_FAKE_STATUS = COLUMN_USER_DEFINED5
 
 
 class RawSampleListFile(RawSampleListColumns, BaseRawSampleListFile):
