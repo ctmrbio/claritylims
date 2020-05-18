@@ -105,6 +105,11 @@ class ValidatedSampleListFile(PandasWrapper):
     STATUS_ERROR = "error"
     STATUS_UNREGISTERED = "unregistered"
 
+    STATUS_ALL = [
+        STATUS_OK,
+        STATUS_ERROR,
+        STATUS_UNREGISTERED
+    ] 
 
 BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS = "Assign unregistered to anonymous"
 
@@ -126,7 +131,13 @@ class BaseValidateRawSampleListExtension(GeneralExtension):
         barcode = str(row[validated_sample_list.COLUMN_REFERENCE])
 
         if ordering_org == TESTING_ORG:
+            # The user can send in a "fake status" from the raw sample list, by including it
+            # in COLUMN_FAKE_STATUS. If we don't recognize it as one of the status flags, we
+            # should just use "ok"
             status = row[validated_sample_list.COLUMN_FAKE_STATUS]
+            if status not in validated_sample_list.STATUS_ALL:
+                status = validated_sample_list.STATUS_OK
+
             comment = "This data is faked for integration purposes (Internal testing was selected)"
 
             if status == validated_sample_list.STATUS_OK:
