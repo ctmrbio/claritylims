@@ -1,9 +1,8 @@
-import os
-import lxml.etree as ET
+from datetime import datetime
 from clarity_ext_scripts.covid.sminet_client import (create_covid_request, SampleInfo,
                                                      ReferringClinic, Patient, Doctor)
-
-from datetime import datetime
+import lxml.etree as ET
+mport os
 
 
 def test_can_create_expected_request():
@@ -16,7 +15,7 @@ def test_can_create_expected_request():
     clinic = ReferringClinic("Clinic name", "", "C", Doctor("Some doctor"))
     patient = Patient("1234", "k", "Some Name", 23)
     request = create_covid_request(
-        request_created, sample_info, clinic, patient)
+        sample_info, clinic, patient, request_created)
 
     fixtures = os.path.join(os.path.dirname(__file__), "fixtures")
 

@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import lxml.etree as ET
 import datetime
+import requests
+import logging
+import lxml.etree as ET
+
+logger = logging.getLogger(__name__)
+
 
 """
 A Python client for the SmiNet site
@@ -280,14 +285,14 @@ class Doctor(SmiNetComplexType):
 
 class SampleInfo(SmiNetComplexType):
     def __init__(self,
-                 status, sample_number, sample_date_arrival, sample_material,
+                 status, sample_id, sample_date_arrival, sample_material,
                  optional_reference=None,
                  sample_date_referral=None,
                  sample_free_text_lab=None,
                  sample_free_text_referral=None):
         """
         :status: Avser anmälans status.
-        :sample_number: Laboratoriets unika provnummer.
+        :sample_id: Laboratoriets unika provnummer.
         :sample_date_arrival: Det datum som provet ankom till laboratoriet.
         :sample_date_referral: Det datum som patienten provtogs.
         :sample_material: Avser undersökningsmatrial.
@@ -300,7 +305,7 @@ class SampleInfo(SmiNetComplexType):
         """
         self.status = StatusType(status)
         # Is a string according to the docs
-        self.sample_number = ShortString(str(sample_number))
+        self.sample_id = ShortString(str(sample_id))
         self.sample_date_arrival = SmiNetDate(sample_date_arrival)
         self.sample_material = SampleMaterialType(sample_material)
         self.optional_reference = ShortLimitedString(
@@ -315,7 +320,7 @@ class SampleInfo(SmiNetComplexType):
     def to_element(self, element_name="sampleInfo"):
         element = ET.Element(element_name)
         add_child(element, "status", self.status)
-        add_child(element, "sampleNumber", self.sample_number)
+        add_child(element, "sampleNumber", self.sample_id)
         add_child(element, "sampleDateArrival", self.sample_date_arrival)
         add_child(element, "sampleDateReferral", self.sample_date_referral)
         add_child(element, "sampleMaterial", self.sample_material)
@@ -433,7 +438,7 @@ class Patient(SmiNetComplexType):
         return element
 
 
-def SmiNetLabExport(created, notification):
+def SmiNetLabExport(created, lab_number, notification):
     """
     Creates a validated lab export as XML that is acceptable for the SmiNet endpoint.
 
@@ -453,7 +458,6 @@ def SmiNetLabExport(created, notification):
     element.append(date_time_created)
 
     # # smiNetLabExport/laboratory
-    lab_number = 10  # TODO: Get this ID
     element.append(Laboratory(lab_number, "National Pandemic Center at KI"))
 
     element.append(notification.to_element())
@@ -465,7 +469,7 @@ def create_scov2_positive_lab_result():
     return LabResult("C", lab_diagnosis)
 
 
-def create_covid_request(created, sample_info, referring_clinic, patient):
+def create_covid_request(sample_info, referring_clinic, patient, created=None):
     """
     Creates a request to SmiNet that's valid for the Covid project.
 
@@ -474,14 +478,70 @@ def create_covid_request(created, sample_info, referring_clinic, patient):
     :patient: An object created with the Patient factory
     """
 
+    if not created:
+        created = datetime.datetime.now()
+
     reporting_doctor = Doctor("Lars Engstrand")
     notification = NotificationType(sample_info, reporting_doctor, referring_clinic, patient,
                                     create_scov2_positive_lab_result())
 
-    contract = SmiNetLabExport(created, notification)
+    lab_number = 91  # TODO, ensure that this is correct
+    contract = SmiNetLabExport(created, lab_number, notification)
 
     return ET.tostring(contract, pretty_print=True, encoding="ISO-8859-1")
 
 
 class SmiNetValidationError(Exception):
     pass
+
+
+class SmiNetRequestError(Exception):
+    pass
+
+
+class SmiNetClient(object):
+    def __init__(self, sminet_url, sminet_username, sminet_password, sminet_proxy=None):
+        """
+        :sminet_url: The url
+        :sminet_username: The username
+        :sminet_password: The password
+        :proxy: Proxy info if the client requires socks (we access SmiNet via a jump host in dev)
+        """
+        self.url = sminet_url
+        if not "https://" in self.url:
+            raise AssertionError("The SmiNet url should use https")
+        self.username = sminet_username
+        self.password = sminet_password
+        self.proxy = sminet_proxy
+
+    def create(self, sample_info, referring_clinic, patient, created=None):
+        """
+        Creates the entry in SmiNet
+        """
+        logger.info("Creating a request at SmiNet")
+        headers = {"Content-Type": "application/xml"}
+        data = create_covid_request(
+            sample_info, referring_clinic, patient, created)
+        response = requests.post(self.url, data=data, proxies=dict(
+            https=self.proxy), headers=headers)
+
+        if response.status_code != requests.codes.created:
+            raise SmiNetRequestError(response.text)
+
+        logger.info("Request created at SmiNet. Response code was={}".format(
+            response.status_code))
+
+    @classmethod
+    def SmiNetClientFromConfig(cls, extension_config):
+        """
+        Creates a SmiNetClient from a clarity-ext extension config (self.config)
+        """
+        filtered = {
+            key: extension_config[key]
+            for key in [
+                "sminet_url",
+                "sminet_username",
+                "sminet_password",
+                "sminet_proxy"] if key in extension_config
+        }
+        return cls(**filtered)
