@@ -469,7 +469,7 @@ def create_scov2_positive_lab_result():
     return LabResult("C", lab_diagnosis)
 
 
-def create_covid_request(sample_info, referring_clinic, patient, created=None):
+def create_covid_request(sample_info, referring_clinic, patient, reporting_doctor, created=None):
     """
     Creates a request to SmiNet that's valid for the Covid project.
 
@@ -481,7 +481,6 @@ def create_covid_request(sample_info, referring_clinic, patient, created=None):
     if not created:
         created = datetime.datetime.now()
 
-    reporting_doctor = Doctor("Lars Engstrand")
     notification = NotificationType(sample_info, reporting_doctor, referring_clinic, patient,
                                     create_scov2_positive_lab_result())
 
@@ -514,14 +513,20 @@ class SmiNetClient(object):
         self.password = sminet_password
         self.proxy = sminet_proxy
 
-    def create(self, sample_info, referring_clinic, patient, created=None):
+    def create(self, sample_info, referring_clinic, patient, reporting_doctor, created=None):
         """
         Creates the entry in SmiNet
+
+        :sample_info: A SampleInfo instance
+        :referring_clinic: A ReferringClinic instance
+        :patient: A Patient instance
+        :reporting_doctor: A Doctor instance
+        :created: The date when the request is created. Defaults to now()
         """
         logger.info("Creating a request at SmiNet")
         headers = {"Content-Type": "application/xml"}
         data = create_covid_request(
-            sample_info, referring_clinic, patient, created)
+            sample_info, referring_clinic, patient, reporting_doctor, created)
         response = requests.post(self.url, data=data, proxies=dict(
             https=self.proxy), headers=headers)
 

@@ -47,4 +47,5 @@ def test_can_create_request():
                              sample_free_text_referral="Anamnes: Personalprov")
     clinic = ReferringClinic("Clinic name", "", "C", Doctor("Some doctor"))
     patient = Patient("1234", "k", "Some Name", 23)
-    client.create(sample_info, clinic, patient)
+    reporting_doctor = Doctor("Lars Engstrand")
+    client.create(sample_info, clinic, patient, reporting_doctor)

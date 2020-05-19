@@ -14,8 +14,9 @@ def test_can_create_expected_request():
                              sample_free_text_referral="Anamnes: Personalprov")
     clinic = ReferringClinic("Clinic name", "", "C", Doctor("Some doctor"))
     patient = Patient("1234", "k", "Some Name", 23)
+    reporting_doctor = Doctor("Lars Engstrand")
     request = create_covid_request(
-        sample_info, clinic, patient, request_created)
+        sample_info, clinic, patient, reporting_doctor, request_created)
 
     fixtures = os.path.join(os.path.dirname(__file__), "fixtures")
 
