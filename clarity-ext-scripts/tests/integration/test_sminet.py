@@ -3,6 +3,7 @@ from uuid import uuid4
 import random
 import string
 import yaml
+import pytest
 from datetime import datetime
 from clarity_ext_scripts.covid.sminet_client import (create_covid_request, SampleInfo,
                                                      ReferringClinic, Patient, Doctor,
