@@ -1,5 +1,6 @@
 import os
 import yaml
+import pytest
 from clarity_ext_scripts.covid.sminet_client import (create_covid_request, SampleInfo,
                                                      ReferringClinic, Patient, Doctor,
                                                      SmiNetClient)
