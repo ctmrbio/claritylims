@@ -5,9 +5,9 @@ from clarity_ext_scripts.covid.utils import KNMClient
 
 
 class RawSampleListColumns(object):
-    COLUMN_REFERENCE = "reference"
-    COLUMN_SOURCE = "source"
-    COLUMN_REASON = "reason"
+    COLUMN_REFERENCE = "Sample Id"
+    COLUMN_SOURCE = "Region"
+    COLUMN_REASON = "Deviation"
     COLUMN_FAKE_STATUS = COLUMN_REASON
 
 
@@ -28,6 +28,7 @@ class Extension(BaseValidateRawSampleListExtension):
         client = KNMClient(self)
 
         raw_sample_list = RawSampleListFile.create_from_context(self.context)
+
         validated_sample_list = raw_sample_list.ValidatedSampleListFile()
 
         for ix, row in validated_sample_list.csv.iterrows():
@@ -55,4 +56,4 @@ class Extension(BaseValidateRawSampleListExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield "24-46737"
+        yield self.test("24-47134", commit=False)

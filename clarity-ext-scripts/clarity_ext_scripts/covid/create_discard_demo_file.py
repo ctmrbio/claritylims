@@ -18,7 +18,10 @@ class Extension(GeneralExtension):
                 return [(str(random.randint(1000000000, 9999999999)), reason)
                         for _ in range(num)]
 
-            headers = ["reference", "source", "reason"]
+            headers = [ValidatedSampleListFile.COLUMN_REFERENCE,
+                       ValidatedSampleListFile.COLUMN_REGION,
+                       ValidatedSampleListFile.COLUMN_DEVIATION]
+
             yield headers
 
             ok = generate(num_ok, ValidatedSampleListFile.STATUS_OK)
@@ -44,4 +47,4 @@ class Extension(GeneralExtension):
         self.context.file_service.upload_files("Raw sample list", upload_tuple)
 
     def integration_tests(self):
-        yield "24-46737"
+        yield self.test("24-47134", commit=False)
