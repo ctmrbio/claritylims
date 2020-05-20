@@ -6,7 +6,7 @@ from clarity_ext_scripts.covid.controls import controls_barcode_generator
 from clarity_ext_scripts.covid.utils import KNMClient
 from clarity_ext_scripts.covid.create_samples.common import (
     BaseRawSampleListFile, ValidatedSampleListFile,
-    BaseValidateRawSampleListExtension
+    BaseValidateRawSampleListExtension, BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS
 )
 
 
@@ -103,6 +103,7 @@ class Extension(BaseValidateRawSampleListExtension):
         validated_sample_list = raw_sample_list.ValidatedSampleListFile()
 
         # 4. Create the validated list
+        unregistered = list()
         for ix, row in validated_sample_list.csv.iterrows():
             barcode = row[validated_sample_list.COLUMN_REFERENCE]
             well = row[validated_sample_list.COLUMN_POSITION]
@@ -122,6 +123,8 @@ class Extension(BaseValidateRawSampleListExtension):
             if not is_control:
                 service_request_id, status, comment, org_uri = self._search_for_id(
                     validated_sample_list, client, ordering_org, row)
+                if status == "unregistered":
+                    unregistered.append(barcode)
                 validated_sample_list.csv.loc[ix,
                                               validated_sample_list.COLUMN_ORG_URI] = org_uri
             else:
@@ -145,6 +148,10 @@ class Extension(BaseValidateRawSampleListExtension):
         self.context.file_service.upload(
             "Validated sample list", file_name, validated_sample_list_content,
             self.context.file_service.FILE_PREFIX_NONE)
+        if len(unregistered) > 0 :
+            self.usage_warning("The following sample are unregistered '{}'. Press '{}' "
+                               "to change the 'Deviation' to anonymous"
+                               "".format(unregistered, BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS))
 
     def integration_tests(self):
-        yield self.test("24-46746", commit=True)
+        yield self.test("24-47136", commit=False)
