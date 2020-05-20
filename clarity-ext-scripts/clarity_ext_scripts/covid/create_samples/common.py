@@ -47,7 +47,7 @@ class PandasWrapper(object):
 
     @classmethod
     def parse_to_csv(cls, file_like):
-        return pd.read_csv(file_like, encoding="utf-8", sep=cls.SEPARATOR, dtype="string")
+        return pd.read_csv(file_like, sep=cls.SEPARATOR, dtype="string")
 
     @staticmethod
     def filter_before_parse(file_like):
@@ -79,8 +79,6 @@ class BaseRawSampleListFile(PandasWrapper):
         # that all columns we require later in the workflow are now named the same.
         ret = ValidatedSampleListFile(self.csv)
         ret.COLUMN_FAKE_STATUS = self.COLUMN_FAKE_STATUS
-        ret.csv = ret.csv.rename(
-            columns={self.COLUMN_REFERENCE: ret.COLUMN_REFERENCE})
         return ret
 
 
@@ -94,7 +92,10 @@ class ValidatedSampleListFile(PandasWrapper):
 
     FILE_HANDLE = "Validated sample list"
 
-    COLUMN_REFERENCE = "reference"
+    COLUMN_REFERENCE = "Sample Id"
+    COLUMN_REGION = "Region"
+    COLUMN_DEVIATION = "Deviation"
+
     COLUMN_SERVICE_REQUEST_ID = "service_request_id"
     COLUMN_STATUS = "status"
     COLUMN_COMMENT = "comment"
@@ -109,7 +110,8 @@ class ValidatedSampleListFile(PandasWrapper):
         STATUS_OK,
         STATUS_ERROR,
         STATUS_UNREGISTERED
-    ] 
+    ]
+
 
 BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS = "Assign unregistered to anonymous"
 

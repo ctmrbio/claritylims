@@ -18,8 +18,9 @@ class Extension(GeneralExtension):
                 return [(str(random.randint(1000000000, 9999999999)), reason)
                         for _ in range(num)]
 
-            # headers = ["reference", "source", "reason"]
-            headers = ["Sample Id", "Region", "Deviation"]
+            headers = [ValidatedSampleListFile.COLUMN_REFERENCE,
+                       ValidatedSampleListFile.COLUMN_REGION,
+                       ValidatedSampleListFile.COLUMN_DEVIATION]
 
             yield headers
 
