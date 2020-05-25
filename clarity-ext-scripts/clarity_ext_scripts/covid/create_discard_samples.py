@@ -78,7 +78,7 @@ class Extension(BaseCreateSamplesExtension):
         container = Container(container_type=container_type, name=name)
 
         # 3. Create in-memory sample
-        original_name = row["reference"]
+        original_name = row["Sample Id"]
         org_uri = row["org_uri"]
         service_request_id = row["service_request_id"]
 
@@ -151,4 +151,4 @@ class Extension(BaseCreateSamplesExtension):
             self.context.file_service.FILE_PREFIX_NONE)
 
     def integration_tests(self):
-        yield self.test("24-46737", commit=True)
+        yield self.test("24-47148", commit=False)
