@@ -284,7 +284,7 @@ class PartnerAPIV7Client(object):
                     ("No partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
         except PartnerClientAPIException as e:
-            log.error(e.message)
+            log.info("Error while connecting to KNM: {}".format(e.message))
             raise e
 
     def create_anonymous_service_request(self, referral_code):

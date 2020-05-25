@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="covid.validate_sample_creation_list" type="PythonConfigurationType" factoryName="Python" folderName="covid">
+  <configuration default="false" name="covid.create_discarded_samples" type="PythonConfigurationType" factoryName="Python" folderName="covid">
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
@@ -15,7 +15,7 @@
     <module name="claritylims" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/clarity-ext-scripts/repos/clarity-ext/clarity_ext/cli.py" />
-    <option name="PARAMETERS" value="--level INFO extension --cache True clarity_ext_scripts.covid.validate_sample_creation_list test" />
+    <option name="PARAMETERS" value="--level INFO extension --cache True clarity_ext_scripts.covid.create_discard_samples test" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <method />

@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import datetime
+from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
 
 
 class UniqueBarcodeGenerator(object):
@@ -82,6 +83,10 @@ class CtmrCovidSubstanceInfo(object):
     will also work as well with a built in clarity control as a control that's in fact a sample.
     """
 
+    STATUS_DISCARD = "DISCARD"
+    STATUS_DISCARDED_AND_REPORTED = "DISCARDED_AND_REPORTED"
+    
+
     def __init__(self, substance):
         """
         :substance: A sample, analyte or a built-in control
@@ -128,3 +133,17 @@ class CtmrCovidSubstanceInfo(object):
         else:
             raise NotImplementedError("Not implemented substance type {}".format(
                 type(self.substance)))
+
+
+
+def KNMClient(extension):
+    # A factory for a KnmClient from an extension
+    config = {
+        key: extension.config[key]
+        for key in [
+            "test_partner_base_url", "test_partner_code_system_base_url",
+            "test_partner_user", "test_partner_password"
+        ]
+    }
+    return PartnerAPIV7Client(**config)
+

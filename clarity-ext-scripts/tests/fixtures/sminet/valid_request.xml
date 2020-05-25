@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<smiNetLabExport>
+  <version>
+    <version-number>4.0.0</version-number>
+  </version>
+  <dateTimeCreated>2020-05-18 18:11:06</dateTimeCreated>
+  <laboratory>
+    <labNumber>91</labNumber>
+    <labName>National Pandemic Center at KI</labName>
+  </laboratory>
+  <notification>
+    <sampleInfo>
+      <status>1</status>
+      <sampleNumber>123</sampleNumber>
+      <sampleDateArrival>2020-04-30</sampleDateArrival>
+      <sampleDateReferral>2020-04-30</sampleDateReferral>
+      <sampleMaterial>Svalg</sampleMaterial>
+      <sampleFreeTextReferral>Anamnes: Personalprov</sampleFreeTextReferral>
+    </sampleInfo>
+    <reportingDoctor>
+      <name>Lars Engstrand</name>
+    </reportingDoctor>
+    <referringClinic>
+      <referringClinicName>Clinic name</referringClinicName>
+      <referringClinicAddress></referringClinicAddress>
+      <referringClinicCounty>C</referringClinicCounty>
+      <referringDoctor>
+        <name>Some doctor</name>
+      </referringDoctor>
+    </referringClinic>
+    <patient>
+      <patientId>1234</patientId>
+      <patientSex>k</patientSex>
+      <patientName>Some Name</patientName>
+      <patientAge>23</patientAge>
+    </patient>
+    <labResult>
+      <diagnosticMethod>C</diagnosticMethod>
+      <labDiagnosis>
+        <diagnoseInCode>SCOV2</diagnoseInCode>
+        <diagnoseInText>SARS-CoV-2 (covid-19)</diagnoseInText>
+      </labDiagnosis>
+    </labResult>
+  </notification>
+</smiNetLabExport>
