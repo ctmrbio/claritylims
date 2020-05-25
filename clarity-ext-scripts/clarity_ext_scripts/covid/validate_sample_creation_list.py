@@ -150,7 +150,7 @@ class Extension(BaseValidateRawSampleListExtension):
             self.context.file_service.FILE_PREFIX_NONE)
         if len(unregistered) > 0 :
             self.usage_warning("The following sample are unregistered '{}'. Press '{}' "
-                               "to change the 'Deviation' to anonymous"
+                               "to change the 'Status' to anonymous"
                                "".format(unregistered, BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS))
 
     def integration_tests(self):
