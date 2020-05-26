@@ -322,7 +322,7 @@ class PartnerAPIV7Client(object):
                     {
                         "system": "{}/id/CodeSystem/cs-test-types".format(
                             self._test_partner_code_system_base_url),
-                        "code": "covid19"
+                        "code": "SARS-CoV-2-RNA"
                     }
                 ]
             }
