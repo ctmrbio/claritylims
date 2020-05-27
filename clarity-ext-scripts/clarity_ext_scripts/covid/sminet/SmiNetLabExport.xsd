@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:annotation>
+        <xsd:documentation xml:lang="se">
+            _SmiNetLabExport XML Schema v1.4_
+
+            Denna fil fungerar som validering [XML Schema (.xsd)] för
+            xmlfiler som skall skickas till SmiNet. En exportfil som
+            skall skickas till SmiNet kommer att valideras mot detta
+            xml-schema innan parsning. Det rekomenderas att validera
+            filen innan sändning för bättre felhantering.
+
+            Den senaste versionen av denna fil tillgänglig via:
+            http://@distribution.ip@/xml-schemas/SmiNetLabExport.xsd.
+			
+			SmiNet-koder/specifikationer och mappningar finns i dokumentet
+			"The latest specifikation code map" som finns att hämta här:
+			http://sminet.folkhalsomyndigheten.se/LabExporter/index.html
+
+            För ytterliggare information, kontakta SMI:
+            sminet@folkhalsomyndigheten.se
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <!-- ************************************************** -->
+    <!-- *********** Global Type Definitions ************** -->
+    <!-- ************************************************** -->
+
+    <!-- ******************* SmiNetDate ****************** -->
+    <xsd:simpleType name="SmiNetDate">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                SmiNetLabExporters datumformat (ÅÅÅÅ-MM-DD).
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d\d\d\d-\d\d-\d\d"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* SmiNetDateTime ****************** -->
+    <xsd:simpleType name="SmiNetDateTime">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                SmiNetLabExporters datum- och tidformat
+                (ÅÅÅÅ-MM-DD TT:MM:SS).
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* ShortLimitedString ****************** -->
+    <xsd:simpleType name="ShortLimitedString">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                En sträng, max 15 tecken lång.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* ShortString ****************** -->
+    <xsd:simpleType name="ShortString">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                En sträng, max 25 tecken lång.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="25"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* LimitedString ****************** -->
+    <xsd:simpleType name="LimitedString">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                En sträng, max 40 tecken lång.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* LongLimitedString ****************** -->
+    <xsd:simpleType name="LongLimitedString">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                En sträng, max 255 tecken lång.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="255"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* FreeText ****************** -->
+    <xsd:simpleType name="FreeText">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                En sträng, max 1500 tecken lång.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="1500"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* DoctorType ****************** -->
+    <xsd:complexType name="DoctorType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                DoctorType innehåller information om en läkare, antingen
+                ansvarig läkare på det inskickande laboratoriet eller
+                behandlande läkare på kliniken.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:choice minOccurs="1" maxOccurs="2">
+            <!--Läkarens namn.-->
+            <xsd:element name="name" type="LimitedString"
+                minOccurs="0" maxOccurs="1"/>
+            <!--Läkarens telefonnummer dagtid.-->
+            <xsd:element name="officePhoneNumber" type="LimitedString"
+                minOccurs="0" maxOccurs="1"/>
+        </xsd:choice>
+    </xsd:complexType>
+
+
+    <!-- ******************************************************** -->
+    <!-- ******************* Lab specification ****************** -->
+    <!-- ******************************************************** -->
+
+    <!-- ******************* SmiNetLabExport ****************** -->
+    <xsd:element name="smiNetLabExport" type="SmiNetLabExportType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Rootelementet i xml-dokumentet. Varje exportfil (XML-fil)
+                måste innehålla ett och endast ett sådant element.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:complexType name="SmiNetLabExportType">
+        <xsd:sequence>
+        	<!--Information om när exportfilens version-->
+            <xsd:element name="version" type="Version"
+                minOccurs="0" maxOccurs="1"/>
+            <!--Information om när exportfilen skapades-->
+            <xsd:element name="dateTimeCreated" type="SmiNetDateTime"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Information om laboratoriet som gör anmälan.-->
+            <xsd:element name="laboratory" type="LaboratoryType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Information om _en_ anmälan. Om information -->
+            <!--om flera anmälningar skall exporteras, så -->
+            <!--listas flera notification efter varandra.-->
+            <xsd:element name="notification" type="NotificationType"
+                minOccurs="0" maxOccurs="unbounded"/>
+            <!--Förfrågan om att makulera en anmälan.-->
+            <xsd:element name="takebackNotification" type="TakebackNotificationType"
+                minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+     <!-- ******************* Version ********************* -->
+
+	 <xsd:complexType name="Version">
+        <xsd:sequence>
+ 			<xsd:element name="version-number" type="ShortString"
+                minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- ******************* Laboratory ****************** -->
+    <xsd:complexType name="LaboratoryType">
+        <xsd:sequence>
+            <!--Varje laboratorium som kopplar sig med automatisk -->
+            <!--överföring mot SmiNet tilldelas ett unikt -->
+            <!--identifikationsnummer som anges i LabNumber.-->
+            <xsd:element name="labNumber" type="xsd:nonNegativeInteger"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Namnet på laboratoriet som exporterar filen.-->
+            <xsd:element name="labName" type="LongLimitedString"
+                minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- ******************* LabResult ****************** -->
+    <xsd:complexType name="NotificationType">
+        <xsd:sequence>
+            <!--Översiktlig information om provet.-->
+            <xsd:element name="sampleInfo" type="SampleInfoType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Information om, på laboratoriet, ansvarig läkare.-->
+            <xsd:element name="reportingDoctor" type="DoctorType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Information om kliniken som provtog patienten -->
+            <!--och skickade in provet till laboratoriet.-->
+            <xsd:element name="referringClinic" type="ReferringClinicType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Information om den provtagna patienten.-->
+            <xsd:element name="patient" type="PatientType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Information om provresultatet.-->
+            <xsd:element name="labResult" type="LabResultType"
+                minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="TakebackNotificationType">
+        <xsd:sequence>
+            <!--Referensnummer till en tidigare anmälan.-->
+            <xsd:element name="refid" type="xsd:integer"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Valfri lokal referens som skickas tillbaka med -->
+            <!--kvittot för spårbarhet.-->
+            <xsd:element name="optionalReference" type="ShortLimitedString"
+                minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- ******************* LabTest ****************** -->
+    <xsd:complexType name="SampleInfoType">
+        <xsd:sequence>
+            <!--Valfri lokal referens som skickas tillbaka med -->
+            <!--kvittot för spårbarhet.-->
+            <xsd:element name="optionalReference" type="ShortLimitedString"
+                minOccurs="0" maxOccurs="1"/>
+            <!--Avser anmälans status.-->
+            <xsd:element name="status" type="StatusType"
+                minOccurs="1" maxOccurs="1" default="1"/>
+            <!--Laboratoriets unika provnummer.-->
+            <xsd:element name="sampleNumber" type="ShortString"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Det datum som provet ankom till laboratoriet.-->
+            <xsd:element name="sampleDateArrival" type="SmiNetDate"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Det datum som patienten provtogs.-->
+            <xsd:element name="sampleDateReferral" type="SmiNetDate"
+                minOccurs="0" maxOccurs="1"/>
+            <!--Avser undersökningsmatrial.-->
+            <xsd:element name="sampleMaterial" type="SampleMaterialType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--LABORATORIETS eventuella kommentarer till provet.-->
+            <xsd:element name="sampleFreeTextLab" type="FreeText"
+                minOccurs="0" maxOccurs="1"/>
+            <!--PROVTAGERENS eventuella kommentarer till provet. -->
+            <!--Exempel: "Patienten rest i Sydostasien."-->
+            <xsd:element name="sampleFreeTextReferral" type="FreeText"
+                minOccurs="0" maxOccurs="1"/>
+            <!--Information om laboratoriet som skickade provet. -->
+            <!--Endast för referenslaboratorium.-->
+            <xsd:element name="sentForReferenceBy" type="sentForReferenceByType"
+                minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="StatusType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Avser en anmälans status. Förklaring:
+                1. Slutsvar.
+                2. Komplettering kommer.
+                3. Makulering av en tidigare anmälan.
+                4. Komplettering av en tidigare anmälan.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:nonNegativeInteger">
+            <xsd:enumeration value="1"/>
+            <xsd:enumeration value="2"/>
+            <xsd:enumeration value="3"/>
+            <xsd:enumeration value="4"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="SampleMaterialType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Avser undersökningsmatrial. (Notera att det är tillåtet att
+                byta ut 'å' och 'ä' mot 'a' samt att 'ö' kan bytas ut mot 'o'.
+                Detta alternativ finns om det skulle bli problem med
+                valideringen pga konstigheter i teckentabeller.)
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Annat"/>
+            <xsd:enumeration value="Bio"/>
+            <xsd:enumeration value="Blod"/>
+            <xsd:enumeration value="Bronk"/>
+            <xsd:enumeration value="Feces"/>
+            <xsd:enumeration value="Likv"/>
+            <xsd:enumeration value="Lymf"/>
+            <xsd:enumeration value="Nfary"/>
+            <xsd:enumeration value="Nasa"/>
+            <xsd:enumeration value="Pleur"/>
+            <xsd:enumeration value="Sekr"/>
+            <xsd:enumeration value="Serum"/>
+            <xsd:enumeration value="Sput"/>
+            <xsd:enumeration value="Svalg"/>
+            <xsd:enumeration value="Sar"/>
+            <xsd:enumeration value="Urin"/>
+            <xsd:enumeration value="VSK"/>
+            <xsd:enumeration value="Led"/>
+            <xsd:enumeration value="Perik"/>
+            <xsd:enumeration value="Fost"/>
+            <xsd:enumeration value="Asci"/>
+            <xsd:enumeration value="Melor"/>
+            <xsd:enumeration value="Uret"/>
+            <xsd:enumeration value="Rect"/>
+            <xsd:enumeration value="Cerv"/>
+            <xsd:enumeration value="VagSek"/>
+            <xsd:enumeration value="Asp"/>
+            <xsd:enumeration value="Blodsr"/>
+            <xsd:enumeration value="Cervur"/>
+            <xsd:enumeration value="Infart"/>
+            <xsd:enumeration value="Nsp"/>
+            <xsd:enumeration value="Perin"/>
+            <xsd:enumeration value="Poolat"/>
+            <xsd:enumeration value="Saliv"/>
+            <xsd:enumeration value="Vagur"/>
+            <xsd:enumeration value="Ogon"/>
+            <xsd:enumeration value="Oron"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="sentForReferenceByType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Innehåller information om laboratoriet som skickade provet
+                för referens samt provnumret hos detta lab.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <!--Laboratoriets unika provnummer.-->
+            <xsd:element name="sampleNumber" type="ShortString"
+                minOccurs="0" maxOccurs="1"/>
+            <!--Laboratoriets namn.-->
+            <xsd:element name="laboratory" type="LimitedString"
+                minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- ******************* ReferringClinic ****************** -->
+    <xsd:complexType name="ReferringClinicType">
+        <xsd:sequence>
+            <!--Den insändande klinikens namn.-->
+            <xsd:element name="referringClinicName" type="LongLimitedString"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Den insändande klinikens adress.-->
+            <xsd:element name="referringClinicAddress" type="LongLimitedString"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Det landsting som den insändande kliniken tillhör.-->
+            <xsd:element name="referringClinicCounty" type="CountyType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Information om den läkare som remitterade provet,-->
+            <!--på angiven klinik.-->
+            <xsd:element name="referringDoctor" type="DoctorType"
+                minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="CountyType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Avser smittskyddsläkarens landstingsbokstav.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="AB"/>   <!-- Stockholm -->
+            <xsd:enumeration value="C"/>	<!-- Uppsala -->
+            <xsd:enumeration value="D"/>	<!-- Sodermanland -->
+            <xsd:enumeration value="E"/>	<!-- ostergotland -->
+            <xsd:enumeration value="F"/>	<!-- Jonkoping -->
+            <xsd:enumeration value="G"/>	<!-- Kronoberg -->
+            <xsd:enumeration value="H"/>	<!-- Kalmar -->
+            <xsd:enumeration value="I"/>	<!-- Gotland -->
+            <xsd:enumeration value="K"/>	<!-- Blekinge -->
+            <xsd:enumeration value="M"/>	<!-- Skane -->
+            <xsd:enumeration value="N"/>	<!-- Halland -->
+            <xsd:enumeration value="O"/>	<!-- Vastragotaland -->
+            <xsd:enumeration value="OB"/>	<!-- Vastragotaland -->
+            <xsd:enumeration value="OG"/>	<!-- Vastragotaland -->
+            <xsd:enumeration value="OS"/>	<!-- Vastragotaland -->
+            <xsd:enumeration value="OT"/>	<!-- Vastragotaland -->
+            <xsd:enumeration value="S"/>	<!-- Varmland -->
+            <xsd:enumeration value="T"/>	<!-- orebro -->
+            <xsd:enumeration value="U"/>	<!-- Vastmanland -->
+            <xsd:enumeration value="W"/>	<!-- Dalarna -->
+            <xsd:enumeration value="X"/>	<!-- Gavleborg -->
+            <xsd:enumeration value="Y"/>	<!-- Vasternorrland -->
+            <xsd:enumeration value="Z"/>	<!-- Jamtland -->
+            <xsd:enumeration value="AC"/>	<!-- Vasterbotten -->
+            <xsd:enumeration value="BD"/>	<!-- Norrbotten -->
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* Patient ****************** -->
+    <xsd:complexType name="PatientType">
+        <xsd:sequence>
+            <!--Information för att identifiera patienten. -->
+            <!--Tillåtna typer är personnummer, rikskod och reservkod.-->
+            <xsd:element name="patientId" type="IdType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Patientens kön.-->
+            <xsd:element name="patientSex" type="SexType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Patientens namn.-->
+            <xsd:element name="patientName" type="LimitedString"
+                minOccurs="0" maxOccurs="1"/>
+            <!--Patientens ålder.-->
+            <xsd:element name="patientAge" type="xsd:nonNegativeInteger"
+                minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="IdType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Avser personnummer eller i känsliga ärenden en rikskod, annat nummer alt. sammordningsnummer.
+                Fyra olika format godkänns:
+                1) (Personnummer) 12 siffror och 13 tecken ('-' avgränsare), exempel: "19671208-1123".
+                2) (Rikskod)  Exempel: "1967-1123" ('-' avgränsare).
+                3) (annat nummer) Övriga format (max 20 tecken).
+                4) (samordningsnummer) Formatet (YY)YYMMDD-XXXX där DD är ett tal mellan 61-91 och där kontrollsiffran stämmer på samma vis som för personnummer.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="20"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="SexType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Avser patientens kön ('o'/'O' = Okänt).
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="m"/>
+            <xsd:enumeration value="k"/>
+            <xsd:enumeration value="o"/>
+            <xsd:enumeration value="M"/>
+            <xsd:enumeration value="K"/>
+            <xsd:enumeration value="O"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* LabResult ****************** -->
+    <xsd:complexType name="LabResultType">
+        <xsd:sequence>
+            <!--Avser diagnostisk metod. -->
+			<!--Observera att det är SmiNet-koden för diagnostisk metod som ska användas. -->
+            <xsd:element name="diagnosticMethod" type="DiagnosticMethodType"
+                minOccurs="1" maxOccurs="unbounded"/>
+            <!--Information om vilken laboratoriediagnos som anmäls.-->
+			<!--Observera att det är SmiNet-koden för laboratoriediagnos som ska användas. -->
+            <xsd:element name="labDiagnosis" type="LabDiagnosisType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Viktig typningsinformation om provet, som till exempel eventuell typningsinformation om sådan finns. -->
+			<!--Observera att det är SmiNet-koden för specifikationen som ska användas. -->
+            <xsd:element name="specification" type="SpecificationType"
+                minOccurs="0" maxOccurs="unbounded"/>
+            <!--Laboratoriets eventuella kommentarer till analysresultatet (labdiagnosen).-->
+            <xsd:element name="labResultFreeText" type="FreeText"
+                minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="DiagnosticMethodType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Avser diagnostisk metod enligt kriterielista i Epidaktuellt
+                8/95. (Notera att flera DiagnosticMethod listade efter varandra
+                är tillåtna.)
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="A"/>
+            <xsd:enumeration value="B"/>
+            <xsd:enumeration value="C"/>
+            <xsd:enumeration value="D"/>
+            <xsd:enumeration value="E"/>
+            <xsd:enumeration value="F"/>
+            <xsd:enumeration value="G"/>
+            <xsd:enumeration value="H"/>
+            <xsd:enumeration value="I"/>
+            <xsd:enumeration value="J"/>
+            <xsd:enumeration value="K"/>
+            <xsd:enumeration value="M"/>
+            <xsd:enumeration value="Z"/> <!-- Annan -->
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* LabDiagnosis ****************** -->
+    <xsd:complexType name="LabDiagnosisType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <!--Labdiagnosens SmiNet-kod.-->
+            <xsd:element name="diagnoseInCode" type="diagnoseInCodeType"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Labdiagnosen i klartext.-->
+            <xsd:element name="diagnoseInText" type="LongLimitedString"
+                minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="diagnoseInCodeType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="se">
+                Definierar vilken laboratoriediagnos som avses anmälas.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+        	<xsd:enumeration value="Apato"/>
+            <xsd:enumeration value="Banthr"/>
+            <xsd:enumeration value="Bpertus"/>
+            <xsd:enumeration value="Bruspp"/>
+            <xsd:enumeration value="Campyl"/>
+            <xsd:enumeration value="Cbotul"/>
+            <xsd:enumeration value="Cburne"/>
+            <xsd:enumeration value="Cdipht"/>
+            <xsd:enumeration value="Cpsitt"/>
+            <xsd:enumeration value="Cryspp"/>
+            <xsd:enumeration value="Ctetan"/>
+            <xsd:enumeration value="Ctrach"/>
+            <xsd:enumeration value="Dengue"/>
+            <xsd:enumeration value="Echspp"/>
+            <xsd:enumeration value="EHEC"/>
+            <xsd:enumeration value="ESBL"/>
+            <xsd:enumeration value="ESBLCL"/>
+            <!-- Code ESBLC added for backwards compatibility due to error in lab export spec, this code is equivavlent to the correct code ESBLCL -->
+            <!-- Please, use code ESBLCL and not code ESBLC, altough the latter code is still accepted -->
+            <xsd:enumeration value="ESBLC"/>
+            <xsd:enumeration value="Ehisto"/>
+            <xsd:enumeration value="Ftular"/>
+            <xsd:enumeration value="Giarspp"/>
+            <xsd:enumeration value="Gulafe"/>
+            <xsd:enumeration value="HAV"/>
+            <xsd:enumeration value="HBV"/>
+            <xsd:enumeration value="HCV"/>
+            <xsd:enumeration value="HDV"/>
+            <xsd:enumeration value="HEV"/>
+        <!-- <xsd:enumeration value="H1N1l"/> -->
+            <xsd:enumeration value="H5N1l"/>
+            <xsd:enumeration value="Hinflu"/>
+            <xsd:enumeration value="HIV"/>
+            <xsd:enumeration value="HTLV1"/>
+            <xsd:enumeration value="HTLV2"/>
+           <!-- <xsd:enumeration value="Infl"/> -->
+            <xsd:enumeration value="ITypA"/>
+             <xsd:enumeration value="ITypB"/>             
+            <xsd:enumeration value="Legspp"/>
+            <xsd:enumeration value="Lepspp"/>
+            <xsd:enumeration value="Lisspp"/>
+            <xsd:enumeration value="Mbatyp"/>
+            <xsd:enumeration value="Menin"/>
+            <xsd:enumeration value="MERSC"/>
+            <xsd:enumeration value="Morbil"/>
+            <xsd:enumeration value="MRSA"/>
+            <xsd:enumeration value="Mtuber"/>
+            <xsd:enumeration value="Ngonor"/>
+            <xsd:enumeration value="Nmenin"/>
+           <!-- <xsd:enumeration value="Noro"/> -->
+            <xsd:enumeration value="Paroti"/>
+            <xsd:enumeration value="Plaspp"/>
+            <xsd:enumeration value="PNSP"/>
+            <xsd:enumeration value="Poliov"/>
+            <xsd:enumeration value="Puumal"/>
+            <xsd:enumeration value="Rabies"/>
+           <!-- <xsd:enumeration value="RSV"/> -->
+            <xsd:enumeration value="Rubell"/>
+            <xsd:enumeration value="Sapo"/>
+            <xsd:enumeration value="SARS"/>
+            <xsd:enumeration value="SCOV2"/>
+            <xsd:enumeration value="Salspp"/>
+            <xsd:enumeration value="Shispp"/>
+            <xsd:enumeration value="SParat"/>
+            <xsd:enumeration value="Spneu"/>
+            <xsd:enumeration value="Spyog"/>
+            <xsd:enumeration value="STyphi"/>
+            <xsd:enumeration value="TBE"/>
+            <xsd:enumeration value="Tpalli"/>
+            <xsd:enumeration value="Tspira"/>
+            <xsd:enumeration value="Vchole"/>
+            <xsd:enumeration value="VHF"/>
+            <xsd:enumeration value="Vibspp"/>
+            <xsd:enumeration value="VREfis"/>
+            <xsd:enumeration value="VREfum"/>
+            <xsd:enumeration value="Yenter"/>
+            <xsd:enumeration value="Ypesti"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- ******************* Specification ****************** -->
+    <xsd:complexType name="SpecificationType">
+        <xsd:sequence>
+            <!--Namnet på den information som skall specificeras, exempelvis "Fagtyp". -->
+			<!--Observera att det är SmiNet-koden för specifikationen som ska användas. -->
+            <xsd:element name="key" type="LimitedString"
+                minOccurs="1" maxOccurs="1"/>
+            <!--Värdet av den i Key specificerade informationen. -->
+            <xsd:element name="data" type="LimitedString"
+                minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>
