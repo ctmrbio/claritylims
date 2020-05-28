@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import os
+import yaml
 import datetime
 import requests
 import logging
+import codecs
+import base64
+import lxml
+from lxml import objectify
 import lxml.etree as ET
+from suds.client import Client
+from suds.xsd.doctor import ImportDoctor, Import
 
 logger = logging.getLogger(__name__)
 
 
 """
-A Python client for the SmiNet site
+A client for the SmiNet site
 
 
 NOTE: Some of the documentation is in Swedish. In those cases, it has been copied directly from
@@ -27,7 +35,7 @@ def add_child(parent, elementName, value, validator=None):
     child_element = ET.SubElement(parent, elementName)
     if validator:
         value = validator(value)
-    child_element.text = str(value)  # Must always be cast to string
+    child_element.text = unicode(value)  # Must always be cast to string
 
 
 ####
@@ -50,11 +58,19 @@ def IdType(python_string):
     return python_string
 
 
+class Gender(object):
+    MALE = "m"
+    FEMALE = "k"
+    UNKNOWN = "o"
+
+    ALL = [MALE, FEMALE, UNKNOWN]
+
+
 def SexType(python_string):
     """
     Avser patientens kön ('o'/'O' = Okänt).
     """
-    if python_string.lower() not in ["m", "k", "o"]:
+    if python_string.lower() not in Gender.ALL:
         raise SmiNetValidationError(
             "Unknown sex type {}".format(python_string))
     return python_string
@@ -71,13 +87,64 @@ def DiagnosticMethod(python_string):
     return python_string
 
 
+COUNTY_STOCKHOLM = "Stockholm"
+COUNTY_UPPSALA = "Uppsala"
+COUNTY_SODERMANLAND = "Sodermanland"
+COUNTY_OSTERGOTLAND = "Ostergotland"
+COUNTY_JONKOPING = "Jonkoping"
+COUNTY_KRONOBERG = "Kronoberg"
+COUNTY_KALMAR = "Kalmar"
+COUNTY_GOTLAND = "Gotland"
+COUNTY_BLEKINGE = "Blekinge"
+COUNTY_SKANE = "Skane"
+COUNTY_HALLAND = "Halland"
+COUNTY_VASTRAGOTALAND = "Vastragotaland"
+COUNTY_VARMLAND = "Varmland"
+COUNTY_OREBRO = "Orebro"
+COUNTY_VASTMANLAND = "Vastmanland"
+COUNTY_DALARNA = "Dalarna"
+COUNTY_GAVLEBORG = "Gavleborg"
+COUNTY_VASTERNORRLAND = "Vasternorrland"
+COUNTY_JAMTLAND = "Jamtland"
+COUNTY_VASTERBOTTEN = "Vasterbotten"
+COUNTY_NORRBOTTEN = "Norrbotten"
+
+
+MAP_COUNTY_CODE_TO_NAME = {
+    "AB": COUNTY_STOCKHOLM,
+    "C": COUNTY_UPPSALA,
+    "D": COUNTY_SODERMANLAND,
+    "E": COUNTY_OSTERGOTLAND,
+    "F": COUNTY_JONKOPING,
+    "G": COUNTY_KRONOBERG,
+    "H": COUNTY_KALMAR,
+    "I": COUNTY_GOTLAND,
+    "K": COUNTY_BLEKINGE,
+    "M": COUNTY_SKANE,
+    "N": COUNTY_HALLAND,
+    "O": COUNTY_VASTRAGOTALAND,
+    "S": COUNTY_VARMLAND,
+    "T": COUNTY_OREBRO,
+    "U": COUNTY_VASTMANLAND,
+    "W": COUNTY_DALARNA,
+    "X": COUNTY_GAVLEBORG,
+    "Y": COUNTY_VASTERNORRLAND,
+    "Z": COUNTY_JAMTLAND,
+    "AC": COUNTY_VASTERBOTTEN,
+    "BD": COUNTY_NORRBOTTEN,
+
+    "OB": COUNTY_VASTRAGOTALAND,
+    "OG": COUNTY_VASTRAGOTALAND,
+    "OS": COUNTY_VASTRAGOTALAND,
+    "OT": COUNTY_VASTRAGOTALAND,
+}
+
+
 def CountyType(python_string):
     """
     Avser smittskyddsläkarens landstingsbokstav.
     """
-    if python_string not in ["AB", "C", "D", "E", "F", "G", "H", "I", "K", "M",
-                             "N", "O", "OB", "OG", "OS", "OT", "S", "T", "U", "W",
-                             "X", "Y", "Z", "AC", "BD"]:
+    if python_string not in MAP_COUNTY_CODE_TO_NAME.keys():
         raise SmiNetValidationError(
             "Unknown county code {}".format(python_string))
     return python_string
@@ -171,19 +238,6 @@ def Version(version_number):
     return element
 
 
-def Laboratory(lab_number, lab_name):
-    """
-    :lab_number: Non-negative integer. Each lab that connects with "automatisk överföring" against
-                 SmiNet gets a unique identification number
-    :lab_name: Name of the laboratory exporting the file. Max 255 characters.
-    """
-    laboratory = ET.Element("laboratory")
-    add_child(laboratory, "labNumber", lab_number, NonNegativeInteger)
-    add_child(laboratory, 'labName', lab_name, LongLimitedString)
-
-    return laboratory
-
-
 # NOTE: These are our translations of the status in the xsd StatusType documentation, which is in
 # Swedish. Might be inaccurate.
 STATUS_FINAL_RESPONSE = 1
@@ -234,6 +288,23 @@ class SmiNetComplexType(object):
 
     def __str__(self):
         return ET.tostring(self.to_element(), pretty_print=True)
+
+
+class Laboratory(SmiNetComplexType):
+    def __init__(self, lab_number, lab_name):
+        """
+        :lab_number: Non-negative integer. Each lab that connects with "automatisk överföring" against
+                     SmiNet gets a unique identification number
+        :lab_name: Name of the laboratory exporting the file. Max 255 characters.
+        """
+        self.lab_number = NonNegativeInteger(lab_number)
+        self.lab_name = LongLimitedString(lab_name)
+
+    def to_element(self, element_name="laboratory"):
+        laboratory = ET.Element(element_name)
+        add_child(laboratory, "labNumber", self.lab_number)
+        add_child(laboratory, 'labName', self.lab_name)
+        return laboratory
 
 
 class ReferringClinic(SmiNetComplexType):
@@ -332,7 +403,6 @@ class SampleInfo(SmiNetComplexType):
 
 
 class NotificationType(SmiNetComplexType):
-
     def __init__(self, sample_info, reporting_doctor, referring_clinic, patient, lab_result):
         """
         :sample_info: Översiktlig information om provet.
@@ -438,7 +508,7 @@ class Patient(SmiNetComplexType):
         return element
 
 
-def SmiNetLabExport(created, lab_number, notification):
+class SmiNetLabExport():
     """
     Creates a validated lab export as XML that is acceptable for the SmiNet endpoint.
 
@@ -447,47 +517,38 @@ def SmiNetLabExport(created, lab_number, notification):
     Original documentation in xsd: Rootelementet i xml-dokumentet.
     Varje exportfil (XML-fil) måste innehålla ett och endast ett sådant element.
     """
-    element = ET.Element('smiNetLabExport')  # TODO: xlmns and xsi
 
-    # # smiNetLabExport/version/version-number
-    element.append(Version("4.0.0"))
+    def __init__(self, created, laboratory, notification):
+        self.created = created
+        self.laboratory = laboratory
+        self.notification = notification
+        self.version = Version("4.0.0")
 
-    # # smiNetLabExport/dateTimeCreated
-    date_time_created = ET.Element("dateTimeCreated")
-    date_time_created.text = SmiNetDateTime(created)
-    element.append(date_time_created)
+    def to_element(self, xsd_url):
+        element = ET.Element('smiNetLabExport')
 
-    # # smiNetLabExport/laboratory
-    element.append(Laboratory(lab_number, "National Pandemic Center at KI"))
+        # element.attrib['xmlns:xsi'] = ""
+        element.attrib["{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation"] = xsd_url
 
-    element.append(notification.to_element())
-    return element
+        # # smiNetLabExport/version/version-number
+        element.append(self.version)
 
+        # # smiNetLabExport/dateTimeCreated
+        date_time_created = ET.Element("dateTimeCreated")
+        date_time_created.text = SmiNetDateTime(self.created)
+        element.append(date_time_created)
 
-def create_scov2_positive_lab_result():
-    lab_diagnosis = LabDiagnosisType("SCOV2", "SARS-CoV-2 (covid-19)")
-    return LabResult("C", lab_diagnosis)
+        # # smiNetLabExport/laboratory
+        element.append(self.laboratory.to_element())
+        element.append(self.notification.to_element())
+        return element
 
-
-def create_covid_request(sample_info, referring_clinic, patient, reporting_doctor, created=None):
-    """
-    Creates a request to SmiNet that's valid for the Covid project.
-
-    :sample_info: An object created with the SampleInfo factory
-    :referring_clinic: An object created with the ReferringClinic factory
-    :patient: An object created with the Patient factory
-    """
-
-    if not created:
-        created = datetime.datetime.now()
-
-    notification = NotificationType(sample_info, reporting_doctor, referring_clinic, patient,
-                                    create_scov2_positive_lab_result())
-
-    lab_number = 91  # TODO, ensure that this is correct
-    contract = SmiNetLabExport(created, lab_number, notification)
-
-    return ET.tostring(contract, pretty_print=True, encoding="ISO-8859-1")
+    def to_document(self, xsd_url):
+        """
+        Creates an XML string representation that should be accepted by SmiNet
+        """
+        export = self.to_element(xsd_url)
+        return ET.tostring(export, pretty_print=True, encoding="ISO-8859-1")
 
 
 class SmiNetValidationError(Exception):
@@ -499,54 +560,136 @@ class SmiNetRequestError(Exception):
 
 
 class SmiNetClient(object):
-    def __init__(self, sminet_url, sminet_username, sminet_password, sminet_proxy=None):
-        """
-        :sminet_url: The url
-        :sminet_username: The username
-        :sminet_password: The password
-        :proxy: Proxy info if the client requires socks (we access SmiNet via a jump host in dev)
-        """
-        self.url = sminet_url
-        if not "https://" in self.url:
-            raise AssertionError("The SmiNet url should use https")
-        self.username = sminet_username
-        self.password = sminet_password
-        self.proxy = sminet_proxy
 
-    def create(self, sample_info, referring_clinic, patient, reporting_doctor, created=None):
+    SMINET_ENVIRONMENT_STAGE = "stage"
+    SMINET_ENVIRONMENT_PROD = "prod"
+
+    def __init__(self, config):
+        """
+        :config: A configuration object of type SmiNetConfig
+        """
+
+        self.config = config
+        self._soap_client = None
+
+        if config.environment == self.SMINET_ENVIRONMENT_STAGE:
+            self.url = "https://stage.sminet.se/sminetlabxmlzone/services/SmiNetLabXmlZone"
+            self.xsd_url = "http://stage.sminet.se/xml-schemas/SmiNetLabExport.xsd"
+            self.wsdl_url = "https://stage.sminet.se/sminetlabxmlzone/services/SmiNetLabXmlZone?wsdl"
+        elif config.environment == self.SMINET_ENVIRONMENT_PROD:
+            self.url = "https://sminet.se/sminetlabxmlzone/services/SmiNetLabXmlZone"
+            self.xsd_url = "http://sminet.se/xml-schemas/SmiNetLabExport.xsd"
+            self.wsdl_url = "https://sminet.se/sminetlabxmlzone/services/SmiNetLabXmlZone?wsdl"
+
+    @property
+    def soap_client(self):
+        if self._soap_client is None:
+            imp = Import('http://schemas.xmlsoap.org/soap/encoding/')
+            doctor = ImportDoctor(imp)
+            self._soap_client = Client(self.wsdl_url,
+                                       doctor=doctor)
+        return self._soap_client
+
+    def is_supported_county_code(self, county_code):
+        return county_code in MAP_COUNTY_CODE_TO_NAME.keys()
+
+    def create(self, sminet_lab_export, file_name):
         """
         Creates the entry in SmiNet
 
-        :sample_info: A SampleInfo instance
-        :referring_clinic: A ReferringClinic instance
-        :patient: A Patient instance
-        :reporting_doctor: A Doctor instance
-        :created: The date when the request is created. Defaults to now()
+		:export: An instance of SmiNetLabExport
+		:file_name: Name of the file in SmiNet's database
         """
         logger.info("Creating a request at SmiNet")
         headers = {"Content-Type": "application/xml"}
-        data = create_covid_request(
-            sample_info, referring_clinic, patient, reporting_doctor, created)
-        response = requests.post(self.url, data=data, proxies=dict(
-            https=self.proxy), headers=headers)
 
-        if response.status_code != requests.codes.created:
-            raise SmiNetRequestError(response.text)
+        doc = sminet_lab_export.to_document(self.xsd_url)
+        self._send_file(doc, file_name)
 
-        logger.info("Request created at SmiNet. Response code was={}".format(
-            response.status_code))
+    def _parse_xml(self, xml):
+        """
+        Returns a Python object from an XML response string"
+        """
+        xml = codecs.encode(xml, "utf-8")
+        obj = objectify.fromstring(xml)
+        return obj
+
+    def _send_file(self, xml_file, file_name):
+        """
+        Sends an XML document to SmiNet.
+
+        Raises a SmiNetRequestError if the return code is not zero.
+
+        :xml_file: A valid xml document as a string. Use SmiNetLabExport to generate
+        a valid document.
+        :file_name: The name of the file in SmiNet
+        """
+        base64encoded = base64.b64encode(xml_file)
+
+        resp = self.soap_client.service.submitFile(
+            self.config.username, self.config.password, file_name, base64encoded)
+        resp = self._parse_xml(resp)
+
+        if resp.returnCode != 0:
+            raise SmiNetRequestError(resp.message)
+
+    def validate(self, xml):
+        """
+        Validates an XML contract against the xsd SmiNet provides
+        """
+        xml_validator = lxml.etree.XMLSchema(
+            file="http://stage.sminet.se/xml-schemas/SmiNetLabExport.xsd")
+        is_valid = xml_validator.validate(xml)
+
+        if not is_valid:
+            raise SmiNetValidationError(
+                "Not able to validate xml against the xsd file")
+
+
+class SmiNetConfig(object):
+    DEFAULT_PATH_ETC = "/etc/sminet_client/sminet_client.config"
+    DEFAULT_PATH_USER = "~/.config/sminet_client/sminet_client.config"
+
+    def __init__(self, sminet_username,
+                 sminet_password,
+                 sminet_proxy,
+                 sminet_environment,
+                 sminet_lab_name,
+                 sminet_lab_number,
+                 **kwargs):
+        """
+        Creates a configuration file that's valid for this SmiNet client.
+
+        Searches the search paths for a valid configuration file
+
+        :sminet_username: The username
+        :sminet_password: The password
+        :sminet_environment: The environment, e.g. SmiNetClient.SMINET_ENVIRONMENT_STAGE 
+        :proxy: Proxy info if the service is only accessible via a proxy 
+        :lab_name: The name of your lab
+        :lab_number: The name of your lab
+        """
+        self.username = sminet_username
+        self.password = sminet_password
+        self.proxy = sminet_proxy
+        self.environment = sminet_environment
+        self.lab_name = sminet_lab_name
+        self.lab_number = sminet_lab_number
 
     @classmethod
-    def SmiNetClientFromConfig(cls, extension_config):
-        """
-        Creates a SmiNetClient from a clarity-ext extension config (self.config)
-        """
-        filtered = {
-            key: extension_config[key]
-            for key in [
-                "sminet_url",
-                "sminet_username",
-                "sminet_password",
-                "sminet_proxy"] if key in extension_config
-        }
-        return cls(**filtered)
+    def create_from_search_paths(cls, paths=None):
+        if not paths:
+            paths = [cls.DEFAULT_PATH_ETC, cls.DEFAULT_PATH_USER]
+
+        for path in paths:
+            path = os.path.expanduser(path)
+            if os.path.exists(path):
+                with open(path, "r") as f:
+                    config = yaml.safe_load(f)
+                    return cls(**config)
+        raise SmiNetConfigNotFoundError(
+            "No config file found in {}".format(paths))
+
+
+class SmiNetConfigNotFoundError(Exception):
+    pass
