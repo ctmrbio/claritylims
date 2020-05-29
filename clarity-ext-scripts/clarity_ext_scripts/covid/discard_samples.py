@@ -6,7 +6,7 @@ from clarity_ext_scripts.covid.partner_api_client import (
     PartnerClientAPIException)
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
 from clarity_ext_scripts.covid.controls import Controls
-from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo, KNMClient
+from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo, KNMClientFromExtension
 from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension
 
 logger = logging.getLogger(__name__)
@@ -61,18 +61,20 @@ class Extension(BaseCreateSamplesExtension):
         self.context.commit()
 
     def execute(self):
-        self.client = KNMClient(self)
+        self.client = KNMClientFromExtension(self)
         for plate in self.context.input_containers:
             for well in plate.occupied:
                 already_uploaded = False
                 try:
                     already_uploaded = well.artifact.udf_knm_result_uploaded == UDF_TRUE
+
                 except AttributeError:
                     pass
 
                 if already_uploaded:
                     logger.info("Analyte {} has already been uploaded".format(
                         well.artifact.name))
+
                     continue
 
                 self.report(well.artifact)

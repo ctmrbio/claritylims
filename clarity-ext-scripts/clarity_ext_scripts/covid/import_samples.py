@@ -1,6 +1,6 @@
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
-from clarity_ext_scripts.covid.utils import KNMClient
+from clarity_ext_scripts.covid.knm_service import KNMClientFromExtension
 from clarity_ext_scripts.covid.create_samples.common import BaseCreateSamplesExtension
 
 
@@ -118,7 +118,7 @@ class Extension(BaseCreateSamplesExtension):
         """
         Creates samples from a validated import file
         """
-        self.client = KNMClient(self)
+        self.client = KNMClientFromExtension(self)
 
         # This is for debug reasons only. Set this to True to create samples even if they have
         # been created before. This will overwrite the field udf_created_containers.

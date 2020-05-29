@@ -1,9 +1,9 @@
 from uuid import uuid4
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.create_samples.common import ValidatedSampleListFile
-from clarity_ext_scripts.covid.utils import KNMClient
+from clarity_ext_scripts.covid.knm_service import KNMClientFromExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-        ORG_URI_BY_NAME, TESTING_ORG, CouldNotCreateServiceRequest, ServiceRequestAlreadyExists)
+    ORG_URI_BY_NAME, TESTING_ORG, CouldNotCreateServiceRequest, ServiceRequestAlreadyExists)
 
 
 class Extension(GeneralExtension):
@@ -11,7 +11,7 @@ class Extension(GeneralExtension):
     Goes through the 'Validated sample list' ensuring that each sample that has the unregistered
     status gets an anonymous service request id.
 
-    Uploads a new file to the validated sample list file handle. The name of it will be on the form 
+    Uploads a new file to the validated sample list file handle. The name of it will be on the form
     'validated_sample_list_no_unregistered_<timestamp>.csv'
 
     Note that the user is not required to run this extension. They can create samples directly
@@ -20,7 +20,7 @@ class Extension(GeneralExtension):
     """
 
     def execute(self):
-        client = KNMClient(self)
+        client = KNMClientFromExtension(self)
         validated_sample_list = ValidatedSampleListFile.create_from_context(
             self.context)
         no_unregistered = ValidatedSampleListFile(validated_sample_list.csv)
