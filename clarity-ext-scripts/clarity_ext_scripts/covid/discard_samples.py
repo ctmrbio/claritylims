@@ -1,11 +1,8 @@
 import logging
 from datetime import datetime
-from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.partner_api_client import (
-    PartnerAPIV7Client, TESTING_ORG, ORG_URI_BY_NAME, COVID_RESPONSE_FAILED,
-    PartnerClientAPIException)
-from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
-from clarity_ext_scripts.covid.controls import Controls
+        TESTING_ORG, ORG_URI_BY_NAME, COVID_RESPONSE_FAILED,
+        PartnerClientAPIException)
 from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo, KNMClientFromExtension
 from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension
 
