@@ -21,7 +21,12 @@ jobs:
           python-version: 2.7
       - name: Add dummy genologicsrc
         run: |
-          echo "[genologics]\nBASEURI=https://fancy.server\nUSERNAME=username\nPASSWORD=pass\n" > ~/.genologicsrc
+          cat << EOF > ~/.genologicsrc
+[genologics] 
+BASEURI=https://fancy.server
+USERNAME=username
+PASSWORD=pass
+EOF
           cat ~/.genologicsrc
       - name: Install dependencies
         run: |
