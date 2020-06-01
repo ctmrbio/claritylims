@@ -5,7 +5,7 @@ import lxml.etree as ET
 import pytest
 from sminet_client import (SampleInfo, ReferringClinic, Patient, Doctor, SmiNetConfig,
                            LabDiagnosisType, LabResult, Laboratory, SmiNetLabExport,
-                           SmiNetConfigNotFoundError, Notification,
+                           SmiNetConfigNotFoundError, Notification, SampleMaterial,
                            SmiNetClient, SmiNetValidationError)
 
 
@@ -31,8 +31,11 @@ def generate_valid_contract_with_random_sample_id():
                   for _ in range(25 - len(prefix)))
     sample_id = prefix + rnd
 
-    sample_info = SampleInfo(status=1, sample_id=sample_id, sample_date_arrival=constant_date,
-                             sample_date_referral=constant_date, sample_material="Svalg",
+    sample_info = SampleInfo(status=1,
+                             sample_id=sample_id,
+                             sample_date_arrival=constant_date,
+                             sample_date_referral=constant_date,
+                             sample_material=SampleMaterial.SVALG,
                              sample_free_text_referral="Extra info")
     referring_clinic = ReferringClinic(
         "Clinic name", "", "C", Doctor("Some doctor"))

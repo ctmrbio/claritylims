@@ -5,6 +5,7 @@ from clarity_ext_scripts.covid.services.knm_sminet_service import KNMSmiNetInteg
 from clarity_ext_scripts.covid.partner_api_client import KARLSSON_AND_NOVAK, ORG_URI_BY_NAME
 from clarity_ext.cli import load_config
 from clarity_ext_scripts.covid.services.knm_service import KNMSampleAccessor, KNMService
+from sminet_client import SampleMaterial
 
 
 """
@@ -31,7 +32,7 @@ def test_can_create_request():
     integration = KNMSmiNetIntegrationService(
         config, knm_service, sminet_service)
     org_uri = ORG_URI_BY_NAME[KARLSSON_AND_NOVAK]
-    sample = KNMSampleAccessor(org_uri, "5236417647", constant_date, "Svalg")
+    sample = KNMSampleAccessor(org_uri, "5236417647", constant_date, SampleMaterial.SVALG)
     sample_free_text = "Anamnes: Personalprov"
 
     lab_result = SmiNetService.create_scov2_positive_lab_result()

@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-from sminet_client import Doctor, Notification, LabDiagnosisType, LabResult, Laboratory, SmiNetLabExport, StatusType
+from sminet_client import (Doctor, Notification, LabDiagnosisType,
+                           LabResult, Laboratory, SmiNetLabExport, StatusType, SampleMaterial)
 
 
 def get_fixture(fname):
@@ -18,7 +19,7 @@ def create_document():
         sample_id="123",
         sample_date_arrival=constant_date,
         sample_date_referral=constant_date,
-        sample_material="Svalg",
+        sample_material=SampleMaterial.SVALG,
         sample_free_text_referral="Free text")
     referring_clinic = Notification.ReferringClinic(
         "Clinic name", "", "C", Doctor("Referring doctor"))

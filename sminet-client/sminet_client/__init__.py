@@ -263,7 +263,7 @@ class StatusType(object):
         self.value = status
 
 
-class SampleMaterialType(object):
+class SampleMaterial(object):
     """
     Avser undersökningsmatrial. (Notera att det är tillåtet att byta ut 'å' och 'ä' mot 'a'
     samt att 'ö' kan bytas ut mot 'o'. Detta alternativ finns om det skulle bli problem med
@@ -423,7 +423,7 @@ class SampleInfo(SmiNetComplexType):
         # Is a string according to the docs
         self.sample_id = ShortString(str(sample_id))
         self.sample_date_arrival = SmiNetDate(sample_date_arrival)
-        self.sample_material = SampleMaterialType(sample_material)
+        self.sample_material = SampleMaterial(sample_material)
         self.optional_reference = ShortLimitedString(
             optional_reference) if optional_reference else None
         self.sample_date_referral = SmiNetDate(
