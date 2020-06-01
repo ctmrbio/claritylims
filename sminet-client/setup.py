@@ -4,7 +4,7 @@ setup(
     name='sminet-client',
     version='1.0.0',
     packages=find_packages(exclude=['tests']),
-    requirements=['suds'],
+    install_requires=['suds', 'pyyaml', 'lxml'],
     zip_safe=False,
     platforms='any',
     classifiers=[

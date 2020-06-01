@@ -263,22 +263,64 @@ class StatusType(object):
         self.value = status
 
 
-def SampleMaterialType(material_type):
+class SampleMaterialType(object):
     """
     Avser undersökningsmatrial. (Notera att det är tillåtet att byta ut 'å' och 'ä' mot 'a'
     samt att 'ö' kan bytas ut mot 'o'. Detta alternativ finns om det skulle bli problem med
     valideringen pga konstigheter i teckentabeller.)
     """
 
-    supported = ["Annat" "Bio", "Blod", "Bronk", "Feces", "Likv", "Lymf",
-                 "Nfary", "Nasa", "Pleur", "Sekr", "Serum", "Sput", "Svalg", "Sar",
-                 "Urin", "VSK", "Led", "Perik", "Fost", "Asci", "Melor", "Uret",
-                 "Rect", "Cerv", "VagSek", "Asp", "Blodsr", "Cervur", "Infart", "Nsp",
-                 "Perin", "Poolat", "Saliv", "Vagur", "Ogon", "Oron"]
-    if material_type not in supported:
-        raise SmiNetValidationError(
-            "Material type not supported: {}".format(material_type))
-    return material_type
+    OTHER = "Annat"
+    BIO = "Bio"
+    BLOD = "Blod"
+    BRONK = "Bronk"
+    FECES = "Feces"
+    LIKV = "Likv"
+    LYMF = "Lymf"
+    NFARY = "Nfary"
+    NASA = "Nasa"
+    PLEUR = "Pleur"
+    SEKR = "Sekr"
+    SERUM = "Serum"
+    SPUT = "Sput"
+    SVALG = "Svalg"
+    SAR = "Sar"
+    URIN = "Urin"
+    VSK = "VSK"
+    LED = "Led"
+    PERIK = "Perik"
+    FOST = "Fost"
+    ASCI = "Asci"
+    MELOR = "Melor"
+    URET = "Uret"
+    RECT = "Rect"
+    CERV = "Cerv"
+    VAGSEK = "VagSek"
+    ASP = "Asp"
+    BLODSR = "Blodsr"
+    CERVUR = "Cervur"
+    INFART = "Infart"
+    NSP = "Nsp"
+    PERIN = "Perin"
+    POOLAT = "Poolat"
+    SALIV = "Saliv"
+    VAGUR = "Vagur"
+    OGON = "Ogon"
+    ORON = "Oron"
+
+    ALL = [OTHER, BIO, BLOD, BRONK, FECES, LIKV,
+           LYMF, NFARY, NASA, PLEUR, SEKR, SERUM,
+           SPUT, SVALG, SAR, URIN, VSK, LED,
+           PERIK, FOST, ASCI, MELOR, URET, RECT,
+           CERV, VAGSEK, ASP, BLODSR, CERVUR, INFART,
+           NSP, PERIN, POOLAT, SALIV, VAGUR,
+           OGON, ORON]
+
+    def __init__(self, value):
+        if value not in self.ALL:
+            raise SmiNetValidationError(
+                "Material type not supported: {}".format(value))
+        self.value = value
 
 
 #####
@@ -397,7 +439,7 @@ class SampleInfo(SmiNetComplexType):
         add_child(element, "sampleNumber", self.sample_id)
         add_child(element, "sampleDateArrival", self.sample_date_arrival)
         add_child(element, "sampleDateReferral", self.sample_date_referral)
-        add_child(element, "sampleMaterial", self.sample_material)
+        add_child(element, "sampleMaterial", self.sample_material.value)
         add_child(element, "optionalReference", self.optional_reference)
         add_child(element, "sampleFreeTextLab", self.sample_free_text_lab)
         add_child(element, "sampleFreeTextReferral",
