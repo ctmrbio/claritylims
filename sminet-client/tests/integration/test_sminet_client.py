@@ -5,18 +5,14 @@ import lxml.etree as ET
 import pytest
 from sminet_client import (SampleInfo, ReferringClinic, Patient, Doctor, SmiNetConfig,
                            LabDiagnosisType, LabResult, Laboratory, SmiNetLabExport,
-                           SmiNetConfigNotFoundError, Notification, SampleMaterial,
-                           SmiNetClient, SmiNetValidationError)
+                           Notification, SampleMaterial, SmiNetClient, SmiNetValidationError)
 
 
 """
 Tests an integration to the SmiNet. Requires a configuration file (see README.md)
 """
 
-try:
-    config = SmiNetConfig.create_from_search_paths()
-except SmiNetConfigNotFoundError:
-    pytest.xfail("This test requires a sminet_client configuration file")
+config = SmiNetConfig.create_from_search_paths()
 
 
 def generate_valid_contract_with_random_sample_id():
@@ -53,7 +49,7 @@ def generate_valid_contract_with_random_sample_id():
 
 def test_can_create_request():
     """
-    Tests creating a request. The test is xfailed if the configuration is not available
+    Tests creating a request.
     """
     client = SmiNetClient(config)
     export = generate_valid_contract_with_random_sample_id()

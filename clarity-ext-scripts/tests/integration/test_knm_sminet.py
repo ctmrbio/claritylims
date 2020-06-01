@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 from clarity_ext_scripts.covid.services.sminet_service import SmiNetService
 from clarity_ext_scripts.covid.services.knm_sminet_service import KNMSmiNetIntegrationService
@@ -12,10 +11,7 @@ from sminet_client import SampleMaterial
 Tests the SmiNet/KNM integration
 """
 
-try:
-    config = load_config()
-except IOError:
-    pytest.xfail("This test requires a sminet_client configuration file")
+config = load_config()
 
 
 def test_can_create_request():
