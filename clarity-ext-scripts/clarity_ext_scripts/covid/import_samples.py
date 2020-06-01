@@ -1,6 +1,6 @@
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
-from clarity_ext_scripts.covid.knm_service import KNMClientFromExtension
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 from clarity_ext_scripts.covid.create_samples.common import BaseCreateSamplesExtension
 
 

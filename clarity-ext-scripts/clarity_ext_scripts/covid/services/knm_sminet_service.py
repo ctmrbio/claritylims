@@ -1,13 +1,9 @@
-import codecs
 import dateutil.parser
 from datetime import datetime
-from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
-from sminet_client import SmiNetClient, SmiNetConfig
-from clarity_ext.utils import lazyprop
-from sminet_client import (SampleInfo, ReferringClinic, Patient, Doctor, SmiNetConfig, NotificationType,
-                           LabDiagnosisType, LabResult, Laboratory, SmiNetLabExport)
+from sminet_client import (SampleInfo, ReferringClinic, Patient, Doctor,
+                           SmiNetLabExport, StatusType, Notification)
 from sminet_client import Gender as SmiNetGender
-from clarity_ext_scripts.covid.knm_service import KNMConfig, ServiceRequestProvider
+from clarity_ext_scripts.covid.services.knm_service import ServiceRequestProvider
 
 
 class KNMSmiNetIntegrationService(object):
@@ -20,14 +16,10 @@ class KNMSmiNetIntegrationService(object):
         None: SmiNetGender.UNKNOWN,
     }
 
-    def __init__(self, config):
+    def __init__(self, config, knm_service, sminet_service):
         self.config = config
-
-        knm_config = KNMConfig(config)
-        sminet_config = SmiNetConfig(**config)
-
-        self.knm_client = PartnerAPIV7Client(**knm_config)
-        self.sminet_client = SmiNetClient(sminet_config)
+        self.sminet_service = sminet_service
+        self.knm_service = knm_service
 
     def get_county_from_organization(self, organization):
         """
@@ -36,26 +28,22 @@ class KNMSmiNetIntegrationService(object):
         aliases = organization["alias"]
         for alias in aliases:
             county_code = alias.split("-")[0]
-            # TODO: THIS IS JUST FOR TEMPORARY TEST PURPOSES (waiting for knm fix)
-            if county_code == "SE":
-                county_code = "AB"
-
-            if self.sminet_client.is_supported_county_code(county_code):
+            if self.sminet_service.client.is_supported_county_code(county_code):
                 return county_code
-        raise NoSupportedCountyCodeFound(
+        raise self.knm_service.NoSupportedCountyCodeFound(
             "No supported county code found in alias list. Found: {}".format(aliases))
 
-    def create_sample_info(self, provider, sample):
+    def create_sample_info(self, provider, sample, free_text):
         sample_date_referral = provider.service_request["resource"]["authoredOn"]
         # The date is on ISO8601 format:
         sample_date_referral = dateutil.parser.isoparse(sample_date_referral)
 
-        return SampleInfo(status=1,
+        return SampleInfo(status=StatusType.FINAL_RESPONSE,
                           sample_id=sample.org_referral_code,
                           sample_date_arrival=sample.date_arrival,
                           sample_date_referral=sample_date_referral,
-                          sample_material="Svalg",
-                          sample_free_text_referral="Anamnes: Personalprov")
+                          sample_material=sample.material,
+                          sample_free_text_referral=free_text)
 
     def create_referring_clinic(self, provider):
         """Creates a referring clinic object from KNM data"""
@@ -67,11 +55,6 @@ class KNMSmiNetIntegrationService(object):
         # TODO: We don't have an address for the referring clinic
         return ReferringClinic(referring_clinic_name, "",
                                referring_clinic_county, Doctor(referring_doctor))
-
-
-    def map_gender(self, knm_gender):
-        """Returns gender in the format required by SmiNet"""
-        pass
 
     def create_patient(self, provider):
         """Creates a Patient object from KNM data"""
@@ -89,7 +72,7 @@ class KNMSmiNetIntegrationService(object):
 
             try:
                 return patient_identifier[0]["value"]
-            except:
+            except KeyError:
                 raise IntegrationError(
                     "First entry in 'identifier' doesn't have a value key for {}".format(provider))
 
@@ -122,35 +105,32 @@ class KNMSmiNetIntegrationService(object):
                        patient_name(),
                        None)
 
-    def get_sminet_export(self, sample):
+    def export_to_sminet(self, sample, doctor_name, lab_result, sample_free_text):
         """
-        Returns a SmiNetLabExport from a sample 
+        Exports a SmiNetLabExport based on a sample
 
         :sample: A KNMSampleAccessor object
+        :doctor_name: Name of the doctor
+        :lab_result: A LabResult entry (for convenience one can use those created by SmiNetService)
         """
-
+        # Generate export:
         provider = ServiceRequestProvider(
-            self.knm_client, sample.org_uri, sample.org_referral_code)
+            self.knm_service.client, sample.org_uri, sample.org_referral_code)
 
-        sample_info = self.create_sample_info(provider, sample)
-        print(sample_info)
-        reporting_doctor = Doctor("Lars Engstrand")
-        print(reporting_doctor)
+        sample_info = self.create_sample_info(
+            provider, sample, sample_free_text)
+        reporting_doctor = Doctor(doctor_name)
         referring_clinic = self.create_referring_clinic(provider)
-        print(referring_clinic)
         patient = self.create_patient(provider)
-        lab_result = LabResult("C",
-                               LabDiagnosisType("SCOV2", "SARS-CoV-2 (covid-19)"))
+        notification = Notification(sample_info, reporting_doctor, referring_clinic, patient,
+                                    lab_result)
+        laboratory = self.sminet_service.get_laboratory()
 
-        notification = NotificationType(sample_info, reporting_doctor, referring_clinic, patient,
-                                        lab_result)
-        laboratory = Laboratory(91, "National Pandemic Center at KI")
+        export = SmiNetLabExport(datetime.now(), laboratory, notification)
 
-        return SmiNetLabExport(datetime.utcnow(), laboratory, notification)
-
-    def export_to_sminet(self, sample):
-        export = self.get_sminet_export(sample)
-        self.sminet_client.create(export, export.notification.sample_info.sample_id)
+        # Send it
+        self.sminet_service.client.create(
+            export, export.notification.sample_info.sample_id)
 
 
 class IntegrationError(Exception):

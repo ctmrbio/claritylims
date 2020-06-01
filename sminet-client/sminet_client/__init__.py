@@ -2,8 +2,6 @@
 
 import os
 import yaml
-import datetime
-import requests
 import logging
 import codecs
 import base64
@@ -240,24 +238,29 @@ def Version(version_number):
 
 # NOTE: These are our translations of the status in the xsd StatusType documentation, which is in
 # Swedish. Might be inaccurate.
-STATUS_FINAL_RESPONSE = 1
-STATUS_COMPLEMENTARY_DATA_PENDING = 2
-STATUS_REVOCATION_OF_PREVIOUS_REPORT = 3
-STATUS_COMPLEMENTARY_DATA = 4
 
 
-def StatusType(status):
+class StatusType(object):
     """
     Original: Avser en anmälans status. Förklaring: 1. Slutsvar. 2. Komplettering kommer.
     3. Makulering av en tidigare anmälan. 4. Komplettering av en tidigare anmälan.
     """
-    if status not in [STATUS_FINAL_RESPONSE,
-                      STATUS_COMPLEMENTARY_DATA_PENDING,
-                      STATUS_REVOCATION_OF_PREVIOUS_REPORT,
-                      STATUS_COMPLEMENTARY_DATA]:
-        raise SmiNetValidationError("The status {} is not in the list of accepted statuses"
-                                    .format(status))
-    return status
+
+    FINAL_RESPONSE = 1
+    COMPLEMENTARY_DATA_PENDING = 2
+    REVOCATION_OF_PREVIOUS_REPORT = 3
+    COMPLEMENTARY_DATA = 4
+
+    ALL = [FINAL_RESPONSE,
+           COMPLEMENTARY_DATA_PENDING,
+           REVOCATION_OF_PREVIOUS_REPORT,
+           COMPLEMENTARY_DATA]
+
+    def __init__(self, status):
+        if status not in self.ALL:
+            raise SmiNetValidationError("The status {} is not in the list of accepted statuses"
+                                        .format(status))
+        self.value = status
 
 
 def SampleMaterialType(material_type):
@@ -390,7 +393,7 @@ class SampleInfo(SmiNetComplexType):
 
     def to_element(self, element_name="sampleInfo"):
         element = ET.Element(element_name)
-        add_child(element, "status", self.status)
+        add_child(element, "status", self.status.value)
         add_child(element, "sampleNumber", self.sample_id)
         add_child(element, "sampleDateArrival", self.sample_date_arrival)
         add_child(element, "sampleDateReferral", self.sample_date_referral)
@@ -402,7 +405,40 @@ class SampleInfo(SmiNetComplexType):
         return element
 
 
-class NotificationType(SmiNetComplexType):
+class Patient(SmiNetComplexType):
+    """
+    Information för att identifiera patienten.
+    """
+
+    def __init__(self, patient_id, patient_sex, patient_name=None, patient_age=None):
+        """
+        :patient_id: Tillåtna typer är personnummer, rikskod och reservkod
+        :patient_sex: Patientens kön
+        :patient_name: Patientens namn
+        :patient_age: Patientens ålder
+        """
+        self.patient_id = IdType(patient_id)
+        self.patient_sex = SexType(patient_sex)
+        self.patient_name = LimitedString(patient_name)
+        self.patient_age = NonNegativeInteger(
+            patient_age) if patient_age else None
+
+    def to_element(self, element_name="patient"):
+        element = ET.Element(element_name)
+        add_child(element, "patientId", self.patient_id)
+        add_child(element, "patientSex", self.patient_sex)
+        add_child(element, "patientName", self.patient_name)
+        add_child(element, "patientAge", self.patient_age)
+        return element
+
+
+class Notification(SmiNetComplexType):
+
+    SampleInfo = SampleInfo
+    Doctor = Doctor
+    ReferringClinic = ReferringClinic
+    Patient = Patient
+
     def __init__(self, sample_info, reporting_doctor, referring_clinic, patient, lab_result):
         """
         :sample_info: Översiktlig information om provet.
@@ -465,9 +501,9 @@ class LabResult(SmiNetComplexType):
     def __init__(self, diagnostic_method, lab_diagnosis):
         """
         :diagnostic_method: Observera att det är SmiNet-koden för diagnostisk metod som
-                            ska användas. 
+                            ska användas.
         :lab_diagnosis: Viktig typningsinformation om provet, som till exempel eventuell
-                        typningsinformation om sådan finns.  
+                        typningsinformation om sådan finns.
 
         """
         self.diagnostic_method = DiagnosticMethod(diagnostic_method)
@@ -481,33 +517,6 @@ class LabResult(SmiNetComplexType):
         return element
 
 
-class Patient(SmiNetComplexType):
-    """
-    Information för att identifiera patienten.
-    """
-
-    def __init__(self, patient_id, patient_sex, patient_name=None, patient_age=None):
-        """
-        :patient_id: Tillåtna typer är personnummer, rikskod och reservkod
-        :patient_sex: Patientens kön
-        :patient_name: Patientens namn
-        :patient_age: Patientens ålder
-        """
-        self.patient_id = IdType(patient_id)
-        self.patient_sex = SexType(patient_sex)
-        self.patient_name = LimitedString(patient_name)
-        self.patient_age = NonNegativeInteger(
-            patient_age) if patient_age else None
-
-    def to_element(self, element_name="patient"):
-        element = ET.Element(element_name)
-        add_child(element, "patientId", self.patient_id)
-        add_child(element, "patientSex", self.patient_sex)
-        add_child(element, "patientName", self.patient_name)
-        add_child(element, "patientAge", self.patient_age)
-        return element
-
-
 class SmiNetLabExport():
     """
     Creates a validated lab export as XML that is acceptable for the SmiNet endpoint.
@@ -517,6 +526,10 @@ class SmiNetLabExport():
     Original documentation in xsd: Rootelementet i xml-dokumentet.
     Varje exportfil (XML-fil) måste innehålla ett och endast ett sådant element.
     """
+
+    # For convenience, all the types that make up an export are defined here:
+    Laboratory = Laboratory
+    Notification = Notification
 
     def __init__(self, created, laboratory, notification):
         self.created = created
@@ -597,12 +610,10 @@ class SmiNetClient(object):
         """
         Creates the entry in SmiNet
 
-		:export: An instance of SmiNetLabExport
-		:file_name: Name of the file in SmiNet's database
+        :export: An instance of SmiNetLabExport
+        :file_name: Name of the file in SmiNet's database
         """
         logger.info("Creating a request at SmiNet")
-        headers = {"Content-Type": "application/xml"}
-
         doc = sminet_lab_export.to_document(self.xsd_url)
         self._send_file(doc, file_name)
 
@@ -664,8 +675,8 @@ class SmiNetConfig(object):
 
         :sminet_username: The username
         :sminet_password: The password
-        :sminet_environment: The environment, e.g. SmiNetClient.SMINET_ENVIRONMENT_STAGE 
-        :proxy: Proxy info if the service is only accessible via a proxy 
+        :sminet_environment: The environment, e.g. SmiNetClient.SMINET_ENVIRONMENT_STAGE
+        :proxy: Proxy info if the service is only accessible via a proxy
         :lab_name: The name of your lab
         :lab_number: The name of your lab
         """

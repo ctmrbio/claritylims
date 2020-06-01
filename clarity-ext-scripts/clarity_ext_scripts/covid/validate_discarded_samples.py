@@ -2,7 +2,7 @@ from datetime import datetime
 from clarity_ext_scripts.covid.create_samples.common import (
     BaseValidateRawSampleListExtension, BaseRawSampleListFile,
     BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS)
-from clarity_ext_scripts.covid.knm_service import KNMClientFromExtension
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 
 
 class RawSampleListColumns(object):

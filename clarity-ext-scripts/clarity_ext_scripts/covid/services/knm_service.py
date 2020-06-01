@@ -2,6 +2,18 @@ from clarity_ext_scripts.covid.partner_api_client import PartnerAPIV7Client
 from clarity_ext.utils import lazyprop
 
 
+class NoSupportedCountyCodeFound(Exception):
+    pass
+
+
+class KNMService(object):
+    NoSupportedCountyCodeFound = NoSupportedCountyCodeFound
+
+    def __init__(self, config):
+        self.config = KNMConfig(config)
+        self.client = PartnerAPIV7Client(**self.config)
+
+
 def KNMConfig(config):
     """
     Creates config required for KNM from the clarity-ext config (which has more than that)
@@ -28,14 +40,21 @@ class KNMSampleAccessor(object):
     Describes a sample/analyte in the LIMS that has originally come via the KNM workflow
     """
 
-    def __init__(self, org_uri, org_referral_code, date_arrival):
+    def __init__(self, org_uri, org_referral_code, date_arrival, material):
+        """
+        :org_uri: The organization URI as defined by KNM
+        :org_referral_code: The referral code within the organization
+        :date_arrival: The date the sample was added to the LIMS
+        :material: The material, one of the constants in SampleMaterialType
+        """
         self.org_uri = org_uri
         self.org_referral_code = org_referral_code
         self.date_arrival = date_arrival
+        self.material = material
 
     @classmethod
     def create_from_lims_sample(cls, sample):
-        pass
+        raise NotImplementedError()
 
 
 class ServiceRequestProvider(object):
@@ -71,8 +90,3 @@ class ServiceRequestProvider(object):
 
     def __str__(self):
         return "{}|{}".format(self.org_uri, self.org_referral_code)
-
-
-class NoSupportedCountyCodeFound(Exception):
-    pass
-
