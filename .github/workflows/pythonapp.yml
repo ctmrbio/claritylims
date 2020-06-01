@@ -21,7 +21,8 @@ jobs:
           python-version: 2.7
       - name: Add dummy genologicsrc
         run: |
-          echo "[genologics]\nBASEURI=https://url\nUSERNAME=username\nPASSWORD=pass\n" > ~/.genologicsrc
+          echo "[genologics]\nBASEURI=https://fancy.server\nUSERNAME=username\nPASSWORD=pass\n" > ~/.genologicsrc
+          cat ~/.genologicsrc
       - name: Install dependencies
         run: |
           ./clarity-ext-scripts/setup.sh
