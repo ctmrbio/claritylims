@@ -606,11 +606,15 @@ class SmiNetLabExport():
         return ET.tostring(export, pretty_print=True, encoding="ISO-8859-1")
 
 
-class SmiNetValidationError(Exception):
+class SmiNetError(Exception):
     pass
 
 
-class SmiNetRequestError(Exception):
+class SmiNetValidationError(SmiNetError):
+    pass
+
+
+class SmiNetRequestError(SmiNetError):
     pass
 
 
