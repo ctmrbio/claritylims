@@ -1,7 +1,7 @@
 from uuid import uuid4
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.create_samples.common import ValidatedSampleListFile
-from clarity_ext_scripts.covid.knm_service import KNMClientFromExtension
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 from clarity_ext_scripts.covid.partner_api_client import (
     ORG_URI_BY_NAME, TESTING_ORG, CouldNotCreateServiceRequest, ServiceRequestAlreadyExists)
 

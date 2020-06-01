@@ -6,7 +6,7 @@ from clarity_ext_scripts.covid.partner_api_client import (
     PartnerClientAPIException)
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
 from clarity_ext_scripts.covid.controls import Controls
-from clarity_ext_scripts.covid.knm_service import KNMClientFromExtension
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 
 
 logger = logging.getLogger(__name__)
