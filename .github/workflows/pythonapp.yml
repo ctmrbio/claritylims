@@ -22,11 +22,11 @@ jobs:
       - name: Add dummy genologicsrc
         run: |
           cat << EOF > ~/.genologicsrc
-[genologics] 
-BASEURI=https://fancy.server
-USERNAME=username
-PASSWORD=pass
-EOF
+          [genologics] 
+          BASEURI=https://fancy.server
+          USERNAME=username
+          PASSWORD=pass
+          EOF
           cat ~/.genologicsrc
       - name: Install dependencies
         run: |
