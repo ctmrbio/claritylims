@@ -3,7 +3,8 @@ from datetime import datetime
 from sminet_client import (SampleInfo, ReferringClinic, Patient, Doctor,
                            SmiNetLabExport, StatusType, Notification)
 from sminet_client import Gender as SmiNetGender
-from clarity_ext_scripts.covid.services.knm_service import ServiceRequestProvider
+from clarity_ext_scripts.covid.services.knm_service import ServiceRequestProvider, KNMService
+from clarity_ext_scripts.covid.services.sminet_service import SmiNetService
 
 
 class KNMSmiNetIntegrationService(object):
@@ -16,10 +17,10 @@ class KNMSmiNetIntegrationService(object):
         None: SmiNetGender.UNKNOWN,
     }
 
-    def __init__(self, config, knm_service, sminet_service):
+    def __init__(self, config, knm_service=None, sminet_service=None):
         self.config = config
-        self.sminet_service = sminet_service
-        self.knm_service = knm_service
+        self.knm_service = knm_service or KNMService(config)
+        self.sminet_service = sminet_service or SmiNetService(config)
 
     def get_county_from_organization(self, organization):
         """
@@ -63,17 +64,17 @@ class KNMSmiNetIntegrationService(object):
             try:
                 patient_identifier = provider.patient["identifier"]
             except KeyError:
-                raise IntegrationError(
+                raise UnregisteredPatient(
                     "Missing field 'identifier' on the patient resource for {}".format(provider))
 
             if len(patient_identifier) == 0:
-                raise IntegrationError(
+                raise UnregisteredPatient(
                     "Field 'identifier' is empty on patient resource for {}".format(provider))
 
             try:
                 return patient_identifier[0]["value"]
             except KeyError:
-                raise IntegrationError(
+                raise UnregisteredPatient(
                     "First entry in 'identifier' doesn't have a value key for {}".format(provider))
 
         def patient_gender():
@@ -134,4 +135,8 @@ class KNMSmiNetIntegrationService(object):
 
 
 class IntegrationError(Exception):
+    pass
+
+
+class UnregisteredPatient(IntegrationError):
     pass
