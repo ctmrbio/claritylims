@@ -85,7 +85,6 @@ class CtmrCovidSubstanceInfo(object):
 
     STATUS_DISCARD = "DISCARD"
     STATUS_DISCARDED_AND_REPORTED = "DISCARDED_AND_REPORTED"
-    
 
     def __init__(self, substance):
         """
@@ -126,24 +125,11 @@ class CtmrCovidSubstanceInfo(object):
         if isinstance(self.substance, Sample):
             return self._deduce_control_type_from_sample(self.substance)
         elif isinstance(self.substance, Analyte):
-            control_type = self._deduce_control_type_from_analyte_name(self.substance.name)
+            control_type = self._deduce_control_type_from_analyte_name(
+                self.substance.name)
             if control_type:
                 return control_type
             return self._deduce_control_type_from_sample(self.substance.sample())
         else:
             raise NotImplementedError("Not implemented substance type {}".format(
                 type(self.substance)))
-
-
-
-def KNMClient(extension):
-    # A factory for a KnmClient from an extension
-    config = {
-        key: extension.config[key]
-        for key in [
-            "test_partner_base_url", "test_partner_code_system_base_url",
-            "test_partner_user", "test_partner_password"
-        ]
-    }
-    return PartnerAPIV7Client(**config)
-

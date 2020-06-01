@@ -1,4 +1,3 @@
-
 import base64
 from datetime import datetime
 from luhn import verify as mod10verify
@@ -399,6 +398,25 @@ class PartnerAPIV7Client(object):
         except PartnerClientAPIException as e:
             log.error(e.message)
             raise e
+
+    def get_by_reference(self, ref):
+        """
+        Get's a resource by reference, such as Organization/123 or Patient/345
+
+        :ref: The reference, e.g. Patient/123
+        """
+        url = "{}/{}".format(self._base_url, ref)
+        headers = self._generate_headers()
+        response = self._session.get(url=url, headers=headers)
+        if response.status_code != 200:
+            print(response.text)
+            raise PartnerClientAPIException(
+                "Couldn't get resource '{}', status code: {}".format(
+                    url, response.status_code))
+        return response.json()
+
+    def get_org_uri_by_name(self, name):
+        return ORG_URI_BY_NAME[name]
 
     def _create_payload(self, service_request_id, diagnosis_result, analysis_results):
         # TODO Need to think about if this needs refactoring later, to more easily support multiple

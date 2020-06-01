@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<smiNetLabExport>
+<smiNetLabExport xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://stage.sminet.se/xml-schemas/SmiNetLabExport.xsd">
   <version>
     <version-number>4.0.0</version-number>
   </version>
   <dateTimeCreated>2020-05-18 18:11:06</dateTimeCreated>
   <laboratory>
-    <labNumber>91</labNumber>
-    <labName>National Pandemic Center at KI</labName>
+    <labNumber>1</labNumber>
+    <labName>Some lab</labName>
   </laboratory>
   <notification>
     <sampleInfo>
@@ -15,23 +15,23 @@
       <sampleDateArrival>2020-04-30</sampleDateArrival>
       <sampleDateReferral>2020-04-30</sampleDateReferral>
       <sampleMaterial>Svalg</sampleMaterial>
-      <sampleFreeTextReferral>Anamnes: Personalprov</sampleFreeTextReferral>
+      <sampleFreeTextReferral>Free text</sampleFreeTextReferral>
     </sampleInfo>
     <reportingDoctor>
-      <name>Lars Engstrand</name>
+      <name>Reporting Doctor</name>
     </reportingDoctor>
     <referringClinic>
       <referringClinicName>Clinic name</referringClinicName>
       <referringClinicAddress></referringClinicAddress>
       <referringClinicCounty>C</referringClinicCounty>
       <referringDoctor>
-        <name>Some doctor</name>
+        <name>Referring doctor</name>
       </referringDoctor>
     </referringClinic>
     <patient>
       <patientId>1234</patientId>
       <patientSex>k</patientSex>
-      <patientName>Some Name</patientName>
+      <patientName>Patient Name</patientName>
       <patientAge>23</patientAge>
     </patient>
     <labResult>
