@@ -89,7 +89,10 @@ class KNMSmiNetIntegrationService(object):
             """
             The name of the patient. Returns an empty string if we don't have the expected data
             """
-            name = provider.patient["name"]
+            try:
+                name = provider.patient["name"]
+            except KeyError:
+                name = ""
 
             if len(name) == 0:
                 return ""
