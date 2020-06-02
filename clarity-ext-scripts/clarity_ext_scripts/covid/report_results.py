@@ -6,7 +6,7 @@ from clarity_ext_scripts.covid.partner_api_client import (
     PartnerClientAPIException)
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
 from clarity_ext_scripts.covid.controls import Controls
-from clarity_ext_scripts.covid.utils import KNMClient
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class Extension(GeneralExtension):
         return False
 
     def execute(self):
-        self.client = KNMClient(self) 
+        self.client = KNMClientFromExtension(self)
         for plate in self.context.input_containers:
             for well in plate.occupied:
                 already_uploaded = False

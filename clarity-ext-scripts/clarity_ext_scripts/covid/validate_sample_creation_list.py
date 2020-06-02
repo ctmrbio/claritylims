@@ -1,9 +1,8 @@
 import cStringIO
 import logging
 from datetime import datetime
-from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.controls import controls_barcode_generator
-from clarity_ext_scripts.covid.utils import KNMClient
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 from clarity_ext_scripts.covid.create_samples.common import (
     BaseRawSampleListFile, ValidatedSampleListFile,
     BaseValidateRawSampleListExtension, BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS
@@ -96,7 +95,7 @@ class Extension(BaseValidateRawSampleListExtension):
 
         # 2. Create an API client
         #    Make sure that there is a config at ~/.config/clarity-ext/clarity-ext.config
-        client = KNMClient(self)
+        client = KNMClientFromExtension(self)
 
         # 3. Read the raw sample list.
         raw_sample_list = RawSampleListFile.create_from_context(self.context)
@@ -148,7 +147,7 @@ class Extension(BaseValidateRawSampleListExtension):
         self.context.file_service.upload(
             "Validated sample list", file_name, validated_sample_list_content,
             self.context.file_service.FILE_PREFIX_NONE)
-        if len(unregistered) > 0 :
+        if len(unregistered) > 0:
             self.usage_warning("The following sample are unregistered '{}'. Press '{}' "
                                "to change the 'Status' to anonymous"
                                "".format(unregistered, BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS))

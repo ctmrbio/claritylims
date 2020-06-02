@@ -2,7 +2,7 @@ from datetime import datetime
 from clarity_ext_scripts.covid.create_samples.common import (
     BaseValidateRawSampleListExtension, BaseRawSampleListFile,
     BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS)
-from clarity_ext_scripts.covid.utils import KNMClient
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 
 
 class RawSampleListColumns(object):
@@ -26,7 +26,7 @@ class Extension(BaseValidateRawSampleListExtension):
             ordering_org = self.context.current_step.udf_ordering_organization
         except AttributeError:
             self.usage_error("You must select an ordering organization")
-        client = KNMClient(self)
+        client = KNMClientFromExtension(self)
 
         raw_sample_list = RawSampleListFile.create_from_context(self.context)
 
@@ -56,7 +56,7 @@ class Extension(BaseValidateRawSampleListExtension):
         self.context.file_service.upload(
             validated_sample_list.FILE_HANDLE, file_name, validated_sample_list_content,
             self.context.file_service.FILE_PREFIX_NONE)
-        if len(unregistered) > 0 :
+        if len(unregistered) > 0:
             self.usage_warning("The following sample are unregistered '{}'. Press '{}' "
                                "to change the 'Status' to anonymous"
                                "".format(unregistered, BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS))
