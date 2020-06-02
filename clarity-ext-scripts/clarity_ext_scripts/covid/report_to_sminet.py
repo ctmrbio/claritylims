@@ -81,7 +81,6 @@ class Extension(GeneralExtension):
 
         error_msg = ""
 
-        # TODO: Anonymous should be ignored
         try:
             integration.export_to_sminet(sample,
                                          doctor_name="Lars Engstrand",
