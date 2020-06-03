@@ -3,7 +3,8 @@ from datetime import datetime
 from clarity_ext_scripts.covid.partner_api_client import (
         TESTING_ORG, ORG_URI_BY_NAME, COVID_RESPONSE_FAILED,
         PartnerClientAPIException)
-from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo, KNMClientFromExtension
+from clarity_ext_scripts.covid.utils import CtmrCovidSubstanceInfo
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 from clarity_ext_scripts.covid.import_samples import BaseCreateSamplesExtension
 
 logger = logging.getLogger(__name__)
