@@ -45,10 +45,9 @@ class FetchBiobankBarcodes(object):
                              .format(RAW_BIOANK_LIST))
 
         # Validate that sample list file has plate barcode as name
-        filenames = self.context.file_service.list_filenames('Raw sample list')
-        base_names = [n.split('.')[0] for n in filenames]
+        filename = single(self.context.file_service.list_filenames('Raw sample list'))
         plate_barcode = single(list(plate_barcodes))
-        if plate_barcode not in base_names:
+        if plate_barcode not in filename:
             raise UsageError(
                 "The 'Raw sample list' name is not matching with the plate "
                 "barcode in '{}', {}".format(RAW_BIOANK_LIST, plate_barcode))

@@ -1,4 +1,3 @@
-
 import base64
 from datetime import datetime
 from luhn import verify as mod10verify
@@ -23,10 +22,12 @@ VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
 # "Ordering organization"
 TESTING_ORG = "Internal testing"
 KARLSSON_AND_NOVAK = "Karlsson and Novak"
+ORG_KUL = "KUL"
 
 ORG_URI_BY_NAME = {
     TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
-    KARLSSON_AND_NOVAK: "http://uri.d-t.se/id/Identifier/i-referral-code"
+    KARLSSON_AND_NOVAK: "http://uri.d-t.se/id/Identifier/i-referral-code",
+    ORG_KUL: "http://uri.d-t.se/id/Identifier/i-lab/region-stockholm-karolinska",
 }
 
 
@@ -284,7 +285,7 @@ class PartnerAPIV7Client(object):
                     ("No partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
         except PartnerClientAPIException as e:
-            log.error(e.message)
+            log.info("Error while connecting to KNM: {}".format(e.message))
             raise e
 
     def create_anonymous_service_request(self, referral_code):
@@ -320,7 +321,7 @@ class PartnerAPIV7Client(object):
                     {
                         "system": "{}/id/CodeSystem/cs-test-types".format(
                             self._test_partner_code_system_base_url),
-                        "code": "covid19"
+                        "code": "SARS-CoV-2-RNA"
                     }
                 ]
             }
@@ -397,6 +398,25 @@ class PartnerAPIV7Client(object):
         except PartnerClientAPIException as e:
             log.error(e.message)
             raise e
+
+    def get_by_reference(self, ref):
+        """
+        Get's a resource by reference, such as Organization/123 or Patient/345
+
+        :ref: The reference, e.g. Patient/123
+        """
+        url = "{}/{}".format(self._base_url, ref)
+        headers = self._generate_headers()
+        response = self._session.get(url=url, headers=headers)
+        if response.status_code != 200:
+            print(response.text)
+            raise PartnerClientAPIException(
+                "Couldn't get resource '{}', status code: {}".format(
+                    url, response.status_code))
+        return response.json()
+
+    def get_org_uri_by_name(self, name):
+        return ORG_URI_BY_NAME[name]
 
     def _create_payload(self, service_request_id, diagnosis_result, analysis_results):
         # TODO Need to think about if this needs refactoring later, to more easily support multiple

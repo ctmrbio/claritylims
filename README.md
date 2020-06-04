@@ -68,5 +68,9 @@ The [clarity-ext](https://github.com/molmed/clarity-ext) package is designed to 
 
 Extensions that use this framework are all in ./clarity-ext-scripts. Refer to the [README](./clarity-ext-scripts/README.md) for more information on this package.
 
+## SmiNet 
+
+There is a client for SmiNet integration in ./sminet_client/. Refer to the [README](./sminet_client/README.md) for more information on the package.
+
 ## More information
 More information about the LIMS system including details on the Miniconda installation and starting the server may be found [here](https://github.com/ctmrbio/wiki/wiki/CTMR-LIMS-(PROD-and-STAGE)).

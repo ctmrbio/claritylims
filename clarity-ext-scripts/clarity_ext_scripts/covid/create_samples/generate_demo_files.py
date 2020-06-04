@@ -1,8 +1,9 @@
-import datetime
 import random
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid.controls import Controls, controls_barcode_generator
 from clarity_ext.domain.container import Container
+from clarity_ext_scripts.covid.create_samples.common import ValidatedSampleListFile
+from clarity_ext_scripts.covid.validate_sample_creation_list import RawSampleListFile
 
 
 class Extension(GeneralExtension):
@@ -10,24 +11,32 @@ class Extension(GeneralExtension):
     Generates demo files for the create sample step
     """
 
-    def generate_raw_sample_list(self, num_samples):
+    def generate_raw_sample_list(self, num_ok=0, num_error=0, num_unregistered=0):
         """
         Generates a sample list with a certain number of samples and all available controls
+
+        The samples will be generated with different status based on their name. This will only
+        happen if validating with the "Internal testing" organization.
+
+        :num_ok: Number of samples with the status "ok" to create
+        :num_error: Number of samples with the status "error" to create
+        :num_unregistered: Number of samples with the status "unregistered" to create
         """
         def rows():
             timestamp = self.context.start.strftime("%y%m%dT%H%M%S")
-            headers = ["Rack Id", "Cavity Id", "Position", "Sample Id",
-                       "CONCENTRATION", "CONCENTRATIONUNIT", "VOLUME",
-                       "USERDEFINED1",
-                       "USERDEFINED2", "USERDEFINED3", "USERDEFINED4", "USERDEFINED5",
-                       "PlateErrors", "SampleErrors", "SAMPLEINSTANCEID", "SAMPLEID"]
-            yield headers
+            yield RawSampleListFile.HEADERS
 
             rows = 8  # Rows in a 96 well plate
 
-            samples_and_controls = [
-                (str(random.randint(1000000000, 9999999999)), "")
-                for _ in range(num_samples)]
+            def generate(num, name):
+                return [(str(random.randint(1000000000, 9999999999)), name)
+                        for _ in range(num)]
+
+            ok = generate(num_ok, ValidatedSampleListFile.STATUS_OK)
+            error = generate(num_error, ValidatedSampleListFile.STATUS_ERROR)
+            unregistered = generate(
+                num_unregistered, ValidatedSampleListFile.STATUS_UNREGISTERED)
+            samples_and_controls = ok + error + unregistered
 
             # Add all controls:
             for c in Controls.ALL:
@@ -36,19 +45,21 @@ class Extension(GeneralExtension):
                 samples_and_controls.append((generated, abbreviation))
 
             for ix, sample_or_control_info in enumerate(samples_and_controls):
-                sample_or_control_id, sample_or_control_name = sample_or_control_info
+                sample_or_control_id, extra_info = sample_or_control_info
                 rack_id = "LVL" + timestamp
                 row = chr(ix % rows + ord("A"))
                 col = ix / rows + 1
                 cavity_id = "{}_{}{:03d}".format(rack_id, row, col)
                 pos = "{}{:02d}".format(row, col)
+
                 yield ([rack_id, cavity_id, pos, sample_or_control_id] +
-                       [""] * 3 +
-                       [sample_or_control_name] +
-                       [""] * 8)
+                       [""] * 3 +  # "CONCENTRATION", "CONCENTRATIONUNIT", "VOLUME"
+                       [""] * 4 +  # COLUMN_USER_DEFINED1-4 
+                       [extra_info] +  # COLUMN_USER_DEFINED5, info only
+                       [""] * 4)
 
             # Add postfix rows that should be ignored later
-            extra_cols = [""] * (len(headers) - 1)
+            extra_cols = [""] * (len(RawSampleListFile.HEADERS) - 1)
             yield ["Sample Tracking Report Name : Plate Report Extended"] + extra_cols
             yield ["Last action tracked : 4/25/2020 2:13:13 PM"] + extra_cols
             yield ["Created by Operator at 4/25/2020 2:13:20 PM"] + extra_cols
@@ -57,7 +68,8 @@ class Extension(GeneralExtension):
         return "\n".join(",".join(row) for row in rows())
 
     def generate_raw_biobank_list(self, plate_barcode):
-        container = Container(container_type=Container.CONTAINER_TYPE_96_WELLS_PLATE)
+        container = Container(
+            container_type=Container.CONTAINER_TYPE_96_WELLS_PLATE)
 
         def rows():
             # Always fill up one entire plate
@@ -72,12 +84,14 @@ class Extension(GeneralExtension):
         biobank_contents = self.generate_raw_biobank_list(plate_barcode)
         fname = 'demo_biobank_barcodes_for_plate_{}.csv'.format(plate_barcode)
         upload_tuple = [(fname, biobank_contents)]
-        self.context.file_service.upload_files("Raw biobank list", upload_tuple)
+        self.context.file_service.upload_files(
+            "Raw biobank list", upload_tuple)
 
-        sample_list_contents = self.generate_raw_sample_list(10)
+        sample_list_contents = self.generate_raw_sample_list(
+            num_ok=8, num_unregistered=2)
         fname = "{}.csv".format(plate_barcode)
         upload_tuple = [(fname, sample_list_contents)]
         self.context.file_service.upload_files("Raw sample list", upload_tuple)
 
     def integration_tests(self):
-        yield "24-44458"
+        yield "24-46735"

@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import datetime
+from clarity_ext.domain import Sample, Artifact
 
 
 class UniqueBarcodeGenerator(object):
@@ -8,7 +9,7 @@ class UniqueBarcodeGenerator(object):
     Generates a unique barcode ID that's guaranteed to be unique if there is only
     one person generating barcodes at a time (they use the current second to mark a unique time),
     while also being short enough to fit within a limited length barcode (currently 14 characters).
-    
+
     Format: <one letter prefix><2 digit type_id (0-99)><8 chars timestamp in hex><3 digits running>
     """
 
@@ -20,9 +21,9 @@ class UniqueBarcodeGenerator(object):
         self.pattern = re.compile(
             "^" +
             prefix +
-            "(?P<type_id>\d{2})" +
-            "(?P<timestamp>\w{8})" +
-            "(?P<running>\d{3})" +
+            r"(?P<type_id>\d{2})" +
+            r"(?P<timestamp>\w{8})" +
+            r"(?P<running>\d{3})" +
             "$")
 
     def parse(self, barcode):
@@ -82,6 +83,9 @@ class CtmrCovidSubstanceInfo(object):
     will also work as well with a built in clarity control as a control that's in fact a sample.
     """
 
+    STATUS_DISCARD = "DISCARD"
+    STATUS_DISCARDED_AND_REPORTED = "DISCARDED_AND_REPORTED"
+
     def __init__(self, substance):
         """
         :substance: A sample, analyte or a built-in control
@@ -100,6 +104,13 @@ class CtmrCovidSubstanceInfo(object):
                                  .format(control_type_abbrev))
         except AttributeError:
             return None
+
+    @property
+    def submitted_sample(self):
+        if isinstance(self.substance, Sample):
+            return self.substance
+        elif isinstance(self.substance, Artifact):
+            return self.substance.sample()
 
     @staticmethod
     def _deduce_control_type_from_analyte_name(name):
@@ -121,10 +132,30 @@ class CtmrCovidSubstanceInfo(object):
         if isinstance(self.substance, Sample):
             return self._deduce_control_type_from_sample(self.substance)
         elif isinstance(self.substance, Analyte):
-            control_type = self._deduce_control_type_from_analyte_name(self.substance.name)
+            control_type = self._deduce_control_type_from_analyte_name(
+                self.substance.name)
             if control_type:
                 return control_type
             return self._deduce_control_type_from_sample(self.substance.sample())
         else:
             raise NotImplementedError("Not implemented substance type {}".format(
                 type(self.substance)))
+
+    @property
+    def is_control(self):
+        return self.control_type is not None
+
+    @property
+    def sminet_status(self):
+        try:
+            return self.substance.udf_sminet_status
+        except AttributeError:
+            return None
+
+    @sminet_status.setter
+    def sminet_status(self, value):
+        self.submitted_sample.udf_sminet_status = value
+        self.substance.udf_sminet_status = value
+
+    def __str__(self):
+        return "name={}, is_control={}".format(self.substance.name, self.is_control)

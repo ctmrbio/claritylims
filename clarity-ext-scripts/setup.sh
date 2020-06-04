@@ -11,3 +11,4 @@ pip install -e ./repos/clarity-ext
 
 pip install -r $SCRIPT_DIR/requirements.txt
 pip install -e $SCRIPT_DIR/.
+pip install -e $SCRIPT_DIR/../sminet-client

@@ -93,3 +93,5 @@ ENV/
 .idea/*
 .idea/*/
 !.idea/runConfigurations
+
+int_tests/
