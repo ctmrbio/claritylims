@@ -18,12 +18,12 @@ class data_parser(object):
     """
     def __init__(self, config):
         self.config = config
-        self.input_file = os.path.join(self.config['input_dir'], "report_{}".format(datetime.strftime(date.today(), "%Y%m%d")))
         self.api_key = self.config['api_key']
         self.data_url = self.config['data_url']
         self.added_samples = {}
         self.date_stats = {}
         self.result_types = set()
+        self.input_file = self._get_input_file()
     
     def parse_latest_data(self):
         """Parse the input file and return a csv string of compiled data"""
@@ -49,9 +49,9 @@ class data_parser(object):
                     result == 'failed_entire_plate_by_failed_external_control' or
                     date == '' or result == '' or control == 'Yes'):
                     continue
-                # Group all kinds of fail under failed
+                # better phrasing of failed samples
                 if 'failed' in result:
-                    result = "failed"
+                    result = "invalid/inconclusive"
                 # Collect all types of result as separate set
                 self.result_types.add(result)
                 # Date of sample processed
@@ -90,16 +90,26 @@ class data_parser(object):
     def print_parsed_data(self):
         """Print parsed data to stdout"""
         print(self.parsed_data)
+    
+    def _get_input_file(self):
+        """Get input file either from argument or try locate"""
+        return self.config.get('input_file') or os.path.join(self.config['input_dir'], "report_{}".format(datetime.strftime(date.today(), "%Y%m%d")))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=True, type=argparse.FileType('r'),
                         help="Config file with required info")
+    parser.add_argument("-i", "--input_file", default=None, type=str,
+                        help="Pass input file (intended for testing)")
     parser.add_argument("--print", action="store_true", help="Print the data after parsing")
     parser.add_argument("--no_put", action="store_true", help="Don't put data to server")
     args = vars(parser.parse_args())
     config = yaml.safe_load(args['config'])
+    
+    # if input file given, would not try and find file
+    if args['input_file']:
+        config['input_file'] = args['input_file']
 
     dp = data_parser(config)
     dp.parse_latest_data()
