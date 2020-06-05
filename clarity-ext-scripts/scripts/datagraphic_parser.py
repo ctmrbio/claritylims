@@ -44,14 +44,14 @@ class data_parser(object):
                 date = columns[date_index]
                 control = columns[control_index]
                 result = columns[result_index]
-                # Group all kinds of fail to failed
-                if 'failed' in result:
-                    result = "failed"
                 # Move on to next sample without further processing if following conditions met
                 if ('biobank' in name.lower() or 'discard' in name.lower() or
                     result == 'failed_entire_plate_by_failed_external_control' or
                     date == '' or result == '' or control == 'Yes'):
                     continue
+                # Group all kinds of fail under failed
+                if 'failed' in result:
+                    result = "failed"
                 # Collect all types of result as separate set
                 self.result_types.add(result)
                 # Date of sample processed
