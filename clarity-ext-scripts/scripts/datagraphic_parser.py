@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+# encoding: utf-8
+
+"""
+Parse daily exports of covid-19 results from Clarity LIMS and upload to SciLifeLab DataGraphics endpoint.
+"""
+__author__ = "Senthilkumar Panneersalvam"
+__date__ = "2020-05"
+__version__ = "1.1"
 
 import argparse
 import logging
@@ -97,7 +105,7 @@ class data_parser(object):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=". ".join([__doc__, __author__, __version__]))
     parser.add_argument("-c", "--config", required=True, type=argparse.FileType('r'),
                         help="Config file with required info")
     parser.add_argument("-i", "--input_file", default=None, type=str,
