@@ -19,7 +19,7 @@ class data_parser(object):
     def __init__(self, config):
         self.config = config
         self.api_key = self.config['scilifelab_datagraphics_api_key']
-        self.data_url = self.config['data_url']
+        self.data_url = self.config['scilifelab_datagraphics_data_url']
         self.added_samples = {}
         self.date_stats = {}
         self.result_types = set()
