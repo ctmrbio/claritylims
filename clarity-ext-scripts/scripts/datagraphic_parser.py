@@ -21,7 +21,6 @@ class data_parser(object):
         self.input_file = os.path.join(self.config['input_dir'], "report_{}".format(datetime.strftime(date.today(), "%Y%m%d")))
         self.api_key = self.config['api_key']
         self.data_url = self.config['data_url']
-        self.log_dir = self.config['log_dir']
         self.added_samples = {}
         self.date_stats = {}
         self.result_types = set()
@@ -98,7 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config", required=True, type=argparse.FileType('r'),
                         help="Config file with required info")
     parser.add_argument("--print", action="store_true", help="Print the data after parsing")
-    parser.add_argument("--no_put", action="store_true", help="Don't put date to server")
+    parser.add_argument("--no_put", action="store_true", help="Don't put data to server")
     args = vars(parser.parse_args())
     config = yaml.safe_load(args['config'])
 
