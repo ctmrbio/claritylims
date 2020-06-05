@@ -16,9 +16,8 @@ class data_parser(object):
         Parser class takes in config with neccesary info and parse
         lims data dump and PUT it to DataGraphic page
     """
-    def __init__(self, config, log=None):
+    def __init__(self, config):
         self.config = config
-        self.log = log
         self.input_file = os.path.join(self.config['input_dir'], "report_{}".format(datetime.strftime(date.today(), "%Y%m%d")))
         self.api_key = self.config['api_key']
         self.data_url = self.config['data_url']
