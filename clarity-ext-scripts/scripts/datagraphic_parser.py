@@ -93,7 +93,7 @@ class data_parser(object):
     
     def _get_input_file(self):
         """Get input file either from argument or try locate"""
-        return self.config.get('input_file') or os.path.join(self.config['input_dir'], "report_{}".format(datetime.strftime(date.today(), "%Y%m%d")))
+        return self.config.get('input_file') or os.path.join(self.config['scilifelab_datagraphics_input_dir'], "report_{}".format(datetime.strftime(date.today(), "%Y%m%d")))
 
 
 if __name__ == "__main__":
