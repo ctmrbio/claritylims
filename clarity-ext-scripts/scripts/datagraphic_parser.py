@@ -9,11 +9,11 @@ __date__ = "2020-05"
 __version__ = "1.1"
 
 import argparse
+import datetime
 import logging
 import requests
 import os
 import yaml
-from datetime import date, datetime
 
 # Set logging level and format
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -44,7 +44,9 @@ class data_parser(object):
             control_index = header.index('Control')
             date_index = header.index('KNM result uploaded date')
             result_index = header.index('rtPCR covid-19 result latest')
-    
+            sdate = None
+            edate = datetime.datetime.now() - datetime.timedelta(days=1)
+            
             for line in ifl:
                 columns = [l.strip() for l in line.strip().split(',')]
                 # Get column info based on the index
@@ -63,14 +65,14 @@ class data_parser(object):
                 # Collect all types of result as separate set
                 self.result_types.add(result)
                 # Date of sample processed
-                parsed_date = datetime.strptime(date.split('T')[0], '%y%m%d')
-                formated_date = datetime.strftime(parsed_date, "%Y-%m-%d")
+                parsed_date = datetime.datetime.strptime(date.split('T')[0], '%y%m%d')
+                formated_date = datetime.datetime.strftime(parsed_date, "%Y-%m-%d")
                 # Get the unique name to check for duplicates
                 uname = name.split('_')[0]
                 # If the sample already processed keep the recent result
                 if uname in self.added_samples:
                     udate, uresult = self.added_samples.split('_')
-                    if datetime.strptime(udate, '‰Y-%m-%d') > parsed_date:
+                    if datetime.datetime.strptime(udate, '‰Y-%m-%d') > parsed_date:
                         continue
                     self.date_stats[udate][uresult] -= 1
                 # Since date is the key here keeping it primary key
@@ -78,13 +80,19 @@ class data_parser(object):
                     self.date_stats[formated_date] = {}
                 if result not in self.date_stats[formated_date]:
                     self.date_stats[formated_date][result] = 0
+                # Find the start and end range of date to iterate over
+                if not sdate or parsed_date < sdate:
+                    sdate = parsed_date
+                # This would mostly never happen, but to catch in case
+                if parsed_date > edate:
+                    edate = parsed_date
                 self.date_stats[formated_date][result] += 1
                 self.added_samples[uname] = "{}_{}".format(formated_date, result)
 
         self.parsed_data = ["date,count,class"]
-        for date in sorted(self.date_stats.keys(), reverse=True):
+        for date in self._date_range(sdate, edate):
             for result in self.result_types:
-                self.parsed_data.append(",".join([date, str(self.date_stats[date].get(result, 0)), result]))
+                self.parsed_data.append(",".join([date, str(self.date_stats.get(date, {}).get(result, 0)), result]))
         self.parsed_data = "\n".join(self.parsed_data)
         logging.info("Finished parsing LIMS file")
 
@@ -101,7 +109,15 @@ class data_parser(object):
     
     def _get_input_file(self):
         """Get input file either from argument or try locate"""
-        return self.config.get('input_file') or os.path.join(self.config['scilifelab_datagraphics_input_dir'], "report_{}".format(datetime.strftime(date.today(), "%Y%m%d")))
+        return self.config.get('input_file') or os.path.join(self.config['scilifelab_datagraphics_input_dir'], 
+                                                             "report_{}".format(datetime.datetime.strftime(datetime.date.today(), "%Y%m%d")))
+    
+    def _date_range(self, sdate, edate):
+        """Generator to give range of date from start to end"""
+        days = (edate-sdate).days
+        while not days < 0:
+            yield datetime.datetime.strftime((sdate + datetime.timedelta(days=days)), "%Y-%m-%d")
+            days -= 1
 
 
 if __name__ == "__main__":
