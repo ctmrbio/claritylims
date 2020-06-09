@@ -88,6 +88,8 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Mac OS stuff
+.DS_Store
 
 # Settings for pycharm (covid project), in order to be able to share run configurations
 .idea/*
