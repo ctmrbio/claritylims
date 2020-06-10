@@ -128,13 +128,13 @@ class KNMSmiNetIntegrationService(object):
         for note in notes:
             try:
                 note_key, note_value = note["text"].split("=", maxsplit=1)
-            except KeyError, AttributeError, ValueError:
+            except (KeyError, AttributeError, ValueError):
                 # This happens when:
                 #   KeyError: the note is not a {"text":"key=value"} dictionary
                 #   AttributeError: the note is not a string
                 #   ValueError: there is no '=' separator in the string
                 continue
-            if note_key in service_request_notes_to_append:
+            if note_key in service_request_notes_to_append and note_value:
                 notes_to_add.append(note["text"])
 
         return " ".join([sample_free_text, *notes_to_add])
