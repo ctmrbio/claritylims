@@ -109,7 +109,7 @@ class KNMSmiNetIntegrationService(object):
                        patient_name(),
                        None)
 
-    def _append_servicerequest_notes(self, sample_free_text, provider, service_request_notes_to_append):
+    def _append_service_request_notes(self, sample_free_text, provider, service_request_notes_to_append):
         """
         Appends text notes from the KNM ServiceRequest to the 'sample_free_text'.
 
