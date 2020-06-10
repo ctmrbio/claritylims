@@ -85,7 +85,8 @@ class Extension(GeneralExtension):
             integration.export_to_sminet(sample,
                                          doctor_name="Lars Engstrand",
                                          lab_result=lab_result,
-                                         sample_free_text="Anamnes: Personalprov")
+                                         sample_free_text="",
+                                         service_request_notes_to_append={"order_note"})
             status = SmiNetService.STATUS_SUCCESS
         except UnregisteredPatient:
             status = SmiNetService.STATUS_IGNORE

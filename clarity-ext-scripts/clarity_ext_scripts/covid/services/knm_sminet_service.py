@@ -109,7 +109,37 @@ class KNMSmiNetIntegrationService(object):
                        patient_name(),
                        None)
 
-    def export_to_sminet(self, sample, doctor_name, lab_result, sample_free_text):
+    def _append_servicerequest_notes(self, sample_free_text, provider, service_request_notes_to_append):
+        """
+        Appends text notes from the KNM ServiceRequest to the 'sample_free_text'.
+
+        :sample_free_text: The free text string that will be added to the SmiNet report
+        :provider: A KNM ServiceRequestProvider
+        :service_request_notes_to_append: A set of strings identifying which notes to append to the sample_free_text
+        """
+
+        if not isinstance(service_request_notes_to_append, set):
+            raise TypeError("service_request_notes_to_append must be a set with keys, e.g. {'order_note'}")
+        if not service_request_notes_to_append:
+            return sample_free_text
+
+        notes_to_add = []
+        notes = provider.service_request["resource"]["note"]
+        for note in notes:
+            try:
+                note_key, note_value = note["text"].split("=", maxsplit=1)
+            except KeyError, AttributeError, ValueError:
+                # This happens when:
+                #   KeyError: the note is not a {"text":"key=value"} dictionary
+                #   AttributeError: the note is not a string
+                #   ValueError: there is no '=' separator in the string
+                continue
+            if note_key in service_request_notes_to_append:
+                notes_to_add.append(note["text"])
+
+        return " ".join([sample_free_text, *notes_to_add])
+
+    def export_to_sminet(self, sample, doctor_name, lab_result, sample_free_text, service_request_notes_to_append):
         """
         Exports a SmiNetLabExport based on a sample
 
@@ -121,8 +151,10 @@ class KNMSmiNetIntegrationService(object):
         provider = ServiceRequestProvider(
             self.knm_service.client, sample.org_uri, sample.org_referral_code)
 
+        sample_free_text_with_notes = self._append_service_request_notes(sample_free_text, provider, service_request_notes_to_append)
+
         sample_info = self.create_sample_info(
-            provider, sample, sample_free_text)
+            provider, sample, sample_free_text_with_notes)
         reporting_doctor = Doctor(doctor_name)
         referring_clinic = self.create_referring_clinic(provider)
         patient = self.create_patient(provider)
