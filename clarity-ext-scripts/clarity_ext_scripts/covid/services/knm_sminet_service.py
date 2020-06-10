@@ -127,7 +127,7 @@ class KNMSmiNetIntegrationService(object):
         notes = provider.service_request["resource"]["note"]
         for note in notes:
             try:
-                note_key, note_value = note["text"].split("=", maxsplit=1)
+                note_key, note_value = note["text"].split("=", 1)
             except (KeyError, AttributeError, ValueError):
                 # This happens when:
                 #   KeyError: the note is not a {"text":"key=value"} dictionary
