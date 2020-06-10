@@ -135,7 +135,7 @@ class KNMSmiNetIntegrationService(object):
                 #   ValueError: there is no '=' separator in the string
                 pass
             if note_key in service_request_notes_to_append:
-                notes_to_add.append(note_value)
+                notes_to_add.append(note["text"])
 
         return " ".join([sample_free_text, *notes_to_add])
 
