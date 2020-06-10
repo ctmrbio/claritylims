@@ -137,7 +137,7 @@ class KNMSmiNetIntegrationService(object):
             if note_key in service_request_notes_to_append and note_value:
                 notes_to_add.append(note["text"])
 
-        return " ".join([sample_free_text, *notes_to_add])
+        return " ".join([sample_free_text] + notes_to_add)
 
     def export_to_sminet(self, sample, doctor_name, lab_result, sample_free_text, service_request_notes_to_append):
         """
