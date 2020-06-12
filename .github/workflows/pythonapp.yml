@@ -19,10 +19,21 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 2.7
+      - name: Add dummy genologicsrc
+        run: |
+          cat << EOF > ~/.genologicsrc
+          [genologics] 
+          BASEURI=https://fancy.server
+          USERNAME=username
+          PASSWORD=pass
+          EOF
+          cat ~/.genologicsrc
       - name: Install dependencies
         run: |
           ./clarity-ext-scripts/setup.sh
       - name: Test with pytest
         run: |
           pip install pytest
-          pytest ./clarity-ext-scripts/tests
+          pytest ./clarity-ext-scripts/tests/unit
+          pytest ./sminet-client/tests/unit
+

@@ -2,14 +2,15 @@ from clarity_ext_scripts.covid.label_printer import label_printer
 
 
 class TestLabelPrinter(object):
+
     def test_single_container__with_lims_id_as_barcode(self):
         label_printer.printer.contents = list()
         container = FakeContainer('container1', '92-123')
         label_printer.generate_zpl_for_containers(
             [container], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO10,5^BY2^BCN,30,N,N,N^FD123^FS^FO10,40^A0,32," \
-                           "25^FB1086,4,20,^FDcontainer1^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD123^FS^FO7,40^A0,32," \
+                           "25^FB380,1,^FDcontainer1^FS^XZ}$\n"
 
     def test_two_containers__with_lims_id_as_barcode(self):
         label_printer.printer.contents = list()
@@ -18,19 +19,18 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container1, container2], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO10,5^BY2^BCN,30,N,N,N^FD123^FS^FO10,40^A0,32,25^FB1086,4,20," \
+        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD123^FS^FO7,40^A0,32,25^FB380,1," \
                            "^FDcontainer1^FS^XZ\n" \
-                           "^XA^LH0,0^FO10,5^BY2^BCN,30,N,N,N^FD124^FS^FO10,40^A0,32,25^FB1086,4,20," \
+                           "^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD124^FS^FO7,40^A0,32,25^FB380,1," \
                            "^FDcontainer2^FS^XZ}$\n"
 
     def test_single_container__with_name_as_barcode(self):
         label_printer.printer.contents = list()
         container = FakeContainer('container1', '92-123')
-        label_printer.generate_zpl_for_containers(
-            [container], lims_id_as_barcode=False)
+        label_printer.generate_zpl_for_containers([container])
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO10,5^BY2^BCN,30,N,N,N^FDcontainer1^FS^FO10," \
-                           "40^A0,32,25^FB932,4,20,^FDcontainer1^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FDcontainer1^FS^FO7," \
+                           "40^A0,32,25^FB380,1,^FDcontainer1^FS^XZ}$\n"
 
     def test_dmitry_barcode(self):
         label_printer.printer.contents = list()
@@ -38,8 +38,8 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO10,5^BY2^BCN,30,N,N,N^FD7277^FS^FO10,40^A0," \
-                           "32,25^FB1064,4,20,^FD27-7277^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD7277^FS^FO7,40^A0," \
+                           "32,25^FB380,1,^FD27-7277^FS^XZ}$\n"
 
     def test_with_long_container_name__lims_id_as_barcode(self):
         label_printer.printer.contents = list()
@@ -47,18 +47,17 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO10,5^BY2^BCN,30,N,N,N^FD727789^FS^FO10," \
-                           "40^A0,32,25^FB1020,4,20,^FDCOVID_200416_RNA_144401.v1^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD727789^FS^FO7," \
+                           "40^A0,32,25^FB380,1,^FDCOVID_200416_RNA_144401.v1^FS^XZ}$\n"
 
     def test_with_long_container_name__name_as_barcode(self):
         label_printer.printer.contents = list()
         container = FakeContainer(
-            'COVID_200416_PREXT_144401', 'COVID_200416_PREXT_144401')
-        label_printer.generate_zpl_for_containers(
-            [container], lims_id_as_barcode=False)
+            'COVID_200416_RNA_144401.v1', '92-727789')
+        label_printer.generate_zpl_for_containers([container])
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO10,5^BY2^BCN,30,N,N,N^FDCOVID_200416_PREXT_144401^FS^FO10," \
-                           "40^A0,32,25^FB602,4,20,^FDCOVID_200416_PREXT_144401^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FDCOVID_200416_RNA_144401.v1^FS^FO7," \
+                           "40^A0,32,25^FB380,1,^FDCOVID_200416_RNA_144401.v1^FS^XZ}$\n"
 
 
 class FakeContainer(object):

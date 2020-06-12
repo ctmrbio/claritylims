@@ -6,6 +6,7 @@ from clarity_ext_scripts.covid.partner_api_client import (
     PartnerClientAPIException)
 from clarity_ext_scripts.covid.rtpcr_analysis_service import FAILED_STATES
 from clarity_ext_scripts.covid.controls import Controls
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
 
 
 logger = logging.getLogger(__name__)
@@ -17,16 +18,6 @@ class Extension(GeneralExtension):
     """
     Reports sample results to third party partner 
     """
-
-    def get_client(self):
-        config = {
-            key: self.config[key]
-            for key in [
-                "test_partner_base_url", "test_partner_code_system_base_url",
-                "test_partner_user", "test_partner_password"
-            ]
-        }
-        return PartnerAPIV7Client(**config)
 
     def map_from_internal_to_external_result(self, sample):
         covid_result = sample.udf_rtpcr_covid19_result_latest
@@ -79,7 +70,7 @@ class Extension(GeneralExtension):
         return False
 
     def execute(self):
-        self.client = self.get_client()
+        self.client = KNMClientFromExtension(self)
         for plate in self.context.input_containers:
             for well in plate.occupied:
                 already_uploaded = False
