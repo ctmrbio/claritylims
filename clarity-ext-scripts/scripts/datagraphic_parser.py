@@ -67,6 +67,9 @@ class data_parser(object):
                 # Date of sample processed
                 parsed_date = datetime.datetime.strptime(date.split('T')[0], '%y%m%d')
                 formated_date = datetime.datetime.strftime(parsed_date, "%Y-%m-%d")
+                # Ignore any data later than yesterday
+                if parsed_date > edate:
+                    continue
                 # Get the unique name to check for duplicates
                 uname = name.split('_')[0]
                 # If the sample already processed keep the recent result
@@ -83,9 +86,6 @@ class data_parser(object):
                 # Find the start and end range of date to iterate over
                 if not sdate or parsed_date < sdate:
                     sdate = parsed_date
-                # This would mostly never happen, but to catch in case
-                if parsed_date > edate:
-                    edate = parsed_date
                 self.date_stats[formated_date][result] += 1
                 self.added_samples[uname] = "{}_{}".format(formated_date, result)
 
