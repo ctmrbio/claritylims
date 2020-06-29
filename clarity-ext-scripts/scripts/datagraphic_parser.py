@@ -67,7 +67,7 @@ class data_parser(object):
                 # Date of sample processed
                 parsed_date = datetime.datetime.strptime(date.split('T')[0], '%y%m%d')
                 formated_date = datetime.datetime.strftime(parsed_date, "%Y-%m-%d")
-                # Ignore any data latest than yesterday
+                # Ignore any data later than yesterday
                 if parsed_date > edate:
                     continue
                 # Get the unique name to check for duplicates
