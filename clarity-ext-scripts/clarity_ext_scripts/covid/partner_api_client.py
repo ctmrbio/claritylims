@@ -305,6 +305,9 @@ class PartnerAPIV7Client(object):
                 {
                     "resourceType": "Patient",
                     "id": "1"
+                    "managingOrganization": {
+                        "reference": "Organization/2-11"  # Organization/2-11 is "NPC Internal testing"
+                    }
                 }
             ],
             "identifier": [
