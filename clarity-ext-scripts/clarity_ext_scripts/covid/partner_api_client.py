@@ -23,13 +23,13 @@ VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
 TESTING_ORG = "Internal testing"
 KARLSSON_AND_NOVAK = "Karlsson and Novak"
 ORG_KUL = "KUL"
-LAB_PORT = "Labportalen"
+ORG_LABPORTALEN = "Labportalen"
 
 ORG_URI_BY_NAME = {
     TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
     KARLSSON_AND_NOVAK: "http://uri.d-t.se/id/Identifier/i-referral-code",
     ORG_KUL: "http://uri.d-t.se/id/Identifier/i-lab/region-stockholm-karolinska",
-    LAB_PORT: "http://uri.d-t.se/id/Identifier/i-lab/labportalen"
+    ORG_LABPORTALEN: "http://uri.d-t.se/id/Identifier/i-lab/labportalen"
 }
 
 
@@ -306,7 +306,7 @@ class PartnerAPIV7Client(object):
                     "resourceType": "Patient",
                     "id": "1",
                     "managingOrganization": {
-                        "reference": "Organization/2-11"  # Organization/2-11 is "NPC Internal testing"
+                        "reference": "Organization/2-44"  # Organization/2-44 is "NPC Anonymous"
                     }
                 }
             ],
