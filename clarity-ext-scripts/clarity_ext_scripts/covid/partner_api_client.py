@@ -29,7 +29,7 @@ ORG_URI_BY_NAME = {
     TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
     KARLSSON_AND_NOVAK: "http://uri.d-t.se/id/Identifier/i-referral-code",
     ORG_KUL: "http://uri.d-t.se/id/Identifier/i-lab/region-stockholm-karolinska",
-    ORG_LABPPORTALEN: "http://uri.d-t.se/id/Identifier/i-lab/labportalen"
+    ORG_LABPORTALEN: "http://uri.d-t.se/id/Identifier/i-lab/labportalen"
 }
 
 
