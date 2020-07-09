@@ -17,11 +17,11 @@ class Extension(BaseCreateSamplesExtension):
 
     Creates two containers with samples and controls in Clarity:
         COVID_<date>_PREXT_<time>
-            <sample_name_in_csv>_<region_from_ServiceRequest>_<subregion_from_ServiceRequest>_<timestamp w sec>
+            <sample_name_in_csv>_<region_from_ServiceRequest>-<subregion_from_ServiceRequest>_<timestamp w sec>
             <control_name_in_csv>_<timestamp w sec>_<running>
             ...
         COVID_<date>_BIOBANK_<time>
-            <sample_name_in_csv>_<region_from_ServiceRequest>_<subregion_from_ServiceRequest>_<timestamp w sec>_BIOBANK
+            <sample_name_in_csv>_<region_from_ServiceRequest>-<subregion_from_ServiceRequest>_<timestamp w sec>_BIOBANK
             <control_name_in_csv>_<timestamp w sec>_<running>_BIOBANK
             ...
 
