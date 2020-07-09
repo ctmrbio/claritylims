@@ -1,6 +1,6 @@
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
-from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension
+from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension, ServiceRequestProvider
 from clarity_ext_scripts.covid.create_samples.common import BaseCreateSamplesExtension
 
 
@@ -15,11 +15,11 @@ class Extension(BaseCreateSamplesExtension):
 
     Creates two containers with samples and controls in Clarity:
         COVID_<date>_PREXT_<time>
-            <sample_name_in_csv>_<timestamp w sec>
+            <sample_name_in_csv>_<region_from_ServiceRequest>_<subregion_from_ServiceRequest>_<timestamp w sec>
             <control_name_in_csv>_<timestamp w sec>_<running>
             ...
         COVID_<date>_BIOBANK_<time>
-            <sample_name_in_csv>_<timestamp w sec>_BIOBANK
+            <sample_name_in_csv>_<region_from_ServiceRequest>_<subregion_from_ServiceRequest>_<timestamp w sec>_BIOBANK
             <control_name_in_csv>_<timestamp w sec>_<running>_BIOBANK
             ...
 
@@ -27,7 +27,19 @@ class Extension(BaseCreateSamplesExtension):
     """
 
     def create_sample(self, original_name, timestamp, project, specifier, org_uri, service_request_id):
-        name = map(str, [original_name, timestamp])
+
+        provider = ServiceRequestProvider(
+            self.client, org_uri, original_name)
+
+        referring_clinic_county = self.get_county_from_organization(provider.organization)
+        referring_clinic_name = provider.patient["managingOrganization"]["display"]
+
+        name = map(str, [
+                original_name, 
+                "".join(referring_clinic_county.split()),
+                "".join(referring_clinic_name.split()),
+                referringtimestamp,
+        ])
         if specifier:
             name.append(specifier)
         name = "_".join(name)
@@ -65,7 +77,9 @@ class Extension(BaseCreateSamplesExtension):
 
         The name of the samples will be:
 
-            <name in csv>_<timestamp>_<sample_specifier>
+            <name in csv>_<region>-<subregion>_<timestamp>_<sample_specifier>
+
+        <region> and <subregion> will have whitespace chars removed.
 
         The name of the controls will be on the form:
 
