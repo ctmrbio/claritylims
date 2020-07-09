@@ -35,10 +35,10 @@ class Extension(BaseCreateSamplesExtension):
         referring_clinic_name = provider.patient["managingOrganization"]["display"]
 
         name = map(str, [
-                original_name, 
+                original_name,
                 "".join(referring_clinic_county.split()),
                 "".join(referring_clinic_name.split()),
-                referringtimestamp,
+                timestamp,
         ])
         if specifier:
             name.append(specifier)
