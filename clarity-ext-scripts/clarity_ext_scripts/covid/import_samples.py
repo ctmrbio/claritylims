@@ -31,8 +31,12 @@ class Extension(BaseCreateSamplesExtension):
         provider = ServiceRequestProvider(
             self.client, org_uri, original_name)
 
-        referring_clinic_county = self.get_county_from_organization(provider.organization)
-        referring_clinic_name = provider.patient["managingOrganization"]["display"]
+        try:
+            referring_clinic_county = self.get_county_from_organization(provider.organization)
+            referring_clinic_name = provider.patient["managingOrganization"]["display"]
+        except AttributeError:
+            referring_clinic_county = ""
+            referring_clinic_name = ""
 
         name = map(str, [
                 original_name,
