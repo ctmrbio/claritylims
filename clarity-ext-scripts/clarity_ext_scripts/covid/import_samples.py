@@ -1,8 +1,10 @@
+import logging
 from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
 from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension, ServiceRequestProvider
 from clarity_ext_scripts.covid.create_samples.common import BaseCreateSamplesExtension
 
+logger = logging.getLogger(__name__)
 
 class Extension(BaseCreateSamplesExtension):
     """
@@ -32,15 +34,13 @@ class Extension(BaseCreateSamplesExtension):
             self.client, org_uri, original_name)
 
         try:
-            referring_clinic_county = self.get_county_from_organization(provider.organization)
             referring_clinic_name = provider.patient["managingOrganization"]["display"]
         except AttributeError:
-            referring_clinic_county = ""
+            logger.warning("Found no referring clinic information for %s" % original_name)
             referring_clinic_name = ""
 
         name = [
             original_name,
-            "".join(referring_clinic_county.split()),
             "".join(referring_clinic_name.split()),
             timestamp,
         ]
