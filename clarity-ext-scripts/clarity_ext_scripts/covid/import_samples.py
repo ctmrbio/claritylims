@@ -34,7 +34,7 @@ class Extension(BaseCreateSamplesExtension):
             self.client, org_uri, original_name)
 
         try:
-            referring_clinic_name = provider.patient["managingOrganization"]["display"]
+            referring_clinic_name = provider.patient["managingOrganization"]["display"].encode("ascii", "ignore")
         except AttributeError:
             logger.warning("Found no referring clinic information for %s" % original_name)
             referring_clinic_name = ""
