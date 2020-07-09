@@ -38,15 +38,15 @@ class Extension(BaseCreateSamplesExtension):
             referring_clinic_county = ""
             referring_clinic_name = ""
 
-        name = map(str, [
-                original_name,
-                "".join(referring_clinic_county.split()),
-                "".join(referring_clinic_name.split()),
-                timestamp,
-        ])
+        name = [
+            original_name,
+            "".join(referring_clinic_county.split()),
+            "".join(referring_clinic_name.split()),
+            timestamp,
+        ]
         if specifier:
             name.append(specifier)
-        name = "_".join(name)
+        name = "_".join(str(component) for component in name if component)
         sample = Sample(sample_id=None, name=name, project=project)
         sample.udf_map.force("Control", "No")
 
