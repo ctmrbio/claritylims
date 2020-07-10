@@ -92,7 +92,7 @@ class ZebraLabelPrinter(object):
     
     FONT_SIZES = {
         "A": (5, 9), "B": (7, 11), "C": (10, 18), "D": (10, 18), "E": (15, 28), 
-        "F": (13, 26), "G": (40, 60), "H": (13, 21), "J": (25, 32), "L": (20,25)
+        "F": (13, 26), "G": (40, 60), "H": (13, 21), "J": (25, 32), "L": (25,20)
     }
 
     def __init__(self, font, zoom_factor, vertical_spacing, block_width_points, label_width_points,
