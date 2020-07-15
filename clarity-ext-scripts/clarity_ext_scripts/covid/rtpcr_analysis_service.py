@@ -122,9 +122,14 @@ class RTPCRAnalysisService(object):
                                     DIAGNOSIS_RESULT_KEY: res})
 
             if res == COVID_RESPONSE_POSITIVE:
-                errors.append(NegativeControlWasPositive(
-                    "Negative control sample: {} was positive for covid-19".format(
-                        neg_control["id"])))
+                # cov-195-negative-controls-should-be-ignored
+                # Ongoing issue with high background levels for negative controls
+                # To be restored as soon as the issue with the controls has been resolved
+                # Maike Seifert, Fredrik Boulund, 2020-07-15
+                #errors.append(NegativeControlWasPositive(
+                #    "Negative control sample: {} was positive for covid-19".format(
+                #       neg_control["id"])))
+                log.warning("NegativeControlWasPositive, negative control sample: " + neg_control["id"])
             if res in FAILED_STATES:
                 errors.append(FailedControl("Negative control sample: {} failed with status: {}".format(pos_control["id"],
                                                                                                         res)))
