@@ -127,7 +127,7 @@ class PartnerAPISampleInformation(object):
 
 class PartnerAPIClient(object):
     """
-    This is a client to enable posting data to the test partners api. It is currently valid for v.6 of the parter's API.
+    This is a client to enable posting data to the test partners api. It is currently valid for v.6 of the partner's API.
     """
 
     def __init__(self, test_partner_url, test_partner_user, test_partner_password,

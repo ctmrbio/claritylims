@@ -107,6 +107,7 @@ class CtmrCovidSubstanceInfo(object):
 
     @property
     def submitted_sample(self):
+        from clarity_ext.domain import Sample, Artifact
         if isinstance(self.substance, Sample):
             return self.substance
         elif isinstance(self.substance, Artifact):
