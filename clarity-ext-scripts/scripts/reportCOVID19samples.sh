@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-current_date=`date +%Y%m%d`
+current_date=$(date +%Y%m%d)
 echo "$(date) Running Clarity sample data export for covid19 on ${current_date}"
 
 psql --pset footer --no-align --field-separator=',' --username='clarity' --dbname='ClarityDB' --file='/opt/gls/clarity/users/glsai/deployment/claritylims/clarity-ext-scripts/scripts/reportCOVID19samples.sql' --output="/tmp/report_${current_date}"
