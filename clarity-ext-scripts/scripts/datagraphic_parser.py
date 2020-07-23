@@ -42,15 +42,18 @@ class data_parser(object):
         with open(self.input_file, 'r') as ifl:
             reader = csv.DictReader(ifl, delimiter=",")
             for row in reader:
-                name = row["Name"] if row["Name"] else ""
-                date = row["KNM result uploaded date"] if row["KNM result uploaded date"] else ""
-                control = row["Control"] if row["Control"] else ""
-                result = row["rtPCR covid-19 result latest"] if row["rtPCR covid-19 result latest"] else "" 
+                name = row["Name"]
+                date = row["KNM result uploaded date"]
+                control = row["Control"]
+                result = row["rtPCR covid-19 result latest"]
 
                 # Move on to next sample without further processing if following conditions met
-                if ('biobank' in name.lower() or 'discard' in name.lower() or
-                    result == 'failed_entire_plate_by_failed_external_control' or
-                    date == '' or result == '' or control == 'Yes'):
+                if ('biobank' in name.lower() 
+                    or 'discard' in name.lower()
+                    or result == 'failed_entire_plate_by_failed_external_control' 
+                    or date == '' 
+                    or result == '' 
+                    or control == 'Yes'):
                     continue
 
                 # Replace failed outcome with more descriptive text
