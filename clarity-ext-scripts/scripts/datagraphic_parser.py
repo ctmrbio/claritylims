@@ -4,9 +4,9 @@
 """
 Parse daily exports of covid-19 results from Clarity LIMS and upload to SciLifeLab DataGraphics endpoint.
 """
-__author__ = "Senthilkumar Panneersalvam"
+__author__ = "Senthilkumar Panneersalvam, Fredrik Boulund"
 __date__ = "2020-05"
-__version__ = "1.1"
+__version__ = "1.2"
 
 import argparse
 import datetime
@@ -14,6 +14,7 @@ import logging
 import requests
 import os
 import yaml
+import csv
 
 # Set logging level and format
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -36,53 +37,56 @@ class data_parser(object):
     def parse_latest_data(self):
         """Parse the input file and return a csv string of compiled data"""
         logging.info("Found LIMS data file '{}', parsing...".format(self.input_file))
+        sdate = None
+        edate = datetime.datetime.now() - datetime.timedelta(days=1)
         with open(self.input_file, 'r') as ifl:
-            header = ifl.readline().strip().split(',')
-    
-            # Get the index of interested columns
-            name_index = header.index('Name')
-            control_index = header.index('Control')
-            date_index = header.index('KNM result uploaded date')
-            result_index = header.index('rtPCR covid-19 result latest')
-            sdate = None
-            edate = datetime.datetime.now() - datetime.timedelta(days=1)
-            
-            for line in ifl:
-                columns = [l.strip() for l in line.strip().split(',')]
-                # Get column info based on the index
-                name = columns[name_index]
-                date = columns[date_index]
-                control = columns[control_index]
-                result = columns[result_index]
+            reader = csv.DictReader(ifl, delimiter=",")
+            for row in reader:
+                name = row["Name"]
+                date = row["KNM result uploaded date"]
+                control = row["Control"]
+                result = row["rtPCR covid-19 result latest"]
+
                 # Move on to next sample without further processing if following conditions met
-                if ('biobank' in name.lower() or 'discard' in name.lower() or
-                    result == 'failed_entire_plate_by_failed_external_control' or
-                    date == '' or result == '' or control == 'Yes'):
+                if ('biobank' in name.lower() 
+                    or 'discard' in name.lower()
+                    or result == 'failed_entire_plate_by_failed_external_control' 
+                    or date == '' 
+                    or result == '' 
+                    or control == 'Yes'):
                     continue
-                # better phrasing of failed samples
+
+                # Replace failed outcome with more descriptive text
                 if 'failed' in result:
                     result = "invalid/inconclusive"
+
                 # Collect all types of result as separate set
                 self.result_types.add(result)
+
                 # Date of sample processed
                 parsed_date = datetime.datetime.strptime(date.split('T')[0], '%y%m%d')
                 formated_date = datetime.datetime.strftime(parsed_date, "%Y-%m-%d")
+
                 # Ignore any data later than yesterday
                 if parsed_date > edate:
                     continue
+
                 # Get the unique name to check for duplicates
                 uname = name.split('_')[0]
-                # If the sample already processed keep the recent result
+
+                # If the sample already processed keep the most recent result
                 if uname in self.added_samples:
                     udate, uresult = self.added_samples.split('_')
                     if datetime.datetime.strptime(udate, '‰Y-%m-%d') > parsed_date:
                         continue
                     self.date_stats[udate][uresult] -= 1
+
                 # Since date is the key here keeping it primary key
                 if formated_date not in self.date_stats:
                     self.date_stats[formated_date] = {}
                 if result not in self.date_stats[formated_date]:
                     self.date_stats[formated_date][result] = 0
+
                 # Find the start and end range of date to iterate over
                 if not sdate or parsed_date < sdate:
                     sdate = parsed_date
