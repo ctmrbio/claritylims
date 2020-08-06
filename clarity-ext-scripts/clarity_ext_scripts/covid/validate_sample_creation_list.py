@@ -153,4 +153,4 @@ class Extension(BaseValidateRawSampleListExtension):
                                "".format(unregistered, BUTTON_TEXT_ASSIGN_UNREGISTERED_TO_ANONYMOUS))
 
     def integration_tests(self):
-        yield self.test("24-47136", commit=False)
+        yield self.test("24-52452", commit=False)
