@@ -48,7 +48,7 @@ class Extension(BaseCreateSamplesExtension):
             name.append(specifier)
         name = "_".join(str(component) for component in name if component)
         sample = Sample(sample_id=None, name=name, project=project)
-        sample.udf_map.force("Control", "No")
+        sample.udf_map.force("Control", "False")
 
         # Add KNM data:test_partner_user
         sample.udf_map.force("KNM data added at", timestamp)
@@ -65,7 +65,7 @@ class Extension(BaseCreateSamplesExtension):
             name.append(specifier)
         name = "_".join(name)
         control = Sample(sample_id=None, name=name, project=project)
-        control.udf_map.force("Control", "Yes")
+        control.udf_map.force("Control", "True")
         control.udf_map.force("Control type", control_type_name)
         return control
 
