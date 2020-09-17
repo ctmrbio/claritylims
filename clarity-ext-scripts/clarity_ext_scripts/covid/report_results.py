@@ -11,7 +11,7 @@ from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtensio
 
 logger = logging.getLogger(__name__)
 
-UDF_TRUE = "Yes"
+UDF_TRUE = True
 
 
 class Extension(GeneralExtension):
