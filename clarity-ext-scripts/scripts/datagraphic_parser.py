@@ -137,7 +137,7 @@ if __name__ == "__main__":
                         help="Pass input file (intended for testing)")
     parser.add_argument("--print", action="store_true", help="Print the data after parsing")
     parser.add_argument("--no_put", action="store_true", help="Don't put data to server")
-    parser.add_argument("--set-to-negative", 
+    parser.add_argument("--set-to-negative",  dest="set_to_negative",
             default="", help="File with identifiers whose result should be set to 'negative'.")
     args = vars(parser.parse_args())
     config = yaml.safe_load(args['config'])
@@ -147,9 +147,9 @@ if __name__ == "__main__":
         config['input_file'] = args['input_file']
     
     # Create sets of unique identifiers whose results should be changed
-    if args.set_to_negative:
+    if args["set_to_negative"]:
         try:
-            set_to_negative = set(barcode.strip() for barcode in open(args.set_to_negative).readlines())
+            set_to_negative = set(barcode.strip() for barcode in open(args["set_to_negative"]).readlines())
         except IOError:
             set_to_negative = set()
 
