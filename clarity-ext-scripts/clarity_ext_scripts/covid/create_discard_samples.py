@@ -40,7 +40,7 @@ class Extension(BaseCreateSamplesExtension):
             name.append(specifier)
         name = "_".join(name)
         sample = Sample(sample_id=None, name=name, project=project)
-        sample.udf_map.force("Control", "No")
+        sample.udf_map.force("Control", "False")
 
         # Add KNM data:test_partner_user
         sample.udf_map.force("KNM data added at", timestamp)
