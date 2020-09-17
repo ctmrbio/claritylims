@@ -34,7 +34,7 @@ class data_parser(object):
         self.result_types = set()
         self.input_file = self._get_input_file()
     
-    def parse_latest_data(self):
+    def parse_latest_data(self, set_to_negative):
         """Parse the input file and return a csv string of compiled data"""
         logging.info("Found LIMS data file '{}', parsing...".format(self.input_file))
         sdate = None
@@ -73,6 +73,11 @@ class data_parser(object):
 
                 # Get the unique name to check for duplicates
                 uname = name.split('_')[0]
+
+                # Check if result needs to be modified
+                if uname in set_to_negative:
+                    result = "negative"
+                    logging.debug("%s found in set_to_negative" % uname)
 
                 # If the sample already processed keep the most recent result
                 if uname in self.added_samples:
@@ -132,15 +137,25 @@ if __name__ == "__main__":
                         help="Pass input file (intended for testing)")
     parser.add_argument("--print", action="store_true", help="Print the data after parsing")
     parser.add_argument("--no_put", action="store_true", help="Don't put data to server")
+    parser.add_argument("--set-to-negative",  dest="set_to_negative",
+            default="", help="File with identifiers whose result should be set to 'negative'.")
     args = vars(parser.parse_args())
     config = yaml.safe_load(args['config'])
     
     # if input file given, would not try and find file
     if args['input_file']:
         config['input_file'] = args['input_file']
+    
+    # Create sets of unique identifiers whose results should be changed
+    set_to_negative = set()
+    if args["set_to_negative"]:
+        try:
+            set_to_negative = set(barcode.strip() for barcode in open(args["set_to_negative"]).readlines())
+        except IOError:
+            pass
 
     dp = data_parser(config)
-    dp.parse_latest_data()
+    dp.parse_latest_data(set_to_negative)
     if not args['no_put']:
         dp.put_parsed_data()
     if args['print']:
