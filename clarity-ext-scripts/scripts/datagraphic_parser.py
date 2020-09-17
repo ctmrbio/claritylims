@@ -147,11 +147,12 @@ if __name__ == "__main__":
         config['input_file'] = args['input_file']
     
     # Create sets of unique identifiers whose results should be changed
+    set_to_negative = set()
     if args["set_to_negative"]:
         try:
             set_to_negative = set(barcode.strip() for barcode in open(args["set_to_negative"]).readlines())
         except IOError:
-            set_to_negative = set()
+            pass
 
     dp = data_parser(config)
     dp.parse_latest_data(set_to_negative)
