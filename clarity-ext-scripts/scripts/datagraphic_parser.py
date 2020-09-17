@@ -150,7 +150,7 @@ if __name__ == "__main__":
     if args.set_to_negative:
         try:
             set_to_negative = set(barcode.strip() for barcode in open(args.set_to_negative).readlines())
-        else:
+        except IOError:
             set_to_negative = set()
 
     dp = data_parser(config)
