@@ -3,6 +3,7 @@ from clarity_ext.domain import Container, Sample
 from clarity_ext_scripts.covid.controls import controls_barcode_generator, Controls
 from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtension, ServiceRequestProvider
 from clarity_ext_scripts.covid.create_samples.common import BaseCreateSamplesExtension
+from clarity_ext_scripts.covid.partner_api_client import TESTING_ORG, ORG_URI_BY_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +34,13 @@ class Extension(BaseCreateSamplesExtension):
         provider = ServiceRequestProvider(
             self.client, org_uri, original_name)
 
-        try:
-            referring_clinic_name = provider.patient["managingOrganization"]["display"].encode("ascii", "ignore")
-        except AttributeError:
-            logger.warning("Found no referring clinic information for %s" % original_name)
+        if org_uri == ORG_URI_BY_NAME[TESTING_ORG]:
             referring_clinic_name = ""
+        else:
+            try:
+                referring_clinic_name = provider.patient["managingOrganization"]["display"].encode("ascii", "ignore")
+            except AttributeError:
+                logger.warning("Found no referring clinic information for %s" % original_name)
 
         name = [
             original_name,
