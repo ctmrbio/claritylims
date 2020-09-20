@@ -24,7 +24,7 @@ TESTING_ORG = "Internal testing"
 KARLSSON_AND_NOVAK = "Karlsson and Novak"
 ORG_KUL = "KUL"
 ORG_LABPORTALEN = "Labportalen"
-ORG_RVB_RID = "Västerbotten RID"
+ORG_RVB_RID = "Vaesterbotten RID"
 
 ORG_URI_BY_NAME = {
     TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
