@@ -127,7 +127,7 @@ class RTPCRAnalysisService(object):
             if res == COVID_RESPONSE_POSITIVE:
                 errors.append(NegativeControlWasPositive(
                     "Negative control sample: {} was positive for covid-19".format(
-                        neg_control["id"])))
+                       neg_control["id"])))
             if res in FAILED_STATES:
                 errors.append(FailedControl("Negative control sample: {} failed with status: {}".format(pos_control["id"],
                                                                                                         res)))
