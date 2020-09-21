@@ -51,10 +51,14 @@ from sample s inner join process p using(processid)
 	left join processudfstorage pf22 on s.processid = pf22.processid and pf22.rowindex = 0
 	left join processudfstorage pf23 on s.processid = pf23.processid and pf23.rowindex = 3
 	left join processudfstorage pf24 on s.processid = pf24.processid and pf24.rowindex = 3
-where s.projectid = 951 -- Covid19 project on prod
--- 	s.projectid = 1001 -- Test-Covid19 project on prod
---	s.projectid = 801 -- Covid19 project on stage
---	s.propjectid = 751 -- Test-Covid19 on stage
+where s.projectid = 3 -- Covid19 project on prod02
+--where s.projectid = 2 -- COVID_Test project on prod02
+--where s.projectid = 51 -- COVID_Test project on stage02
+--where s.projectid = 101 -- Covid19 project on stage02
+--where s.projectid = 951 -- Covid19 project on prod01
+--where s.projectid = 1001 -- Test-Covid19 project on prod01
+--where s.projectid = 801 -- Covid19 project on stage01
+--where s.projectid = 751 -- Test-Covid19 on stage01
 --	and s.datereceived < to_date('2020-07-15', 'YYYY-MM-DD')
 order by 1;
 
