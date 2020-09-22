@@ -6,7 +6,7 @@ Parse daily exports of covid-19 results from Clarity LIMS and upload to SciLifeL
 """
 __author__ = "Senthilkumar Panneersalvam, Fredrik Boulund"
 __date__ = "2020-05"
-__version__ = "1.2"
+__version__ = "1.3"
 
 import argparse
 import datetime
@@ -15,6 +15,7 @@ import requests
 import os
 import yaml
 import csv
+from collections import defaultdict
 
 # Set logging level and format
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -30,15 +31,15 @@ class data_parser(object):
         self.api_key = self.config['scilifelab_datagraphics_api_key']
         self.data_url = self.config['scilifelab_datagraphics_data_url']
         self.added_samples = {}
-        self.date_stats = {}
+        self.date_stats = defaultdict(lambda: defaultdict(int))
         self.result_types = set()
         self.input_file = self._get_input_file()
     
-    def parse_latest_data(self, set_to_negative):
+    def parse_latest_data(self, set_to_negative, frozen_file):
         """Parse the input file and return a csv string of compiled data"""
         logging.info("Found LIMS data file '{}', parsing...".format(self.input_file))
-        sdate = None
-        edate = datetime.datetime.now() - datetime.timedelta(days=1)
+        self.sdate = datetime.datetime.now()
+        self.edate = datetime.datetime.now() - datetime.timedelta(days=1)
         with open(self.input_file, 'r') as ifl:
             reader = csv.DictReader(ifl, delimiter=",")
             for row in reader:
@@ -68,7 +69,7 @@ class data_parser(object):
                 formated_date = datetime.datetime.strftime(parsed_date, "%Y-%m-%d")
 
                 # Ignore any data later than yesterday
-                if parsed_date > edate:
+                if parsed_date > self.edate:
                     continue
 
                 # Get the unique name to check for duplicates
@@ -93,17 +94,22 @@ class data_parser(object):
                     self.date_stats[formated_date][result] = 0
 
                 # Find the start and end range of date to iterate over
-                if not sdate or parsed_date < sdate:
-                    sdate = parsed_date
+                if not self.sdate or parsed_date < self.sdate:
+                    self.sdate = parsed_date
                 self.date_stats[formated_date][result] += 1
                 self.added_samples[uname] = "{}_{}".format(formated_date, result)
+        logging.info("Finished parsing LIMS file")
 
+        if frozen_file:
+            self.append_frozen_data(frozen_file)
+
+        logging.debug("Formatting parsed data")
         self.parsed_data = ["date,count,class"]
-        for date in self._date_range(sdate, edate):
+        for date in self._date_range(self.sdate, self.edate):
             for result in self.result_types:
                 self.parsed_data.append(",".join([date, str(self.date_stats.get(date, {}).get(result, 0)), result]))
         self.parsed_data = "\n".join(self.parsed_data)
-        logging.info("Finished parsing LIMS file")
+        logging.info("Finished formatting data for submission.")
 
     def put_parsed_data(self):
         """Send the parsed data to DataGraphic server"""
@@ -111,7 +117,21 @@ class data_parser(object):
         response = requests.put(self.data_url, headers={'x-apikey': self.api_key}, data=self.parsed_data)
         response.raise_for_status()
         logging.info("Parsed data have been successfully PUT")
-    
+
+    def append_frozen_data(self, frozen_file):
+        """Append frozen data to total results"""
+        with open(frozen_file) as f:
+            logging.debug("Opened frozen file for parsing...")
+            reader = csv.DictReader(f, delimiter=",")
+            for row in reader:
+	        self.date_stats[row["date"]][row["class"]] += int(row["count"])
+                self.result_types.add(row["class"])
+                parsed_date = datetime.datetime.strptime(row["date"], '%Y-%m-%d')
+                if parsed_date < self.sdate:
+                    self.sdate = parsed_date
+                logging.debug("Parsed %s from frozen file", row)
+        logging.info("Finished parsing and appending frozen file stats.")
+        
     def print_parsed_data(self):
         """Print parsed data to stdout"""
         print(self.parsed_data)
@@ -139,6 +159,8 @@ if __name__ == "__main__":
     parser.add_argument("--no_put", action="store_true", help="Don't put data to server")
     parser.add_argument("--set-to-negative",  dest="set_to_negative",
             default="", help="File with identifiers whose result should be set to 'negative'.")
+    parser.add_argument("--append-frozen-stats", dest="append_frozen_stats",
+            default="", help="Append preformatted frozen statistics to final submitted results.")
     args = vars(parser.parse_args())
     config = yaml.safe_load(args['config'])
     
@@ -154,8 +176,12 @@ if __name__ == "__main__":
         except IOError:
             pass
 
+    frozen_file = None
+    if args["append_frozen_stats"]:
+        frozen_file = args["append_frozen_stats"]
+
     dp = data_parser(config)
-    dp.parse_latest_data(set_to_negative)
+    dp.parse_latest_data(set_to_negative, frozen_file)
     if not args['no_put']:
         dp.put_parsed_data()
     if args['print']:
