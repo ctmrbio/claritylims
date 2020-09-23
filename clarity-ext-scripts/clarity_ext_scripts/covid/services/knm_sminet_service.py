@@ -28,9 +28,8 @@ class KNMSmiNetIntegrationService(object):
         """
         aliases = organization["alias"]
         for alias in aliases:
-            county_code = alias.split("-")[0]
-            if self.sminet_service.client.is_supported_county_code(county_code):
-                return county_code
+            if self.sminet_service.client.is_supported_county_code(alias):
+                return alias
         raise self.knm_service.NoSupportedCountyCodeFound(
             "No supported county code found in alias list. Found: {}".format(aliases))
 
