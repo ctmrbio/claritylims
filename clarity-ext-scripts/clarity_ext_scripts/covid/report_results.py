@@ -1,3 +1,4 @@
+from time import sleep
 import logging
 from datetime import datetime
 from clarity_ext.extensions import GeneralExtension
@@ -87,6 +88,7 @@ class Extension(GeneralExtension):
                     continue
 
                 self.report(well.artifact)
+                sleep(1e-4)
 
     def integration_tests(self):
         yield "24-44118"
