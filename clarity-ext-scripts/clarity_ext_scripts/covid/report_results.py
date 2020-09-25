@@ -88,7 +88,7 @@ class Extension(GeneralExtension):
                     continue
 
                 self.report(well.artifact)
-                sleep(1e-4)
+                sleep(1e-3)
 
     def integration_tests(self):
         yield "24-44118"
