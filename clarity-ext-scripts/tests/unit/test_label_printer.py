@@ -9,7 +9,7 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD123^FS^FO7,40^A0,32," \
+        assert contents == "\n${^XA^LH0,0^FO7,1^BY1.6,^BCN,48,N,^FD123^FS^FO7,55^A0,20," \
                            "25^FB380,1,^FDcontainer1^FS^XZ}$\n"
 
     def test_two_containers__with_lims_id_as_barcode(self):
@@ -19,9 +19,9 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container1, container2], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD123^FS^FO7,40^A0,32,25^FB380,1," \
+        assert contents == "\n${^XA^LH0,0^FO7,1^BY1.6,^BCN,48,N,^FD123^FS^FO7,55^A0,20,25^FB380,1," \
                            "^FDcontainer1^FS^XZ\n" \
-                           "^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD124^FS^FO7,40^A0,32,25^FB380,1," \
+                           "^XA^LH0,0^FO7,1^BY1.6,^BCN,48,N,^FD124^FS^FO7,55^A0,20,25^FB380,1," \
                            "^FDcontainer2^FS^XZ}$\n"
 
     def test_single_container__with_name_as_barcode(self):
@@ -29,8 +29,8 @@ class TestLabelPrinter(object):
         container = FakeContainer('container1', '92-123')
         label_printer.generate_zpl_for_containers([container])
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FDcontainer1^FS^FO7," \
-                           "40^A0,32,25^FB380,1,^FDcontainer1^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,1^BY1.6,^BCN,48,N,^FDcontainer1^FS^FO7," \
+                           "55^A0,20,25^FB380,1,^FDcontainer1^FS^XZ}$\n"
 
     def test_dmitry_barcode(self):
         label_printer.printer.contents = list()
@@ -38,8 +38,8 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD7277^FS^FO7,40^A0," \
-                           "32,25^FB380,1,^FD27-7277^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,1^BY1.6,^BCN,48,N,^FD7277^FS^FO7,55^A0," \
+                           "20,25^FB380,1,^FD27-7277^FS^XZ}$\n"
 
     def test_with_long_container_name__lims_id_as_barcode(self):
         label_printer.printer.contents = list()
@@ -47,8 +47,8 @@ class TestLabelPrinter(object):
         label_printer.generate_zpl_for_containers(
             [container], lims_id_as_barcode=True)
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FD727789^FS^FO7," \
-                           "40^A0,32,25^FB380,1,^FDCOVID_200416_RNA_144401.v1^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,1^BY1.6,^BCN,48,N,^FD727789^FS^FO7," \
+                           "55^A0,20,25^FB380,1,^FDCOVID_200416_RNA_144401.v1^FS^XZ}$\n"
 
     def test_with_long_container_name__name_as_barcode(self):
         label_printer.printer.contents = list()
@@ -56,8 +56,8 @@ class TestLabelPrinter(object):
             'COVID_200416_RNA_144401.v1', '92-727789')
         label_printer.generate_zpl_for_containers([container])
         contents = label_printer.contents
-        assert contents == "\n${^XA^LH0,0^FO7,5^BY1,^BCN,30,N,^FDCOVID_200416_RNA_144401.v1^FS^FO7," \
-                           "40^A0,32,25^FB380,1,^FDCOVID_200416_RNA_144401.v1^FS^XZ}$\n"
+        assert contents == "\n${^XA^LH0,0^FO7,1^BY1.6,^BCN,48,N,^FDCOVID_200416_RNA_144401.v1^FS^FO7," \
+                           "55^A0,20,25^FB380,1,^FDCOVID_200416_RNA_144401.v1^FS^XZ}$\n"
 
 
 class FakeContainer(object):
