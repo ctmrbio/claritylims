@@ -34,7 +34,13 @@ class Extension(GeneralExtension):
                 ''.join(barcode_template).format(bc_data=barcode_data, label_text=barcode_data))
 
         content = "\n".join(container_barcodes)
-        contents = ''.join(["\n", "${", content, content, "}$", "\n"])  # We need two copies
+        contents = ''.join([
+            "\n",
+            "${",
+            content,
+            content.replace("RNA", "rtPCR").replace(".", ""),  # rtPCR team requires barcode to scan into a suitable filename
+            "}$",
+            "\n"])
         upload_packet = [(file_name, contents)]
         self.context.file_service.upload_files("Print files", upload_packet)
 
