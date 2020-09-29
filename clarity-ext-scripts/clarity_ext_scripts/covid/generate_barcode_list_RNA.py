@@ -14,7 +14,7 @@ class Extension(GeneralExtension):
         barcode_template = [
             "^XA",
             "^LH0,0",
-              "^FO7,1",
+            "^FO7,1",
               "^BY1,",
               "^BCN,48,N,",
               "^FD{bc_data}",
