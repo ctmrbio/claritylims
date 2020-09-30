@@ -121,7 +121,7 @@ class KNMSmiNetIntegrationService(object):
         try:
             telecom_entries = provider.patient["telecom"]
         except KeyError:
-            pass
+            telecom_entries = []
         for entry in telecom_entries:
             if entry.get("system", None) == "sms" and entry.get("value", None):
                 phone_number = entry["value"]
