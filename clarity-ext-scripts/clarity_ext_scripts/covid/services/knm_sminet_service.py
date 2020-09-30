@@ -123,7 +123,7 @@ class KNMSmiNetIntegrationService(object):
         except KeyError:
             pass
         for entry in telecom_entries:
-            if entry["system"] == "sms" and entry["value"]:
+            if entry.get("system", None) == "sms" and entry.get("value", None):
                 phone_number = entry["value"]
                 sample_free_text = "".join([sample_free_text, " phone=", phone_number.strip()])
 
