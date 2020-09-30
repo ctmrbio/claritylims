@@ -118,7 +118,11 @@ class KNMSmiNetIntegrationService(object):
         """
 
         # VGR requested phone number to be included in SmiNet report: cov-238
-        for entry in provider.patient["telecom"]:
+        try:
+            telecom_entries = provider.patient["telecom"]
+        except KeyError:
+            pass
+        for entry in telecom_entries:
             if entry["system"] == "sms" and entry["value"]:
                 phone_number = entry["value"]
                 sample_free_text = "".join([sample_free_text, " phone=", phone_number.strip()])
