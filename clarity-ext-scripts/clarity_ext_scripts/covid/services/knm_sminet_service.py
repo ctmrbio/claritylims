@@ -117,6 +117,12 @@ class KNMSmiNetIntegrationService(object):
         :service_request_notes_to_append: A set of strings identifying which notes to append to the sample_free_text
         """
 
+        # VGR requested phone number to be included in SmiNet report: cov-238
+        for entry in provider.patient["telecom"]:
+            if entry["system"] == "sms" and entry["value"]:
+                phone_number = entry["value"]
+                sample_free_text = " ".join([sample_free_text, " phone=", phone_number])
+
         if not isinstance(service_request_notes_to_append, set):
             raise TypeError("service_request_notes_to_append must be a set with keys, e.g. {'order_note'}")
         if not service_request_notes_to_append:
