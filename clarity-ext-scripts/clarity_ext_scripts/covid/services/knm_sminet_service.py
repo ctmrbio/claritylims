@@ -117,6 +117,16 @@ class KNMSmiNetIntegrationService(object):
         :service_request_notes_to_append: A set of strings identifying which notes to append to the sample_free_text
         """
 
+        # VGR requested phone number to be included in SmiNet report: cov-238
+        try:
+            telecom_entries = provider.patient["telecom"]
+        except KeyError:
+            telecom_entries = []
+        for entry in telecom_entries:
+            if entry.get("system", None) == "sms" and entry.get("value", None):
+                phone_number = entry["value"]
+                sample_free_text = "".join([sample_free_text, " phone=", phone_number.strip()])
+
         if not isinstance(service_request_notes_to_append, set):
             raise TypeError("service_request_notes_to_append must be a set with keys, e.g. {'order_note'}")
         if not service_request_notes_to_append:
@@ -134,7 +144,7 @@ class KNMSmiNetIntegrationService(object):
                 #   ValueError: there is no '=' separator in the string
                 continue
             if note_key in service_request_notes_to_append and note_value:
-                notes_to_add.append(note["text"])
+                notes_to_add.append("".join([note_key, "=", "'", note_value, "'"]))
 
         return " ".join([sample_free_text] + notes_to_add)
 
