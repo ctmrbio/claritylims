@@ -121,7 +121,7 @@ class KNMSmiNetIntegrationService(object):
         for entry in provider.patient["telecom"]:
             if entry["system"] == "sms" and entry["value"]:
                 phone_number = entry["value"]
-                sample_free_text = " ".join([sample_free_text, " phone=", phone_number])
+                sample_free_text = " ".join([sample_free_text, " phone=", phone_number.strip()])
 
         if not isinstance(service_request_notes_to_append, set):
             raise TypeError("service_request_notes_to_append must be a set with keys, e.g. {'order_note'}")
@@ -140,7 +140,7 @@ class KNMSmiNetIntegrationService(object):
                 #   ValueError: there is no '=' separator in the string
                 continue
             if note_key in service_request_notes_to_append and note_value:
-                notes_to_add.append(note["text"])
+                notes_to_add.append("".join(["'", note["text"], "'"]))
 
         return " ".join([sample_free_text] + notes_to_add)
 
