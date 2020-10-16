@@ -39,11 +39,23 @@ class PartnerClientAPIException(Exception):
     pass
 
 
-class OrganizationReferralCodeNotFound(PartnerClientAPIException):
+class ResourceNotFound(PartnerClientAPIException):
     pass
 
 
-class MoreThanOneOrganizationReferralCodeFound(PartnerClientAPIException):
+class OrganizationReferralCodeNotFound(ResourceNotFound):
+    pass
+
+
+class PatientNotFound(ResourceNotFound):
+    pass
+
+
+class MoreThanOneResultFound(PartnerClientAPIException):
+    pass
+
+
+class MoreThanOneOrganizationReferralCodeFound(MoreThanOneResultFound):
     pass
 
 
@@ -321,19 +333,19 @@ class PartnerAPIV7Client(object):
             nbr_of_results = response_json["total"]
 
             if nbr_of_results == 1:
-                resource = response_json["entry"][0]
+                resource = response_json["entry"][0]["resource"]
                 if resource["resourceType"] == "Consent":
                     return resource
-                raise PartnerClientAPIException(
+                raise ResourceNotFound(
                         "Could not find consent for patient_id: {}".format(patient_id))
             elif nbr_of_results > 1:
-                raise MoreThanOneOrganizationReferralCodeFound(
+                raise MoreThanOneResultFound(
                     "More than one consent was found for "
                     "patient_id: {}".format(patient_id)
                 )
             else:
                 log.debug("Response json was: {}".format(response_json))
-                raise OrganizationReferralCodeNotFound(
+                raise PatientNotFound(
                     "No consent was found for patient_id: {}".format(patient_id)
                 )
         except PartnerClientAPIException as e:
