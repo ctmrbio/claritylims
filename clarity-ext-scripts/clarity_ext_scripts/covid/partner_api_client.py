@@ -39,11 +39,23 @@ class PartnerClientAPIException(Exception):
     pass
 
 
-class OrganizationReferralCodeNotFound(PartnerClientAPIException):
+class ResourceNotFound(PartnerClientAPIException):
     pass
 
 
-class MoreThanOneOrganizationReferralCodeFound(PartnerClientAPIException):
+class OrganizationReferralCodeNotFound(ResourceNotFound):
+    pass
+
+
+class PatientNotFound(ResourceNotFound):
+    pass
+
+
+class MoreThanOneResultFound(PartnerClientAPIException):
+    pass
+
+
+class MoreThanOneOrganizationReferralCodeFound(MoreThanOneResultFound):
     pass
 
 
@@ -129,7 +141,7 @@ class PartnerAPISampleInformation(object):
 
 class PartnerAPIClient(object):
     """
-    This is a client to enable posting data to the test partners api. It is currently valid for v.6 of the parter's API.
+    This is a client to enable posting data to the test partners api. It is currently valid for v.7 of the parter's API.
     """
 
     def __init__(self, test_partner_url, test_partner_user, test_partner_password,
@@ -288,6 +300,54 @@ class PartnerAPIV7Client(object):
                 raise OrganizationReferralCodeNotFound(
                     ("No partner referral code was found for organization: {} "
                      "and organization referral code: {}").format(org, org_referral_code))
+        except PartnerClientAPIException as e:
+            log.info("Error while connecting to KNM: {}".format(e.message))
+            raise e
+
+    def get_consent(self, patient_id):
+        """
+        Get consent for a sample via its patient_id, which can be found in
+        the ServiceRequest.
+
+        Returns the "Consent" resource from the response, iff there is only one.
+        """
+        try:
+            api_url = "{}/Consent".format(self._base_url)
+            params = {"patient:Patient.reference": "Patient/{}".format(patient_id)}
+            headers = self._generate_headers()
+
+            response = self._session.get(url=api_url, headers=headers, params=params)
+
+            if not response.status_code == 200:
+                mess = ("Did not get a 200 response when getting consent from test partner. "
+                        "Response status code was: {}".format(response.status_code)
+                )
+                try:
+                    mess += " and response json: {}".format(response.json())
+                except ValueError:
+                    mess += " and the response json was empty."
+                raise FailedInContactingTestPartner(mess)
+            
+            response_json = response.json()
+
+            nbr_of_results = response_json["total"]
+
+            if nbr_of_results == 1:
+                resource = response_json["entry"][0]["resource"]
+                if resource["resourceType"] == "Consent":
+                    return resource
+                raise ResourceNotFound(
+                        "Could not find consent for patient_id: {}".format(patient_id))
+            elif nbr_of_results > 1:
+                raise MoreThanOneResultFound(
+                    "More than one consent was found for "
+                    "patient_id: {}".format(patient_id)
+                )
+            else:
+                log.debug("Response json was: {}".format(response_json))
+                raise PatientNotFound(
+                    "No consent was found for patient_id: {}".format(patient_id)
+                )
         except PartnerClientAPIException as e:
             log.info("Error while connecting to KNM: {}".format(e.message))
             raise e
