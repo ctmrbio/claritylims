@@ -35,7 +35,7 @@ class data_parser(object):
         self.result_types = set()
         self.input_file = self._get_input_file()
     
-    def parse_latest_data(self, set_to_negative, frozen_file):
+    def parse_latest_data(self, set_to_negative, frozen_files):
         """Parse the input file and return a csv string of compiled data"""
         logging.info("Found LIMS data file '{}', parsing...".format(self.input_file))
         self.sdate = datetime.datetime.now()
@@ -100,7 +100,7 @@ class data_parser(object):
                 self.added_samples[uname] = "{}_{}".format(formated_date, result)
         logging.info("Finished parsing LIMS file")
 
-        if frozen_file:
+        for frozen_file in frozen_files:
             self.append_frozen_data(frozen_file)
 
         logging.debug("Formatting parsed data")
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     parser.add_argument("--no_put", action="store_true", help="Don't put data to server")
     parser.add_argument("--set-to-negative",  dest="set_to_negative",
             default="", help="File with identifiers whose result should be set to 'negative'.")
-    parser.add_argument("--append-frozen-stats", dest="append_frozen_stats",
+    parser.add_argument("--append-frozen-stats", dest="append_frozen_stats", nargs="+",
             default="", help="Append preformatted frozen statistics to final submitted results.")
     args = vars(parser.parse_args())
     config = yaml.safe_load(args['config'])
@@ -176,12 +176,12 @@ if __name__ == "__main__":
         except IOError:
             pass
 
-    frozen_file = None
+    frozen_files = None
     if args["append_frozen_stats"]:
-        frozen_file = args["append_frozen_stats"]
+        frozen_files = args["append_frozen_stats"]
 
     dp = data_parser(config)
-    dp.parse_latest_data(set_to_negative, frozen_file)
+    dp.parse_latest_data(set_to_negative, frozen_files)
     if not args['no_put']:
         dp.put_parsed_data()
     if args['print']:
