@@ -134,15 +134,14 @@ class KNMSmiNetIntegrationService(object):
             return sample_free_text
 
         notes_to_add = []
-        notes = provider.service_request["resource"]["note"]
-        for note in notes:
+        for note in service_request_notes_to_append:
             if isinstance(note, tuple):
                 # Tuple notes are added 'as is'
                 if len(note) == 2:
                     notes_to_add.append("=".join(note))
-                else:
-                    continue
 
+        notes = provider.service_request["resource"]["note"]
+        for note in notes:
             try:
                 note_key, note_value = note["text"].split("=", 1)
             except (KeyError, AttributeError, ValueError):
