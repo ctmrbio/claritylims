@@ -112,9 +112,10 @@ class KNMSmiNetIntegrationService(object):
         """
         Appends text notes from the KNM ServiceRequest to the 'sample_free_text'.
 
-        :sample_free_text: The free text string that will be added to the SmiNet report
-        :provider: A KNM ServiceRequestProvider
-        :service_request_notes_to_append: A set of strings identifying which notes to append to the sample_free_text
+        :sample_free_text: The free text string that will be added to the SmiNet report.
+        :provider: A KNM ServiceRequestProvider.
+        :service_request_notes_to_append: A set of strings or tuples of strings identifying which notes 
+                to append to the sample_free_text.
         """
 
         # VGR requested phone number to be included in SmiNet report: cov-238
@@ -128,13 +129,20 @@ class KNMSmiNetIntegrationService(object):
                 sample_free_text = "".join([sample_free_text, " phone=", phone_number.strip()])
 
         if not isinstance(service_request_notes_to_append, set):
-            raise TypeError("service_request_notes_to_append must be a set with keys, e.g. {'order_note'}")
+            raise TypeError("service_request_notes_to_append must be a set, e.g. {'order_note'}")
         if not service_request_notes_to_append:
             return sample_free_text
 
         notes_to_add = []
         notes = provider.service_request["resource"]["note"]
         for note in notes:
+            if isinstance(note, tuple):
+                # Tuple notes are added 'as is'
+                if len(note) == 2:
+                    notes_to_add.append("=".join(note))
+                else:
+                    continue
+
             try:
                 note_key, note_value = note["text"].split("=", 1)
             except (KeyError, AttributeError, ValueError):

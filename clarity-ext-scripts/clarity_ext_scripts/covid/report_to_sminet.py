@@ -82,6 +82,7 @@ class Extension(GeneralExtension):
             "order_note",
             "kit_batch_facility_name",  # VGR: cov-237
             "kit_batch_facility_code",  # VGR: cov-237
+            ("ct_bgi_orf1ab", str(substance.submitted_sample.udf_famct_latest)),  # cov-261
         }
 
         error_msg = ""
