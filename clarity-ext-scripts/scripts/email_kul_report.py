@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from pathlib import Path
 from datetime import date, timedelta
+import os
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -10,8 +10,11 @@ from email.mime.base import MIMEBase
 from email import encoders
 
 import pandas as pd
-
 import psycopg2
+
+import logging
+logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def load_pgpass():
     """ Load connection parameters from ~/.pgpass 
@@ -20,7 +23,7 @@ def load_pgpass():
     
     host:port:database:user:password
     """
-    with open(Path("~/.pgpass").expanduser()) as pgpass:
+    with open(os.path.expanduser("~/.pgpass")) as pgpass:
         host, port, database, user, password = pgpass.readline().strip().split(":")
     return {
         "host": host,
@@ -34,10 +37,9 @@ def connect_to_db():
     """Connect to Clarity PostgreSQL database.
     """
     params = load_pgpass()
-    params.update(port=server.local_bind_port)
     conn = psycopg2.connect(**params)
     curs = conn.cursor()
-    print("PostgreSQL database connected")
+    logger.info("PostgreSQL database connected")
     return conn, curs
 
 
@@ -51,8 +53,8 @@ def send_email(to_address, from_address, subject, attachment=None, server_addres
     msg['To'] = to_address
 
     if attachment:
-        assert Path(attachment).exists()
-        filename = Path(attachment).name
+        assert os.path.exists(attachment)
+        filename = os.path.basename(attachment)
         attach = MIMEBase('application', "octet-stream")
         attach.set_payload(open(attachment, 'rb').read())
         encoders.encode_base64(attach)
@@ -64,9 +66,11 @@ def send_email(to_address, from_address, subject, attachment=None, server_addres
 
 
 if __name__ == "__main__":
+    logger.info("Gathering statistics to report to KUL")
 
     conn, curs = connect_to_db()
 
+    logger.info("Running DB query")
     db_query = """
     select
         p.luid as "LimsId", s.name as "Name", 
@@ -92,7 +96,8 @@ if __name__ == "__main__":
 
     today = pd.to_datetime(date.today())
     yesterday = pd.to_datetime(today - timedelta(days = 1))
-    yesterday
+
+    logger.info("Collecting data for %s", str(yesterday.date()))
 
     alltid_oppet = clarity["Name"].str.contains("Alltidppet")
     biobank = clarity["Name"].str.contains("BIOBANK")
@@ -119,14 +124,17 @@ if __name__ == "__main__":
             "Antal positiva": pt["positive"],
             "Totalt antal prover": pt.sum(),
         }],
-    ).set_index(["Rapporterande verksamhet", "Analystyp", "Typ"])
+    ).set_index(["Rapporterande verksamhet", "Analystyp", "Typ", "Datum för provsvar"])
 
     export_filename = "/tmp/NPC_statistics_for_KUL_{}.xlsx".format(str(yesterday.date()))
     kul_data.to_excel(export_filename)
+    logger.info("Saved Excel data to: %s", export_filename)
 
+    email_address="tableau.karolinska@sll.se"
     send_email(
-        to_address="fredrik.boulund@ki.se", 
+        to_address=email_address,
         from_address="noreply.npc@ki.se", 
-        subject="Test email from script", 
+        subject="Daily report from NPC LIMS",
         attachment=export_filename,
     )
+    logger.info("Sent email to %s", email_address)
