@@ -547,6 +547,12 @@ class PartnerAPIV7Client(object):
                     "reference": "ServiceRequest/{}".format(service_request_id)
                 }
             ],
+            "performer": [
+                {
+                    "reference": "Organization/l-5",
+                    "display": "NPC BGI"
+                }
+            ],
             "code": codeable_concept,
             "result": map(lambda x: {"reference": "#{}".format(x["id"])}, observations)
         }
