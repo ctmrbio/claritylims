@@ -120,8 +120,8 @@ if __name__ == "__main__":
             "Analystyp": "PCR",
             "Typ": "PEP",
             "Datum för provsvar": str(yesterday.date()),
-            "Antal negativa": pt["negative"],
-            "Antal positiva": pt["positive"],
+            "Antal negativa": pt.get("negative", 0),
+            "Antal positiva": pt.get("positive", 0),
             "Totalt antal prover": pt.sum(),
         }],
     ).set_index(["Rapporterande verksamhet", "Analystyp", "Typ", "Datum för provsvar"])
