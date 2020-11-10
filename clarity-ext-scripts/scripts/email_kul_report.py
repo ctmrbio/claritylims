@@ -96,12 +96,14 @@ if __name__ == "__main__":
     select
         p.luid as "LimsId", s.name as "Name", 
             pf2.text5 as "CT latest date",
+            pf10.text0 as "KNM result uploaded date",
             round(pf6.numeric6::numeric, 10)::float8 as "FAM-CT latest",
             round(pf22.numeric8::numeric, 10)::float8 as "VIC-CT latest",
             pf24.text5 as "rtPCR covid-19 result latest"
         from sample s inner join process p using(processid)
             left join processudfstorage pf2 on s.processid = pf2.processid and pf2.rowindex = 0
             left join processudfstorage pf6 on s.processid = pf6.processid and pf6.rowindex = 0
+            left join processudfstorage pf10 on s.processid = pf10.processid and pf10.rowindex = 1
             left join processudfstorage pf22 on s.processid = pf22.processid and pf22.rowindex = 0
             left join processudfstorage pf24 on s.processid = pf24.processid and pf24.rowindex = 1
         where projectid = 3		-- prod02
@@ -120,6 +122,7 @@ if __name__ == "__main__":
 
     logger.info("Collecting data for %s", str(yesterday.date()))
 
+    logger.info("Selecting samples using '%'", args.select)
     selected_samples = clarity["Name"].str.contains(args.select)
     if select_samples.shape[0] == 0:
         logger.warning("NO samples matching '%s', no samples selected!", args.select)
