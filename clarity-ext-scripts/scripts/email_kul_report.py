@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     logger.info("Collecting data for %s", str(yesterday.date()))
 
-    logger.info("Selecting samples using '%'", args.select)
+    logger.info("Selecting samples using '%s'", args.select)
     selected_samples = clarity["Name"].str.contains(args.select)
     if selected_samples.shape[0] == 0:
         logger.warning("NO samples matching '%s', no samples selected!", args.select)
