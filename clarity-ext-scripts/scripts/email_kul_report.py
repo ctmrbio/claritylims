@@ -2,6 +2,8 @@
 # coding: utf-8
 
 from datetime import date, timedelta
+from sys import argv, exit
+import argparse
 import os
 
 import smtplib
@@ -15,6 +17,23 @@ import psycopg2
 import logging
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def parse_args():
+    """Parse arguments
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--email",
+        default="tableau.karolinska@sll.se",
+        help="Email address to send report to.")
+    parser.add_argument("--select",
+        default="Alltidppet",
+        help="Substring of Name column used to select which samples are included in report.")
+    
+    if len(argv) < 2:
+        parser.print_help()
+        exit()
+
+    return parser.parse_args()
 
 def load_pgpass():
     """ Load connection parameters from ~/.pgpass 
@@ -66,6 +85,8 @@ def send_email(to_address, from_address, subject, attachment=None, server_addres
 
 
 if __name__ == "__main__":
+    args = parse_args()
+
     logger.info("Gathering statistics to report to KUL")
 
     conn, curs = connect_to_db()
@@ -92,17 +113,19 @@ if __name__ == "__main__":
 
     clarity = pd.read_sql(db_query, conn)
 
-    clarity["report_datetime"] = pd.to_datetime(clarity["CT latest date"], format="%Y%m%dT%H:%M:%S")
+    clarity["report_datetime"] = pd.to_datetime(clarity["KNM result uploaded date"], format="%y%m%dT%H%M%S")
 
     today = pd.to_datetime(date.today())
     yesterday = pd.to_datetime(today - timedelta(days = 1))
 
     logger.info("Collecting data for %s", str(yesterday.date()))
 
-    alltid_oppet = clarity["Name"].str.contains("Alltidppet")
+    selected_samples = clarity["Name"].str.contains(args.select)
+    if select_samples.shape[0] == 0:
+        logger.warning("NO samples matching '%s', no samples selected!", args.select)
     biobank = clarity["Name"].str.contains("BIOBANK")
     reported_yesterday = (clarity["report_datetime"] >= yesterday) & (clarity["report_datetime"] < today)
-    samples_reported_yesterday = clarity[alltid_oppet & ~biobank & reported_yesterday]
+    samples_reported_yesterday = clarity[selected_samples & ~biobank & reported_yesterday]
 
     columns = [
         "report_datetime",
@@ -130,11 +153,13 @@ if __name__ == "__main__":
     kul_data.to_excel(export_filename)
     logger.info("Saved Excel data to: %s", export_filename)
 
-    email_address="tableau.karolinska@sll.se"
-    send_email(
-        to_address=email_address,
-        from_address="noreply.npc@ki.se", 
-        subject="Daily report from NPC LIMS",
-        attachment=export_filename,
-    )
-    logger.info("Sent email to %s", email_address)
+    if args.email:
+        send_email(
+            to_address=args.email,
+            from_address="noreply.npc@ki.se", 
+            subject="Daily report from NPC LIMS",
+            attachment=export_filename,
+        )
+        logger.info("Sent email to %s", args.email)
+    else:
+        logger.info("No email address specified, not sending email.")
