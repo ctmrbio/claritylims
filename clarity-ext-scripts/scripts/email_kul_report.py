@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     logger.info("Selecting samples using '%'", args.select)
     selected_samples = clarity["Name"].str.contains(args.select)
-    if select_samples.shape[0] == 0:
+    if selected_samples.shape[0] == 0:
         logger.warning("NO samples matching '%s', no samples selected!", args.select)
     biobank = clarity["Name"].str.contains("BIOBANK")
     reported_yesterday = (clarity["report_datetime"] >= yesterday) & (clarity["report_datetime"] < today)
