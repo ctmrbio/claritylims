@@ -228,6 +228,12 @@ class TestPartnerAPIV7Client(object):
                     "reference": "ServiceRequest/1000"
                 }
             ],
+            "performer": [
+                {
+                    "reference": "Organization/l-5",
+                    "display": "NPC BGI"
+                }
+            ],
             "code": {
                 "coding": [
                     {
