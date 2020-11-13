@@ -27,7 +27,7 @@ def generate_plate():
 
     date = datetime.now()
 
-    plate_id = f"DWP{date.strftime('%y%m%d%S%f')}"[:-1]
+    plate_id = f"DWP{date.strftime('%y%m%d%S%f')}"[:-4]
 
     plate = {
         "plate_id": plate_id,
