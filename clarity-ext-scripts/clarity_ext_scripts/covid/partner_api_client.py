@@ -264,6 +264,7 @@ class PartnerAPIV7Client(object):
             "Content-Type": "application/fhir+json"}
         return headers
 
+    @retry(ConnectionError, tries=3, delay=2, backoff=2)  # To avoid BadStatusLine
     def search_for_service_request(self, org, org_referral_code):
         try:
             params = {"identifier": "|".join([org, org_referral_code])}
