@@ -264,6 +264,7 @@ class PartnerAPIV7Client(object):
             "Content-Type": "application/fhir+json"}
         return headers
 
+    @retry(ConnectionError, tries=3, delay=2, backoff=2)  # To avoid BadStatusLine
     def search_for_service_request(self, org, org_referral_code):
         try:
             params = {"identifier": "|".join([org, org_referral_code])}
@@ -466,6 +467,7 @@ class PartnerAPIV7Client(object):
             log.error(e.message)
             raise e
 
+    @retry(ConnectionError, tries=3, delay=2, backoff=2)  # To avoid BadStatusLine
     def get_by_reference(self, ref):
         """
         Get's a resource by reference, such as Organization/123 or Patient/345

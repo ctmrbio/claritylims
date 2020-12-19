@@ -102,10 +102,6 @@ class KNMSmiNetIntegrationService(object):
             if len(name) > 40:
                 name = name[:39]
 
-            # Bug in SmiNet limits name field to 40 chars: cov-274
-            if len(name) > 40:
-                name = name[:39]
-
             try:
                 return name
             except KeyError:
