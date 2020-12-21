@@ -77,9 +77,7 @@ class RtPcrAnalyseExecution(object):
         self.context.update(self.context.current_step)
 
     def _instantiate_service(self):
-        if self.instrument == 'qPCR ABI 7500':
-            service = ABI7500RTPCRAnalysisService()
-        elif self.instrument == 'Quant Studio 7':
+        if self.instrument == 'QuantStudio 5':
             service = QuantStudio7AnalysisService()
         else:
             raise UsageError("The instrument in 'Instrument Used' is not recognized: {}"

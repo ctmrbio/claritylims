@@ -88,7 +88,10 @@ class RTPCRAnalysisService(object):
         elif covid_ct > self.COVID_CONTROL_THRESHOLD:
             return FAILED_BY_TOO_HIGH_COVID_VALUE
         elif 0 < covid_ct <= self.COVID_CONTROL_THRESHOLD:
-            return COVID_RESPONSE_POSITIVE
+            if 0 < internal_control_ct <= self.INTERNAL_CONTROL_THRESHOLD:
+                return COVID_RESPONSE_POSITIVE
+            else:
+                return FAILED_BY_INTERNAL_CONTROL
         else:
             raise AssertionError(
                 "Got CT-value for {}: {} and CT-value for {}: {}.".format(self._covid_reporter_key,
@@ -124,7 +127,7 @@ class RTPCRAnalysisService(object):
             if res == COVID_RESPONSE_POSITIVE:
                 errors.append(NegativeControlWasPositive(
                     "Negative control sample: {} was positive for covid-19".format(
-                        neg_control["id"])))
+                       neg_control["id"])))
             if res in FAILED_STATES:
                 errors.append(FailedControl("Negative control sample: {} failed with status: {}".format(pos_control["id"],
                                                                                                         res)))

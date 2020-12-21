@@ -78,6 +78,12 @@ class Extension(GeneralExtension):
 
         integration = KNMSmiNetIntegrationService(self.config)
         lab_result = SmiNetService.create_scov2_positive_lab_result()
+        service_request_notes_to_append = {
+            "order_note",
+            "kit_batch_facility_name",  # VGR: cov-237
+            "kit_batch_facility_code",  # VGR: cov-237
+            ("ct_bgi_orf1ab", str(substance.submitted_sample.udf_famct_latest)),  # cov-261
+        }
 
         error_msg = ""
 
@@ -86,7 +92,7 @@ class Extension(GeneralExtension):
                                          doctor_name="Lars Engstrand",
                                          lab_result=lab_result,
                                          sample_free_text="",
-                                         service_request_notes_to_append={"order_note"})
+                                         service_request_notes_to_append=service_request_notes_to_append)
             status = SmiNetService.STATUS_SUCCESS
         except UnregisteredPatient:
             status = SmiNetService.STATUS_IGNORE

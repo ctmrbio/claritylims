@@ -23,11 +23,15 @@ VALID_COVID_RESPONSES = {COVID_RESPONSE_POSITIVE,
 TESTING_ORG = "Internal testing"
 KARLSSON_AND_NOVAK = "Karlsson and Novak"
 ORG_KUL = "KUL"
+ORG_LABPORTALEN = "Labportalen"
+ORG_RVB_RID = "Vaesterbotten RID"
 
 ORG_URI_BY_NAME = {
     TESTING_ORG: "http://uri.ctmr.scilifelab.se/id/Identifier/ctmr-internal-testing-code",
     KARLSSON_AND_NOVAK: "http://uri.d-t.se/id/Identifier/i-referral-code",
     ORG_KUL: "http://uri.d-t.se/id/Identifier/i-lab/region-stockholm-karolinska",
+    ORG_LABPORTALEN: "http://uri.d-t.se/id/Identifier/i-lab/labportalen",
+    ORG_RVB_RID: "http://uri.d-t.se/id/Identifier/i-lab/region-vasterbotten-nus"
 }
 
 
@@ -35,11 +39,23 @@ class PartnerClientAPIException(Exception):
     pass
 
 
-class OrganizationReferralCodeNotFound(PartnerClientAPIException):
+class ResourceNotFound(PartnerClientAPIException):
     pass
 
 
-class MoreThanOneOrganizationReferralCodeFound(PartnerClientAPIException):
+class OrganizationReferralCodeNotFound(ResourceNotFound):
+    pass
+
+
+class PatientNotFound(ResourceNotFound):
+    pass
+
+
+class MoreThanOneResultFound(PartnerClientAPIException):
+    pass
+
+
+class MoreThanOneOrganizationReferralCodeFound(MoreThanOneResultFound):
     pass
 
 
@@ -125,7 +141,7 @@ class PartnerAPISampleInformation(object):
 
 class PartnerAPIClient(object):
     """
-    This is a client to enable posting data to the test partners api. It is currently valid for v.6 of the parter's API.
+    This is a client to enable posting data to the test partners api. It is currently valid for v.7 of the parter's API.
     """
 
     def __init__(self, test_partner_url, test_partner_user, test_partner_password,
@@ -248,6 +264,7 @@ class PartnerAPIV7Client(object):
             "Content-Type": "application/fhir+json"}
         return headers
 
+    @retry(ConnectionError, tries=3, delay=2, backoff=2)  # To avoid BadStatusLine
     def search_for_service_request(self, org, org_referral_code):
         try:
             params = {"identifier": "|".join([org, org_referral_code])}
@@ -288,6 +305,54 @@ class PartnerAPIV7Client(object):
             log.info("Error while connecting to KNM: {}".format(e.message))
             raise e
 
+    def get_consent(self, patient_id):
+        """
+        Get consent for a sample via its patient_id, which can be found in
+        the ServiceRequest.
+
+        Returns the "Consent" resource from the response, iff there is only one.
+        """
+        try:
+            api_url = "{}/Consent".format(self._base_url)
+            params = {"patient:Patient.reference": "Patient/{}".format(patient_id)}
+            headers = self._generate_headers()
+
+            response = self._session.get(url=api_url, headers=headers, params=params)
+
+            if not response.status_code == 200:
+                mess = ("Did not get a 200 response when getting consent from test partner. "
+                        "Response status code was: {}".format(response.status_code)
+                )
+                try:
+                    mess += " and response json: {}".format(response.json())
+                except ValueError:
+                    mess += " and the response json was empty."
+                raise FailedInContactingTestPartner(mess)
+            
+            response_json = response.json()
+
+            nbr_of_results = response_json["total"]
+
+            if nbr_of_results == 1:
+                resource = response_json["entry"][0]["resource"]
+                if resource["resourceType"] == "Consent":
+                    return resource
+                raise ResourceNotFound(
+                        "Could not find consent for patient_id: {}".format(patient_id))
+            elif nbr_of_results > 1:
+                raise MoreThanOneResultFound(
+                    "More than one consent was found for "
+                    "patient_id: {}".format(patient_id)
+                )
+            else:
+                log.debug("Response json was: {}".format(response_json))
+                raise PatientNotFound(
+                    "No consent was found for patient_id: {}".format(patient_id)
+                )
+        except PartnerClientAPIException as e:
+            log.info("Error while connecting to KNM: {}".format(e.message))
+            raise e
+
     def create_anonymous_service_request(self, referral_code):
         """
         This method can be used to create an anonymous service request, that is
@@ -302,7 +367,10 @@ class PartnerAPIV7Client(object):
             "contained": [
                 {
                     "resourceType": "Patient",
-                    "id": "1"
+                    "id": "1",
+                    "managingOrganization": {
+                        "reference": "Organization/2-44"  # Organization/2-44 is "NPC Anonymous"
+                    }
                 }
             ],
             "identifier": [
@@ -399,6 +467,7 @@ class PartnerAPIV7Client(object):
             log.error(e.message)
             raise e
 
+    @retry(ConnectionError, tries=3, delay=2, backoff=2)  # To avoid BadStatusLine
     def get_by_reference(self, ref):
         """
         Get's a resource by reference, such as Organization/123 or Patient/345
@@ -478,6 +547,12 @@ class PartnerAPIV7Client(object):
             "basedOn": [
                 {
                     "reference": "ServiceRequest/{}".format(service_request_id)
+                }
+            ],
+            "performer": [
+                {
+                    "reference": "Organization/l-5",
+                    "display": "NPC BGI"
                 }
             ],
             "code": codeable_concept,

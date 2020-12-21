@@ -1,3 +1,4 @@
+from time import sleep
 import logging
 from datetime import datetime
 from clarity_ext.extensions import GeneralExtension
@@ -11,7 +12,7 @@ from clarity_ext_scripts.covid.services.knm_service import KNMClientFromExtensio
 
 logger = logging.getLogger(__name__)
 
-UDF_TRUE = "Yes"
+UDF_TRUE = True
 
 
 class Extension(GeneralExtension):
@@ -87,6 +88,7 @@ class Extension(GeneralExtension):
                     continue
 
                 self.report(well.artifact)
+                sleep(1e-3)
 
     def integration_tests(self):
         yield "24-44118"

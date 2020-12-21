@@ -28,9 +28,8 @@ class KNMSmiNetIntegrationService(object):
         """
         aliases = organization["alias"]
         for alias in aliases:
-            county_code = alias.split("-")[0]
-            if self.sminet_service.client.is_supported_county_code(county_code):
-                return county_code
+            if self.sminet_service.client.is_supported_county_code(alias):
+                return alias
         raise self.knm_service.NoSupportedCountyCodeFound(
             "No supported county code found in alias list. Found: {}".format(aliases))
 
@@ -97,10 +96,14 @@ class KNMSmiNetIntegrationService(object):
             if len(name) == 0:
                 return ""
 
-            name = name[0]
+            name = name[0]["text"]
+
+            # Bug in SmiNet limits name field to 40 chars: cov-274
+            if len(name) > 40:
+                name = name[:39]
 
             try:
-                return name["text"]
+                return name
             except KeyError:
                 return ""
 
@@ -113,17 +116,34 @@ class KNMSmiNetIntegrationService(object):
         """
         Appends text notes from the KNM ServiceRequest to the 'sample_free_text'.
 
-        :sample_free_text: The free text string that will be added to the SmiNet report
-        :provider: A KNM ServiceRequestProvider
-        :service_request_notes_to_append: A set of strings identifying which notes to append to the sample_free_text
+        :sample_free_text: The free text string that will be added to the SmiNet report.
+        :provider: A KNM ServiceRequestProvider.
+        :service_request_notes_to_append: A set of strings or tuples of strings identifying which notes 
+                to append to the sample_free_text.
         """
 
+        # VGR requested phone number to be included in SmiNet report: cov-238
+        try:
+            telecom_entries = provider.patient["telecom"]
+        except KeyError:
+            telecom_entries = []
+        for entry in telecom_entries:
+            if entry.get("system", None) == "sms" and entry.get("value", None):
+                phone_number = entry["value"]
+                sample_free_text = "".join([sample_free_text, " phone=", phone_number.strip()])
+
         if not isinstance(service_request_notes_to_append, set):
-            raise TypeError("service_request_notes_to_append must be a set with keys, e.g. {'order_note'}")
+            raise TypeError("service_request_notes_to_append must be a set, e.g. {'order_note'}")
         if not service_request_notes_to_append:
             return sample_free_text
 
         notes_to_add = []
+        for note in service_request_notes_to_append:
+            if isinstance(note, tuple):
+                # Tuple notes are added 'as is'
+                if len(note) == 2:
+                    notes_to_add.append("=".join(note))
+
         notes = provider.service_request["resource"]["note"]
         for note in notes:
             try:
@@ -135,7 +155,7 @@ class KNMSmiNetIntegrationService(object):
                 #   ValueError: there is no '=' separator in the string
                 continue
             if note_key in service_request_notes_to_append and note_value:
-                notes_to_add.append(note["text"])
+                notes_to_add.append("".join([note_key, "=", "'", note_value, "'"]))
 
         return " ".join([sample_free_text] + notes_to_add)
 

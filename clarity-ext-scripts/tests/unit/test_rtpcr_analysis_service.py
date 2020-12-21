@@ -69,10 +69,8 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-1",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
-            {"id": "cov-2",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-1", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-2", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
             {"id": "cov-3", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}]
 
         assert expected == list(result)
@@ -101,10 +99,8 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-1",
-                "diagnosis_result": COVID_RESPONSE_POSITIVE},
-            {"id": "cov-2",
-                "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "cov-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
+            {"id": "cov-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "cov-3", "diagnosis_result": FAILED_BY_INTERNAL_CONTROL}]
 
         assert expected == list(result)
@@ -133,10 +129,8 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-1",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
-            {"id": "cov-2",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-1", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-2", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
             {"id": "cov-3", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}]
 
         assert expected == list(result)
@@ -165,10 +159,8 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": FAILED_BY_INTERNAL_CONTROL},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-1",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
-            {"id": "cov-2",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-1", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-2", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
             {"id": "cov-3", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}]
 
         assert expected == list(result)
@@ -197,10 +189,8 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-2", "diagnosis_result": FAILED_BY_TOO_HIGH_COVID_VALUE},
-            {"id": "cov-1",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
-            {"id": "cov-2",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-1", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-2", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
             {"id": "cov-3", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}]
 
         assert expected == list(result)
@@ -229,10 +219,8 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-1",
-                "diagnosis_result": COVID_RESPONSE_POSITIVE},
-            {"id": "cov-2",
-                "diagnosis_result": COVID_RESPONSE_POSITIVE},
+            {"id": "cov-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
+            {"id": "cov-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "cov-3", "diagnosis_result": FAILED_BY_TOO_HIGH_COVID_VALUE}]
 
         assert expected == list(result)
@@ -260,10 +248,8 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-1",
-                "diagnosis_result": FAILED_BY_INTERNAL_CONTROL},
-            {"id": "cov-2",
-                "diagnosis_result": COVID_RESPONSE_POSITIVE},
+            {"id": "cov-1", "diagnosis_result": FAILED_BY_INTERNAL_CONTROL},
+            {"id": "cov-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "cov-3", "diagnosis_result": FAILED_BY_TOO_HIGH_COVID_VALUE}]
 
         assert expected == list(result)
@@ -291,10 +277,38 @@ class TestRTPCRAnalysisService(object):
             {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
             {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
             {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
-            {"id": "cov-1",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
-            {"id": "cov-2",
-                "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-1", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
+            {"id": "cov-2", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL},
             {"id": "cov-3", "diagnosis_result": FAILED_ENTIRE_PLATE_BY_FAILED_EXTERNAL_CONTROL}]
+
+        assert expected == list(result)
+
+    def test_can_analyze_samples_scenario10(self):
+        """
+        Controls are ok. Fail one sample on too low HEX-CT value.
+        """
+
+        pos_controls = [{"id": "pos-1", "FAM-CT": 25, "HEX-CT": 20},
+                        {"id": "pos-2", "FAM-CT": 20, "HEX-CT": 18}]
+
+        neg_controls = [{"id": "neg-1", "FAM-CT": 0, "HEX-CT": 0},
+                        {"id": "neg-2", "FAM-CT": 0, "HEX-CT": 0}]
+
+        samples = [{"id": "cov-1", "FAM-CT": 20, "HEX-CT": 20},
+                   {"id": "cov-2", "FAM-CT": 0, "HEX-CT": 18},
+                   {"id": "cov-3", "FAM-CT": 23, "HEX-CT": 0}]
+
+        result = self.service.analyze_samples(positive_controls=pos_controls,
+                                              negative_controls=neg_controls,
+                                              samples=samples)
+
+        expected = [
+            {"id": "pos-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
+            {"id": "pos-2", "diagnosis_result": COVID_RESPONSE_POSITIVE},
+            {"id": "neg-1", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "neg-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "cov-1", "diagnosis_result": COVID_RESPONSE_POSITIVE},
+            {"id": "cov-2", "diagnosis_result": COVID_RESPONSE_NEGATIVE},
+            {"id": "cov-3", "diagnosis_result": FAILED_BY_INTERNAL_CONTROL}]
 
         assert expected == list(result)
