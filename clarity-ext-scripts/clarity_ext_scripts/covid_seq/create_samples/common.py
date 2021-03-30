@@ -144,9 +144,12 @@ class BaseCreateSamplesExtension(GeneralExtension):
             self.context)
 
         errors = list()
+        if not valid_biobank_plate_id:
+            errors.append("No Biobank plate id entered in step!")
+
         observed_wells = defaultdict(int)
         observed_sample_ids = defaultdict(int)
-        for _, row in samplesheet.csv.iterrows():
+        for idx, row in samplesheet.csv.iterrows():
             well = row[samplesheet.COLUMN_WELL]
             sample_id = row[samplesheet.COLUMN_SAMPLE_ID]
             biobank_plate_id = row[samplesheet.COLUMN_BIOBANK_PLATE_ID]
@@ -157,16 +160,14 @@ class BaseCreateSamplesExtension(GeneralExtension):
             observed_wells[well] += 1
             observed_sample_ids[sample_id] += 1
 
-            if not valid_biobank_plate_id:
-                errors.append("No Biobank plate id entered in step!")
-            elif biobank_plate_id != valid_biobank_plate_id:
-                errors.append("Biobank plate ID is inconsistent!")
+            if biobank_plate_id and (biobank_plate_id != valid_biobank_plate_id):
+                errors.append("Row {}, Biobank plate ID is inconsistent!".format(idx))
             if selection_criteria not in samplesheet.VALID_SELECTION_CRITERIA:
-                errors.append("Selection criteria not valid: {}".format(selection_criteria))
+                errors.append("Row {}, Selection criteria not valid: {}".format(idx, selection_criteria))
             if region_code not in samplesheet.VALID_REGION_CODES:
-                errors.append("Region code not valid: {}".format(region_code))
+                errors.append("Row {}, Region code not valid: {}".format(idx, region_code))
             if lab_code not in samplesheet.VALID_LABCODES:
-                errors.append("Lab code not valid: {}".format(lab_code))
+                errors.append("Row {}, Lab code not valid: {}".format(idx, lab_code))
 
         for well, count in observed_wells.iteritems():
             if count > 1:
