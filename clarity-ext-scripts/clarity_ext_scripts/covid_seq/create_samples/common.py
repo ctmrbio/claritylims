@@ -1,3 +1,4 @@
+# encoding: utf-8
 """
 Contains classes that are common to the workflow for creating samples.
 """
