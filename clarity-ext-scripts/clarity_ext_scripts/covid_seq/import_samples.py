@@ -97,8 +97,8 @@ class Extension(BaseCreateSamplesExtension):
             substance.udf_map.force("Ct_5", str(ct_values[4]))
             substance.udf_map.force("Selection criteria", selection_criteria)
             substance.udf_map.force("Selection criteria detail", selection_criteria_detail)
-            substance.udf_map.force("Biobank plate ID", biobank_plate_id)
-            substance.udf_map.force("Biobank tube ID", biobank_tube_id)
+            substance.udf_map.force("Biobank plate id", biobank_plate_id)
+            substance.udf_map.force("Biobank tube id", biobank_tube_id)
             substance.udf_map.force(
                 "Step ID created in", self.context.current_step.id)
             container[well] = substance
