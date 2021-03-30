@@ -55,7 +55,7 @@ class SamplesheetFile(PandasWrapper):
     COLUMN_SAMPLE_ID = "sample_id"
     COLUMN_REGION_CODE = "region_code"
     COLUMN_LAB_CODE = "lab_code"
-    COLUMN_SELECTION_CRITERIA = "selection_critiera"
+    COLUMN_SELECTION_CRITERIA = "selection_criteria"
     COLUMN_SELECTION_CRITERIA_DETAIL = "selection_criteria_detail"
     COLUMN_BIOBANK_PLATE_ID = "biobank_plate_id"
     COLUMN_BIOBANK_TUBE_ID = "biobank_tube_id"
