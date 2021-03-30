@@ -1,10 +1,5 @@
 """
 Contains classes that are common to the workflow for creating samples.
-
-There are several extensions that all use this logic:
-    * import_samples.py
-
-These will for example share common files.
 """
 
 import logging
@@ -49,9 +44,9 @@ class PandasWrapper(object):
         return file_like
 
 
-class RawSampleListFile(PandasWrapper):
+class SamplesheetFile(PandasWrapper):
     """
-    Describes the CSV file that is submitted to the 'Raw sample list' file handle.
+    Describes the CSV file that is submitted to the 'Samplesheet' file handle.
     """
     FILE_HANDLE = "Samplesheet"
 
@@ -140,23 +135,23 @@ class RawSampleListFile(PandasWrapper):
 
 
 class BaseCreateSamplesExtension(GeneralExtension):
-    def validate_sample_list(self, valid_biobank_plate_id=""):
+    def validate_samplesheet(self, valid_biobank_plate_id=""):
         """
-        Validate sample list and raise error if it's not valid.
+        Validate samplesheet and raise error if it's not valid.
         """
-        raw_sample_list = RawSampleListFile.create_from_context(
+        samplesheet = SamplesheetFile.create_from_context(
             self.context)
 
         errors = list()
         observed_wells = defaultdict(int)
         observed_sample_ids = defaultdict(int)
-        for _, row in raw_sample_list.csv.iterrows():
-            well = row[raw_sample_list.COLUMN_WELL]
-            sample_id = row[raw_sample_list.COLUMN_SAMPLE_ID]
-            biobank_plate_id = row[raw_sample_list.COLUMN_BIOBANK_PLATE_ID]
-            selection_criteria = row[raw_sample_list.COLUMN_SELECTION_CRITERIA]
-            region_code = row[raw_sample_list.COLUMN_REGION_CODE]
-            lab_code = row[raw_sample_list.COLUMN_LAB_CODE]
+        for _, row in samplesheet.csv.iterrows():
+            well = row[samplesheet.COLUMN_WELL]
+            sample_id = row[samplesheet.COLUMN_SAMPLE_ID]
+            biobank_plate_id = row[samplesheet.COLUMN_BIOBANK_PLATE_ID]
+            selection_criteria = row[samplesheet.COLUMN_SELECTION_CRITERIA]
+            region_code = row[samplesheet.COLUMN_REGION_CODE]
+            lab_code = row[samplesheet.COLUMN_LAB_CODE]
 
             observed_wells[well] += 1
             observed_sample_ids[sample_id] += 1
@@ -165,11 +160,11 @@ class BaseCreateSamplesExtension(GeneralExtension):
                 errors.append("No Biobank plate id entered in step!")
             elif biobank_plate_id != valid_biobank_plate_id:
                 errors.append("Biobank plate ID is inconsistent!")
-            if selection_criteria not in raw_sample_list.VALID_SELECTION_CRITERIA:
+            if selection_criteria not in samplesheet.VALID_SELECTION_CRITERIA:
                 errors.append("Selection criteria not valid: {}".format(selection_criteria))
-            if region_code not in raw_sample_list.VALID_REGION_CODES:
+            if region_code not in samplesheet.VALID_REGION_CODES:
                 errors.append("Region code not valid: {}".format(region_code))
-            if lab_code not in raw_sample_list.VALID_LABCODES:
+            if lab_code not in samplesheet.VALID_LABCODES:
                 errors.append("Lab code not valid: {}".format(lab_code))
 
         for well, count in observed_wells.iteritems():
@@ -186,4 +181,4 @@ class BaseCreateSamplesExtension(GeneralExtension):
                     len(errors), errors)
             self.usage_error(msg)
 
-        return raw_sample_list
+        return samplesheet

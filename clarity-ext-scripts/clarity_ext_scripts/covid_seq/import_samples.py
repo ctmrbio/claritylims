@@ -37,7 +37,7 @@ class Extension(BaseCreateSamplesExtension):
 
         return sample
 
-    def create_in_mem_container(self, samples_file, container_specifier, 
+    def create_in_mem_container(self, samplesheet, container_specifier, 
             sample_specifier, date, time):
         """Create an in-memory container with samples
 
@@ -63,21 +63,21 @@ class Extension(BaseCreateSamplesExtension):
         container = Container(container_type=container_type, name=name)
 
         # 3. Create in-memory samples
-        for _, row in samples_file.csv.iterrows():
-            well = row[samples_file.COLUMN_WELL]
-            sample_id = row[samples_file.COLUMN_SAMPLE_ID]
-            region_code = row[samples_file.COLUMN_REGION_CODE]
-            lab_code = row[samples_file.COLUMN_LAB_CODE]
-            selection_criteria = row[samples_file.COLUMN_SELECTION_CRITERIA]
-            selection_criteria_detail = row[samples_file.COLUMN_SELECTION_CRITERIA_DETAIL]
-            biobank_plate_id = row[samples_file.COLUMN_BIOBANK_PLATE_ID]
-            biobank_tube_id = row[samples_file.COLUMN_BIOBANK_TUBE_ID]
+        for _, row in samplesheet.csv.iterrows():
+            well = row[samplesheet.COLUMN_WELL]
+            sample_id = row[samplesheet.COLUMN_SAMPLE_ID]
+            region_code = row[samplesheet.COLUMN_REGION_CODE]
+            lab_code = row[samplesheet.COLUMN_LAB_CODE]
+            selection_criteria = row[samplesheet.COLUMN_SELECTION_CRITERIA]
+            selection_criteria_detail = row[samplesheet.COLUMN_SELECTION_CRITERIA_DETAIL]
+            biobank_plate_id = row[samplesheet.COLUMN_BIOBANK_PLATE_ID]
+            biobank_tube_id = row[samplesheet.COLUMN_BIOBANK_TUBE_ID]
             ct_values = [
-                row[samples_file.COLUMN_CT_1],
-                row[samples_file.COLUMN_CT_2],
-                row[samples_file.COLUMN_CT_3],
-                row[samples_file.COLUMN_CT_4],
-                row[samples_file.COLUMN_CT_5],
+                row[samplesheet.COLUMN_CT_1],
+                row[samplesheet.COLUMN_CT_2],
+                row[samplesheet.COLUMN_CT_3],
+                row[samplesheet.COLUMN_CT_4],
+                row[samplesheet.COLUMN_CT_5],
             ]
 
             substance = self.create_sample(
@@ -130,18 +130,18 @@ class Extension(BaseCreateSamplesExtension):
 
         # 2. Read the samples from the uploaded csv and ensure they are valid
         valid_biobank_plate_id = self.context.current_step.udf_biobank_plate_id
-        validated_sample_list = self.validate_sample_list(valid_biobank_plate_id)
+        validated_samplesheet = self.validate_samplesheet(valid_biobank_plate_id)
 
         # 3. Create the two plates in memory
         prext_plate = self.create_in_mem_container(
-            validated_sample_list,
+            validated_samplesheet,
             container_specifier="PREXT",
             sample_specifier="",
             date=date,
             time=time,
         )
         biobank_plate = self.create_in_mem_container(
-            validated_sample_list,
+            validated_samplesheet,
             container_specifier="BIOBANK",
             sample_specifier="BIOBANK",
             date=date,
