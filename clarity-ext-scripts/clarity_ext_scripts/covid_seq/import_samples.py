@@ -47,7 +47,7 @@ class Extension(BaseCreateSamplesExtension):
 
         The name of the samples will be:
 
-            <sample_name_in_csv>_<region_code_in_csv>_<lab_code_in_csv>_<timestamp w sec>
+           <sample_name_in_csv>_<region_code_in_csv>_<lab_code_in_csv>_<timestamp w sec>
         """
         timestamp = date + "T" + time
 
