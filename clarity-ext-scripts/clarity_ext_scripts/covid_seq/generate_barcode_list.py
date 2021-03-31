@@ -13,7 +13,7 @@ class Extension(GeneralExtension):
         label_printer.generate_zpl_for_containers(containers)
         contents = label_printer.contents
         upload_packet = [(file_name, contents)]
-        self.context.file_service.upload_files("Print files", upload_packet)
+        self.context.file_service.upload_files("Zebra printer file", upload_packet)
 
     def integration_tests(self):
         yield "24-46734"
