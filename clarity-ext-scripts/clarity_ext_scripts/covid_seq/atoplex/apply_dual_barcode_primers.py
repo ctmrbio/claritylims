@@ -21,7 +21,11 @@ class Extension(GeneralExtension):
         )
         primer_mix_file = os.path.join(script_dir, rel_path_primer_mix_file)
 
-        return pd.read_csv(primer_mix_file, index_col="well", dtypes={"well": str, "barcode": int})
+        return pd.read_csv(
+            primer_mix_file, 
+            index_col="well", 
+            dtype={"well": str, "barcode": int}
+        )
 
     def execute(self):
         selected_primer_mix = self.context.current_step.udf_dual_barcode_primer_id
