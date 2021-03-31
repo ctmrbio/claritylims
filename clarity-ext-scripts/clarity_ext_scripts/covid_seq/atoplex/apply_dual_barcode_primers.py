@@ -29,11 +29,13 @@ class Extension(GeneralExtension):
 
     def execute(self):
         selected_primer_mix = self.context.current_step.udf_dual_barcode_primer_id
-        primer_mix = self.parse_primer_mix(selected_primer_mix)
+        primer_mix_df = self.parse_primer_mix(selected_primer_mix)
+        primer_mix = primer_mix_df.to_dict(orient="index")
 
         for artifact in self._all_outputs:
-            artifact.udf_map.force("Adapter id forward", primer_mix[artifact.well])
-            artifact.udf_map.force("Adapter id reverse", primer_mix[artifact.well])
+            well = str(artifact.well.position).replace(":", "")
+            artifact.udf_map.force("Adapter id forward", str(primer_mix[well]["barcode"]))
+            artifact.udf_map.force("Adapter id reverse", str(primer_mix[well]["barcode"]))
 
     @property
     def _all_outputs(self):
