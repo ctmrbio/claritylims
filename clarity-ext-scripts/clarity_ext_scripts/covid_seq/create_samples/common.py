@@ -178,6 +178,8 @@ class BaseCreateSamplesExtension(GeneralExtension):
             observed_wells[well] += 1
             observed_sample_ids[sample_id] += 1
 
+            if not sample_id:
+                errors.append("Row {}, sample_id is empty".format(idx))
             if not biobank_tube_id:
                 # Replace empty biobank_tube_id value in the underlying DataFrame
                 samplesheet.csv.iloc[idx][samplesheet.COLUMN_BIOBANK_TUBE_ID] = "{}_{}".format(
