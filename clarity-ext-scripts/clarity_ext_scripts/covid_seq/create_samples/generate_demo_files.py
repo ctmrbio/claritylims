@@ -12,15 +12,15 @@ class Extension(GeneralExtension):
         samplesheet_rows = [
             ",".join(SamplesheetFile.HEADERS),
             ",".join([
-                "A1", "12348971234", "01", "SEADG", "Riskland", "Eng. mutant", 
+                "A1", "12348971234", "01", "SEADG", "Riskland", "Eng. mutant",
                 plate_id, "", "27.75", "26.31", "", "", "",
             ]),
             ",".join([
-                "B1", "987654321", "03", "SEADG", "Riskland", "Eng. mutant", 
+                "B1", "987654321", "03", "SEADG", "Riskland", "Eng. mutant",
                 plate_id, "", "21.75", "22.31", "", "", "",
             ]),
             ",".join([
-                "C11", "demosample1", "12", "SEADG", "Information saknas", "", 
+                "C11", "demosample1", "12", "SEADG", "Information saknas", "",
                 plate_id, "", "29.75", "28.31", "", "", "",
             ]),
             ",".join([
@@ -30,7 +30,7 @@ class Extension(GeneralExtension):
         ]
         samplesheet_contents = "\n".join(samplesheet_rows)
         upload_tuple = [(filename, samplesheet_contents)]
-        self.context.file_service.upload_files("Samplesheet", upload_tuple)
+        self.context.file_service.upload_files("DEMO input file", upload_tuple)
 
     def integration_tests(self):
         yield "24-46735"
