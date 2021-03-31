@@ -2,7 +2,6 @@
 """
 Contains classes that are common to the workflow for creating samples.
 """
-
 import logging
 from uuid import uuid4
 from collections import defaultdict
@@ -36,7 +35,8 @@ class PandasWrapper(object):
 
     @classmethod
     def parse_to_csv(cls, file_like):
-        return pd.read_csv(file_like, sep=cls.SEPARATOR, dtype="string")
+        """Parse file_like as CSV, interpreting all fields as a string."""
+        return pd.read_csv(file_like, sep=cls.SEPARATOR, dtype=str, na_filter=False)
 
     @staticmethod
     def filter_before_parse(file_like):
@@ -178,9 +178,10 @@ class BaseCreateSamplesExtension(GeneralExtension):
             observed_wells[well] += 1
             observed_sample_ids[sample_id] += 1
 
-            if not biobank_tube_id and biobank_plate_id:
-                # This replaces the empty value for biobank_tube_id in the original DataFrame
-                biobank_tube_id = "{}_{}".format(biobank_plate_id, well)
+            if not biobank_tube_id:
+                # Replace empty biobank_tube_id value in the underlying DataFrame
+                samplesheet.csv.iloc[idx][samplesheet.COLUMN_BIOBANK_TUBE_ID] = "{}_{}".format(
+                    biobank_plate_id, well)
             if biobank_plate_id and (biobank_plate_id != valid_biobank_plate_id):
                 errors.append("Row {}, Biobank plate ID is inconsistent!".format(idx))
             if selection_criteria not in samplesheet.VALID_SELECTION_CRITERIA:
