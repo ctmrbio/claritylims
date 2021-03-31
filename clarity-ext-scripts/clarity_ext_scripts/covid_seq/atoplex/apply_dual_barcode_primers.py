@@ -12,7 +12,7 @@ class Extension(GeneralExtension):
     ]
 
     def parse_primer_mix(self, dual_barcode_primer_id):
-        if not dual_barcode_primer_id in VALID_PRIMER_MIXES:
+        if not dual_barcode_primer_id in cls.VALID_PRIMER_MIXES:
             self.usage_error("Selected dual barcode primer ID not valid!")
 
         script_dir = os.path.dirname(__file__)
