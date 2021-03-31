@@ -24,7 +24,7 @@ class Extension(GeneralExtension):
         return pd.read_csv(primer_mix_file, index_col="well", dtypes={"well": str, "barcode": int})
 
     def execute(self):
-        selected_primer_mix = self.context.udf_dual_barcode_primer_id
+        selected_primer_mix = self.context.current_step.udf_dual_barcode_primer_id
         primer_mix = self.parse_primer_mix(selected_primer_mix)
 
         for artifact in self._all_outputs:
