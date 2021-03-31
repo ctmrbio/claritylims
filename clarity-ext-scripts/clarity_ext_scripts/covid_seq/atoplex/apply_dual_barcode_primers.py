@@ -2,17 +2,17 @@ import os
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
 
+VALID_PRIMER_MIXES = [
+    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+]
+
 class Extension(GeneralExtension):
     """
     Apply dual barcode indexing primers to all samples in a plate.
     """
 
-    VALID_PRIMER_MIXES = [
-        "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
-    ]
-
     def parse_primer_mix(self, dual_barcode_primer_id):
-        if not dual_barcode_primer_id in cls.VALID_PRIMER_MIXES:
+        if not dual_barcode_primer_id in VALID_PRIMER_MIXES:
             self.usage_error("Selected dual barcode primer ID not valid!")
 
         script_dir = os.path.dirname(__file__)
