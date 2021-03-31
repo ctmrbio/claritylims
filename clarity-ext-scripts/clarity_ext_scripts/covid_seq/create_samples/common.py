@@ -17,8 +17,9 @@ class PandasWrapper(object):
     Wraps a pandas file, having methods to consistently fetch from a context
     """
 
-    # Override this in subclasses
-    FILE_HANDLE = "Some file handle"
+    # Override these in subclasses
+    FILE_HANDLE = "Some file handle"  # Override in subclass
+    HEADERS = [""]                    # Override in subclass
 
     SEPARATOR = ","
 
@@ -64,6 +65,22 @@ class SamplesheetFile(PandasWrapper):
     COLUMN_CT_3 = "Ct_3"
     COLUMN_CT_4 = "Ct_4"
     COLUMN_CT_5 = "Ct_5"
+
+    HEADERS = [
+        COLUMN_WELL,
+        COLUMN_SAMPLE_ID,
+        COLUMN_REGION_CODE,
+        COLUMN_LAB_CODE,
+        COLUMN_SELECTION_CRITERIA,
+        COLUMN_SELECTION_CRITERIA_DETAIL,
+        COLUMN_BIOBANK_PLATE_ID,
+        COLUMN_BIOBANK_TUBE_ID,
+        COLUMN_CT_1,
+        COLUMN_CT_2,
+        COLUMN_CT_3,
+        COLUMN_CT_4,
+        COLUMN_CT_5,
+    ]
 
     VALID_REGION_CODES = {
         "01",  # Region Stockholm
@@ -153,6 +170,7 @@ class BaseCreateSamplesExtension(GeneralExtension):
             well = row[samplesheet.COLUMN_WELL]
             sample_id = row[samplesheet.COLUMN_SAMPLE_ID]
             biobank_plate_id = row[samplesheet.COLUMN_BIOBANK_PLATE_ID]
+            biobank_tube_id = row[samplesheet.COLUMN_BIOBANK_TUBE_ID]
             selection_criteria = row[samplesheet.COLUMN_SELECTION_CRITERIA]
             region_code = row[samplesheet.COLUMN_REGION_CODE]
             lab_code = row[samplesheet.COLUMN_LAB_CODE]
@@ -160,6 +178,9 @@ class BaseCreateSamplesExtension(GeneralExtension):
             observed_wells[well] += 1
             observed_sample_ids[sample_id] += 1
 
+            if not biobank_tube_id and biobank_plate_id:
+                # This replaces the empty value for biobank_tube_id in the original DataFrame
+                biobank_tube_id = "{}_{}".format(biobank_plate_id, well)
             if biobank_plate_id and (biobank_plate_id != valid_biobank_plate_id):
                 errors.append("Row {}, Biobank plate ID is inconsistent!".format(idx))
             if selection_criteria not in samplesheet.VALID_SELECTION_CRITERIA:
