@@ -1,6 +1,6 @@
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext.domain import Container
-from clarity_ext_scripts.covid.label_printer import label_printer
+from clarity_ext_scripts.covid_seq.label_printer import label_printer
 import datetime
 
 
@@ -32,7 +32,7 @@ class Extension(GeneralExtension):
 
         contents = label_printer.contents
         upload_packet = [(file_name, contents)]
-        self.context.file_service.upload_files("PREXT and Biobank barcodes", upload_packet)
+        self.context.file_service.upload_files("Zebra barcodes file", upload_packet)
 
     def integration_tests(self):
         yield self.test("24-44013", commit=False)
