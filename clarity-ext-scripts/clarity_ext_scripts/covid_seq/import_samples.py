@@ -88,6 +88,7 @@ class Extension(BaseCreateSamplesExtension):
                 project, 
                 sample_specifier,
             )
+            substance.udf_map.force("Step ID created in", self.context.current_step.id)
             substance.udf_map.force("Region code", region_code)
             substance.udf_map.force("Lab code", lab_code)
             substance.udf_map.force("Selection criteria", selection_criteria)
@@ -99,8 +100,6 @@ class Extension(BaseCreateSamplesExtension):
             substance.udf_map.force("Ct_3", ct_values[2])
             substance.udf_map.force("Ct_4", ct_values[3])
             substance.udf_map.force("Ct_5", ct_values[4])
-            substance.udf_map.force(
-                "Step ID created in", self.context.current_step.id)
             container[well] = substance
         return container
 
@@ -119,8 +118,7 @@ class Extension(BaseCreateSamplesExtension):
         except AttributeError:
             udf_container_log = ""
         if udf_container_log and not force:
-            raise AssertionError(
-                "Samples have already been created in this step")
+            self.usage_error("Samples have already been created in this step")
 
         container_log = list()
 
