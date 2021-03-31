@@ -1,6 +1,9 @@
 import os
+import logging
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
+
+logger = logging.getLogger(__name__)
 
 VALID_PRIMER_MIXES = [
     "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
@@ -30,12 +33,13 @@ class Extension(GeneralExtension):
     def execute(self):
         selected_primer_mix = self.context.current_step.udf_dual_barcode_primer_id
         primer_mix_df = self.parse_primer_mix(selected_primer_mix)
-        primer_mix = primer_mix_df.to_dict(orient="index")
+        primer_map = primer_mix_df.to_dict(orient="index")
 
         for artifact in self._all_outputs:
             well = str(artifact.well.position).replace(":", "")
-            artifact.udf_map.force("Adapter id forward", str(primer_mix[well]["barcode"]))
-            artifact.udf_map.force("Adapter id reverse", str(primer_mix[well]["barcode"]))
+            artifact.udf_map.force("Adapter id forward", str(primer_map[well]["barcode"]))
+            artifact.udf_map.force("Adapter id reverse", str(primer_map[well]["barcode"]))
+            self.context.update(artifact)
 
     @property
     def _all_outputs(self):
