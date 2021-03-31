@@ -37,9 +37,10 @@ class Extension(GeneralExtension):
 
         for artifact in self._all_outputs:
             well = str(artifact.well.position).replace(":", "")
-            artifact.udf_map.force("Adapter id forward", str(primer_map[well]["barcode"]))
-            artifact.udf_map.force("Adapter id reverse", str(primer_map[well]["barcode"]))
-            self.context.update(artifact)
+            original_sample = artifact.sample()
+            original_sample.udf_map.force("Adapter id forward", str(primer_map[well]["barcode"]))
+            original_sample.udf_map.force("Adapter id reverse", str(primer_map[well]["barcode"]))
+            self.context.update(original_sample)
 
     @property
     def _all_outputs(self):
