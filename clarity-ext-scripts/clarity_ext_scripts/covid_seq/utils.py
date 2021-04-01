@@ -26,8 +26,8 @@ class DNBSEQ_DB():
         self.db = sa.create_engine(url=db_url)
         self.session = Session(self.db)
 
-    def upload_samplesheet(self, sequencer_id, flowcell_id, samplesheet):
-        """Upload samplesheet to postgresql DB
+    def submit_samplesheet(self, sequencer_id, flowcell_id, samplesheet):
+        """Submit samplesheet to postgresql DB
         """
         today = datetime.today().strftime('%Y-%m-%d')
 
