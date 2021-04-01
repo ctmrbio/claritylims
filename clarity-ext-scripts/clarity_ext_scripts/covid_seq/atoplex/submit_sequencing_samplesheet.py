@@ -16,8 +16,8 @@ class Extension(GeneralExtension):
 
         samplesheet_data = self.generate_samplesheet_data()
 
-        self.db.submit_samplesheet(
-            self.sequencer_id,
-            self.flowcell_id,
-            samplesheet_data,
-        )
+        #self.db.submit_samplesheet(
+        #    self.sequencer_id,
+        #    self.flowcell_id,
+        #    samplesheet_data,
+        #)

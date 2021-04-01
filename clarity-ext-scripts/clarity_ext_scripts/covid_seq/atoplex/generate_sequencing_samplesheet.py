@@ -60,7 +60,7 @@ class Extension(GeneralExtension):
         for row in samplesheet_data:
             writer.writerow(row)
 
-        filename = "{}_{}_{}.tsv".format(
+        filename = "DNBSEQ_{}_{}_{}.tsv".format(
             self.date,
             self.sequencer_id,
             self.context.current_step.udf_flowcell_id,
