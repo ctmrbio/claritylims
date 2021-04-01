@@ -45,7 +45,7 @@ class DNBSEQ_DB():
         try:
             self.session.flush()
         except sa.exc.IntegrityError as e:
-            raise DBIntegrityError("Samplesheet already exists in DB")
+            raise DBIntegrityError("Samplesheet already exists in DB. Did you run this twice?")
 
         samples = [
             self.Sample(
@@ -69,7 +69,7 @@ class DNBSEQ_DB():
             self.session.flush()
             self.session.commit()
         except sa.exc.SQLAlchemyError as e:
-            raise DBError("Cannot submit samplesheet to database: {}".format(
+            raise DBError("Cannot submit samplesheet to database: {}.".format(
                 e
             ))
         
