@@ -100,7 +100,7 @@ class Extension(BaseCreateSamplesExtension):
             substance.udf_map.force("Ct_3", ct_values[2])
             substance.udf_map.force("Ct_4", ct_values[3])
             substance.udf_map.force("Ct_5", ct_values[4])
-            substance.udf_map.force("Well", well)
+            substance.udf_map.force("well_id", well)
             container[well] = substance
         return container
 
