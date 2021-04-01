@@ -20,13 +20,14 @@ class Extension(GeneralExtension):
         try:
             sequencer_name = self.context.current_step.udf_sequencer_name
         except AttributeError:
-            self.usage_error("Sequencer name must be set.")
+            self.usage_error_defer("Sequencer name must be set.")
+            sequencer_name = ""
         self.sequencer_id = self.db._get_sequencer_id(sequencer_name)
 
         try: 
             self.flowcell_id = self.context.current_step.udf_flowcell_id
         except AttributeError:
-            self.usage_error("Flowcell ID not filled in.")
+            self.usage_error_defer("Flowcell ID not filled in.")
 
         samplesheet_data = self.generate_samplesheet_data()
         self.upload_samplesheet(samplesheet_data)

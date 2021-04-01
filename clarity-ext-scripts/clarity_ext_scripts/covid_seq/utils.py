@@ -63,7 +63,10 @@ class DNBSEQ_DB():
         sequencer = self.session\
             .query(self.Sequencer)\
             .filter_by(alias=sequencer_name).first()
-        return sequencer.sequencer_id
+        if sequencer:
+            return sequencer.sequencer_id
+        else:
+            return None
 
     class Sequencer(Base):
         __tablename__ = "DNBSEQ_instrument"
