@@ -38,7 +38,7 @@ class Extension(GeneralExtension):
             samplesheet_data,
         )
 
-    def enerate_samplesheet_data(self):
+    def generate_samplesheet_data(self):
         """
         Generate a list of dicts representing samplesheet rows
         """
