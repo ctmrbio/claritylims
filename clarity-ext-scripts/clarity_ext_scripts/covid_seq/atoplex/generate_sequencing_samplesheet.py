@@ -38,6 +38,8 @@ class Extension(GeneralExtension):
                 self.flowcell_id,
                 samplesheet_data,
             )
+        except DBIntegrityError as e:
+            self.usage_error(e)
         except DBError as e:
             self.usage_error(e)
 

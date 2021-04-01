@@ -15,6 +15,8 @@ Base = declarative_base()
 
 class DBError(Exception):
     pass
+class DBIntegrityError(DBError):
+    pass
 
 class DNBSEQ_DB():
     """Connect to DNBSEQ Postgresql DB
@@ -42,10 +44,8 @@ class DNBSEQ_DB():
         self.session.add(samplesheet_upload_date)
         try:
             self.session.flush()
-        except sa.exc.SQLAlchemyError as e:
-            raise DBError("Cannot submit samplesheet to database: {}".format(
-                e
-            ))
+        except sa.exc.IntegrityError as e:
+            raise DBIntegrityError("Samplesheet already exists in DB")
 
         samples = [
             self.Sample(
