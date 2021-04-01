@@ -1,6 +1,6 @@
 import logging
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext_scripts.covid_seq.atoplex.generate_sequencing_samplesheet import DNBSEQ_DB
+from clarity_ext_scripts.covid_seq.utils import DNBSEQ_DB
 
 logger = logging.getLogger(__name__)
 
