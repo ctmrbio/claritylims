@@ -17,12 +17,15 @@ class Extension(GeneralExtension):
 
         self.db = DNBSEQ_DB()
 
-        sequencer_name = self.context.current_step.udf_sequencer_name
-        if not sequencer_name:
+        try:
+            sequencer_name = self.context.current_step.udf_sequencer_name
+        except AttributeError:
             self.usage_error("Sequencer name must be set.")
         self.sequencer_id = self.db._get_sequencer_id(sequencer_name)
-        self.flowcell_id = self.context.current_step.udf_flowcell_id
-        if not self.flowcell_id:
+
+        try: 
+            self.flowcell_id = self.context.current_step.udf_flowcell_id
+        except AttributeError:
             self.usage_error("Flowcell ID not filled in.")
 
         samplesheet_data = self.generate_samplesheet_data()
@@ -34,7 +37,9 @@ class Extension(GeneralExtension):
         """
         sheet = []
         for pool in set(self._all_outputs):
-            if not pool.udf_lane_id:
+            try:
+                pool.udf_lane_id
+            except AttributeError:
                 self.usage_error("Pool {} has not been assigned a lane id!")
             for row_id, sample in enumerate(pool.samples, start=1):
                 row = OrderedDict()
