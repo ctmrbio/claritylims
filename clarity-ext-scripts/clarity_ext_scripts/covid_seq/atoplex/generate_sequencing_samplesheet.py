@@ -40,7 +40,9 @@ class Extension(GeneralExtension):
             try:
                 pool.udf_lane_id
             except AttributeError:
-                self.usage_error("Pool {} has not been assigned a lane id!")
+                self.usage_error("Pool {} has not been assigned a lane id!".format(
+                    pool.name
+                ))
             for row_id, sample in enumerate(pool.samples, start=1):
                 row = OrderedDict()
                 row["row_id"] = row_id
