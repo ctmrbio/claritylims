@@ -13,6 +13,9 @@ config = load_config()
 
 Base = declarative_base()
 
+class DBError(Exception):
+    pass
+
 class DNBSEQ_DB():
     """Connect to DNBSEQ Postgresql DB
 
@@ -37,7 +40,12 @@ class DNBSEQ_DB():
             samplesheet_uploaded=now,
         )
         self.session.add(samplesheet_upload_date)
-        self.session.flush()
+        try:
+            self.session.flush()
+        except sa.exc.IntegrityError as e:
+            raise DBError("Cannot submit samplesheet to database: {}".format(
+                e
+            ))
 
         samples = [
             self.Sample(
@@ -57,8 +65,13 @@ class DNBSEQ_DB():
         ]
         self.session.add_all(samples)
 
-        self.session.flush()
-        self.session.commit()
+        try:
+            self.session.flush()
+            self.session.commit()
+        except sa.exc.IntegrityError as e:
+            raise DBError("Cannot submit samplesheet to database: {}".format(
+                e
+            ))
         
     def _get_sequencer_id(self, sequencer_name):
         sequencer = self.session\

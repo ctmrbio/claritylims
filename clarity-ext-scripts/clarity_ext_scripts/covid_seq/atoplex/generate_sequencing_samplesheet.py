@@ -3,7 +3,7 @@ import csv
 from cStringIO import StringIO
 from collections import OrderedDict
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext_scripts.covid_seq.utils import DNBSEQ_DB
+from clarity_ext_scripts.covid_seq.utils import DNBSEQ_DB, DBError
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +32,15 @@ class Extension(GeneralExtension):
         samplesheet_data = self.generate_samplesheet_data()
         self.upload_samplesheet(samplesheet_data)
 
-        self.db.submit_samplesheet(
-            self.sequencer_id,
-            self.flowcell_id,
-            samplesheet_data,
-        )
+        try:
+            self.db.submit_samplesheet(
+                self.sequencer_id,
+                self.flowcell_id,
+                samplesheet_data,
+            )
+        except DBError as e:
+            self.usage_error(e)
+
 
     def generate_samplesheet_data(self):
         """
