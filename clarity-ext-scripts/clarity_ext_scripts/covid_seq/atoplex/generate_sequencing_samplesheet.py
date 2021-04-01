@@ -16,9 +16,14 @@ class Extension(GeneralExtension):
         self.date = start.strftime("%Y%m%d")
 
         self.db = DNBSEQ_DB()
+
         sequencer_name = self.context.current_step.udf_sequencer_name
+        if not sequencer_name:
+            self.usage_error("Sequencer name must be set.")
         self.sequencer_id = self.db._get_sequencer_id(sequencer_name)
         self.flowcell_id = self.context.current_step.udf_flowcell_id
+        if not self.flowcell_id:
+            self.usage_error("Flowcell ID not filled in.")
 
         samplesheet_data = self.generate_samplesheet_data()
         self.upload_samplesheet(samplesheet_data)
@@ -29,13 +34,15 @@ class Extension(GeneralExtension):
         """
         sheet = []
         for pool in set(self._all_outputs):
+            if not pool.udf_lane_id:
+                self.usage_error("Pool {} has not been assigned a lane id!")
             for row_id, sample in enumerate(pool.samples, start=1):
                 row = OrderedDict()
                 row["row_id"] = row_id
                 row["sample_id"] = sample.name
                 row["project_id"] = sample.project.name
                 row["lims_id"] = sample.id
-                row["well"] =  sample.udf_well_id
+                row["well"] = sample.udf_well_id
                 row["adapter_id"] = sample.udf_adapter_id_forward
                 row["adapter_id_reverse"] = sample.udf_adapter_id_reverse
                 row["sequencer_id"] = self.sequencer_id
