@@ -4,7 +4,6 @@ from cStringIO import StringIO
 from collections import OrderedDict
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid_seq.utils import DNBSEQ_DB
-from clarity_ext.cli import load_config
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +23,6 @@ class Extension(GeneralExtension):
         samplesheet_data = self.generate_samplesheet_data()
         self.upload_samplesheet(samplesheet_data)
 
-        self.db.submit_samplesheet(
-            self.sequencer_id,
-            self.flowcell_id,
-            samplesheet_data,
-        )
-
     def generate_samplesheet_data(self):
         """
         Generate a list of dicts representing samplesheet rows
@@ -38,7 +31,7 @@ class Extension(GeneralExtension):
         for pool in set(self._all_outputs):
             for row_id, sample in enumerate(pool.samples, start=1):
                 row = OrderedDict()
-                row["row_id"] = idx
+                row["row_id"] = row_id
                 row["sample_id"] = sample.name
                 row["project_id"] = sample.project.name
                 row["lims_id"] = sample.id
