@@ -32,7 +32,7 @@ class DNBSEQ_DB():
     def submit_samplesheet(self, sequencer_id, flowcell_id, samplesheet):
         """Submit samplesheet to postgresql DB
         """
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%s')
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         samplesheet_upload_date = self.Status(
             sequencer_id=sequencer_id, 
