@@ -32,7 +32,13 @@ class Extension(GeneralExtension):
         samplesheet_data = self.generate_samplesheet_data()
         self.upload_samplesheet(samplesheet_data)
 
-    def generate_samplesheet_data(self):
+        self.db.submit_samplesheet(
+            self.sequencer_id,
+            self.flowcell_id,
+            samplesheet_data,
+        )
+
+    def enerate_samplesheet_data(self):
         """
         Generate a list of dicts representing samplesheet rows
         """
