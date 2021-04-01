@@ -42,7 +42,7 @@ class DNBSEQ_DB():
         self.session.add(samplesheet_upload_date)
         try:
             self.session.flush()
-        except sa.exc.IntegrityError as e:
+        except sa.exc.SQLAlchemyError as e:
             raise DBError("Cannot submit samplesheet to database: {}".format(
                 e
             ))
@@ -68,7 +68,7 @@ class DNBSEQ_DB():
         try:
             self.session.flush()
             self.session.commit()
-        except sa.exc.IntegrityError as e:
+        except sa.exc.SQLAlchemyError as e:
             raise DBError("Cannot submit samplesheet to database: {}".format(
                 e
             ))
