@@ -32,17 +32,11 @@ class Extension(GeneralExtension):
         samplesheet_data = self.generate_samplesheet_data()
         self.upload_samplesheet(samplesheet_data)
 
-        try:
-            self.db.submit_samplesheet(
-                self.sequencer_id,
-                self.flowcell_id,
-                samplesheet_data,
-            )
-        except DBIntegrityError as e:
-            self.usage_error(e)
-        except DBError as e:
-            self.usage_error(e)
-
+        self.db.submit_samplesheet(
+            self.sequencer_id,
+            self.flowcell_id,
+            samplesheet_data,
+        )
 
     def generate_samplesheet_data(self):
         """

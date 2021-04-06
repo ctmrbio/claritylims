@@ -3,6 +3,8 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import psql_insert
+from sqlalchemy.inspection import inspect
 from sqlalchemy.ext.declarative import declarative_base
 
 from clarity_ext.cli import load_config
@@ -36,42 +38,29 @@ class DNBSEQ_DB():
         """
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        samplesheet_upload_date = self.Status(
-            sequencer_id=sequencer_id, 
-            flowcell_id=flowcell_id, 
-            samplesheet_uploaded=now,
+        status = self._upsert(self.Status, 
+            [{
+                "sequencer_id": sequencer_id,
+                "flowcell_id": flowcell_id,
+                "samplesheet_uploaded": now,
+            }],
         )
-        self.session.add(samplesheet_upload_date)
-        try:
-            self.session.flush()
-        except sa.exc.IntegrityError as e:
-            raise DBIntegrityError("Samplesheet already exists in DB. Did you run this twice?")
+        samples = self._upsert(self.Sample, samplesheet)
 
-        samples = [
-            self.Sample(
-                sample_id=row["sample_id"],
-                project_id=row["project_id"],
-                flowcell_id=row["flowcell_id"],
-                row_id=row["row_id"],
-                lims_id=row["lims_id"],
-                PCR_well=row["well"],
-                adapter_id=row["adapter_id"],
-                adapter_id_reverse=row["adapter_id_reverse"],
-                sequencer_id=row["sequencer_id"],
-                lane_id=row["lane_id"], 
-                pool_id=row["pool_id"],
-            )
-            for row in samplesheet
-        ]
-        self.session.add_all(samples)
 
-        try:
-            self.session.flush()
-            self.session.commit()
-        except sa.exc.SQLAlchemyError as e:
-            raise DBError("Cannot submit samplesheet to database: {}.".format(
-                e
-            ))
+    def _upsert(self, table, records):
+        primary_keys = [key.name for key in inspect(table).primary_key]
+
+        insert_statement = psql_insert(table).values(records)
+
+        upsert_statement = insert_statement.on_conflict_do_update(
+            index_elements=primary_keys,
+            set_=dict(data=insert_statement.excluded.data)
+        )
+
+        with self.db.connect() as conn:
+            return conn.execute(upsert_statement)
+
         
     def _get_sequencer_id(self, sequencer_name):
         sequencer = self.session\
