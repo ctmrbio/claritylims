@@ -6,7 +6,7 @@ from clarity_ext.extensions import GeneralExtension
 logger = logging.getLogger(__name__)
 
 VALID_PRIMER_MIXES = [
-    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+    "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
 ]
 
 class Extension(GeneralExtension):
