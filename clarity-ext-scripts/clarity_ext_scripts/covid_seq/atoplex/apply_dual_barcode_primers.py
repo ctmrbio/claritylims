@@ -42,6 +42,10 @@ class Extension(GeneralExtension):
             original_sample.udf_map.force("Adapter id reverse", str(primer_map[well]["barcode"]))
             self.context.update(original_sample)
 
+        for in_cont, out_cont in self.context.containers:
+            out_cont.name = "{}_library".format(in_cont.name)
+            self.context.update(out_cont)
+
     @property
     def _all_outputs(self):
         return [artifact for _, artifact in self.context.artifact_service.all_aliquot_pairs()]
