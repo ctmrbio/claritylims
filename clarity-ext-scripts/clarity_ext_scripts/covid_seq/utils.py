@@ -51,7 +51,7 @@ class DNBSEQ_DB():
         samplesheet_corrected = []
         for row in samplesheet:
             row["PCR_well"] = row.pop("well")
-            samplesheet_corrected.insert(row)
+            samplesheet_corrected.append(row)
         samples = self._upsert(self.Sample, samplesheet_corrected)
 
 
