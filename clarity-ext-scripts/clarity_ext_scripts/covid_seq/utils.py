@@ -32,7 +32,7 @@ class DNBSEQ_DB():
         """
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        status = self._upsert(self.Status, 
+        status = self._upsert(self.Status,
             [{
                 "sequencer_id": sequencer_id,
                 "flowcell_id": flowcell_id,
