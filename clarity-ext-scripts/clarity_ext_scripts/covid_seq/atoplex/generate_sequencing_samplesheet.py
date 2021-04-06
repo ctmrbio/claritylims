@@ -3,7 +3,7 @@ import csv
 from cStringIO import StringIO
 from collections import OrderedDict
 from clarity_ext.extensions import GeneralExtension
-from clarity_ext_scripts.covid_seq.utils import DNBSEQ_DB, DBError, DBIntegrityError
+from clarity_ext_scripts.covid_seq.utils import DNBSEQ_DB
 
 logger = logging.getLogger(__name__)
 

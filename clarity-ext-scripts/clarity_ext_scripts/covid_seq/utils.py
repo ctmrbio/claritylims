@@ -15,18 +15,12 @@ config = load_config()
 
 Base = declarative_base()
 
-class DBError(Exception):
-    pass
-class DBIntegrityError(DBError):
-    pass
-
 class DNBSEQ_DB():
     """Connect to DNBSEQ Postgresql DB
 
     Requires configuration in ~/.config/clarity-ext/clarity-ext.config:
         dnbseq_db_url: postgresql://username:password@c1-ctmr-db.ki.se:5431
     """
-
 
     def __init__(self):
         db_url = config["dnbseq_db_url"]
