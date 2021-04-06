@@ -52,11 +52,19 @@ class DNBSEQ_DB():
         primary_keys = [key.name for key in inspect(table).primary_key]
 
         insert_statement = psql_insert(table).values(records)
+        logger.info(insert_statement.compile())
+
+        update_dict = {
+            c.name: c
+            for c in insert_statement.excluded
+        }
+        logger.info(update_dict)
 
         upsert_statement = insert_statement.on_conflict_do_update(
             index_elements=primary_keys,
-            set_=dict(data=insert_statement.excluded.data)
+            set_=update_dict,
         )
+        logger.info(upsert_statement.compile())
 
         with self.db.connect() as conn:
             return conn.execute(upsert_statement)
