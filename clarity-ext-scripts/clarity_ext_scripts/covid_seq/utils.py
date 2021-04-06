@@ -3,7 +3,7 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.postgresql import psql_insert
+from sqlalchemy.dialects.postgresql import insert as psql_insert
 from sqlalchemy.inspection import inspect
 from sqlalchemy.ext.declarative import declarative_base
 
