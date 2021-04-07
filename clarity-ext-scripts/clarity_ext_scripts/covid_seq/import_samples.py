@@ -12,10 +12,10 @@ class Extension(BaseCreateSamplesExtension):
         * Biobank plate id: The identifier of the "biobank plate" that is imported
 
     Creates two containers with samples and controls in Clarity:
-        COVID_SEQ_<biobank_plate_id>_PREXT_<time>
+        NPCSEQ_<biobank_plate_id>_PREXT_<time>
             <sample_name_in_csv>_<region_code_in_csv>_<lab_code_in_csv>_<timestamp w sec>
             ...
-        COVID_SEQ_<date>_BIOBANK_<time>
+        NPCSEQ_<date>_BIOBANK_<time>
             <sample_name_in_csv>_<region_code_in_csv>_<lab_code_in_csv>_<timestamp w sec>_BIOBANK
             ...
     """
@@ -43,7 +43,7 @@ class Extension(BaseCreateSamplesExtension):
 
         The name of the container will be on the form:
 
-           COVID_SEQ_<biobank_plate_id>_<container_specifier>_<time to sec>
+           NPCSEQ_<biobank_plate_id>_<container_specifier>_<time to sec>
 
         The name of the samples will be:
 
@@ -58,7 +58,7 @@ class Extension(BaseCreateSamplesExtension):
 
         # 2. Create a 96 well plate in memory:
         container_type = "96 well plate"
-        name = "COVID_SEQ_{}_{}_{}".format(
+        name = "NPCSEQ_{}_{}_{}".format(
             biobank_plate_id, container_specifier, timestamp)
         container = Container(container_type=container_type, name=name)
 
