@@ -61,7 +61,7 @@ class Extension(GeneralExtension):
                     row["adapter_id_reverse"] = sample.udf_adapter_id_reverse
                     row["regionkod"] = sample.udf_region_code
                     row["labkod"] = sample.udf_lab_code
-                    row["internt_labbnumme"] = sample.name
+                    row["internt_labbnummer"] = sample.name.split("_")[0]
                     row["selection_criteria"] = sample.udf_selection_criteria
                 else:
                     row["row_id"] = row_id
