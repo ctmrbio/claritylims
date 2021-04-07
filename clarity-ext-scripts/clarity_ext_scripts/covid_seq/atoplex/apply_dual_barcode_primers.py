@@ -40,10 +40,11 @@ class Extension(GeneralExtension):
             original_sample = artifact.sample()
             original_sample.udf_map.force("Adapter id forward", str(primer_map[well]["barcode"]))
             original_sample.udf_map.force("Adapter id reverse", str(primer_map[well]["barcode"]))
+            original_sample.udf_map.force("Dual barcode primer mix id", str(selected_primer_mix))
             self.context.update(original_sample)
 
         for in_cont, out_cont in self.context.containers:
-            out_cont.name = "{}_library".format(in_cont.name)
+            out_cont.name = "{}_{}_library".format(in_cont.name, selected_primer_mix)
             self.context.update(out_cont)
 
     @property
