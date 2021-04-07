@@ -40,13 +40,7 @@ class DNBSEQ_DB():
             }],
         )
 
-        # The DB column is called "PCR_well", but the row key is "well"
-        # so we need to modify it before inserting into the DB
-        samplesheet_corrected = []
-        for row in samplesheet:
-            row["PCR_well"] = row.pop("well")
-            samplesheet_corrected.append(row)
-        samples = self._upsert(self.Sample, samplesheet_corrected)
+        samples = self._upsert(self.Sample, samplesheet)
 
 
     def _upsert(self, table, records):

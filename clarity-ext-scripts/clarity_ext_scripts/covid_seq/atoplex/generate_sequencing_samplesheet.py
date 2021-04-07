@@ -29,16 +29,16 @@ class Extension(GeneralExtension):
         except AttributeError:
             self.usage_error_defer("Flowcell ID not filled in.")
 
-        samplesheet_data = self.generate_samplesheet_data()
+        samplesheet_data = self.generate_samplesheet_data(mode="gensam")
         self.upload_samplesheet(samplesheet_data)
 
         self.db.submit_samplesheet(
             self.sequencer_id,
             self.flowcell_id,
-            samplesheet_data,
+            self.generate_samplesheet_data(),
         )
 
-    def generate_samplesheet_data(self):
+    def generate_samplesheet_data(self, mode=""):
         """
         Generate a list of dicts representing samplesheet rows
         """
@@ -52,17 +52,29 @@ class Extension(GeneralExtension):
                 ))
             for row_id, sample in enumerate(pool.samples, start=1):
                 row = OrderedDict()
-                row["row_id"] = row_id
-                row["sample_id"] = sample.name
-                row["project_id"] = sample.project.name
-                row["lims_id"] = sample.id
-                row["well"] = sample.udf_well_id
-                row["adapter_id"] = sample.udf_adapter_id_forward
-                row["adapter_id_reverse"] = sample.udf_adapter_id_reverse
-                row["sequencer_id"] = self.sequencer_id
-                row["flowcell_id"] = self.flowcell_id
-                row["lane_id"] = pool.udf_lane_id
-                row["pool_id"] = pool.name
+                if mode == "gensam":
+                    row["sample_id"] = sample.name
+                    row["sequencer_id"] = self.sequencer_id
+                    row["flowcell_id"] = self.flowcell_id
+                    row["lane_id"] = pool.udf_lane_id
+                    row["adapter_id_forward"] = sample.udf_adapter_id_forward
+                    row["adapter_id_reverse"] = sample.udf_adapter_id_reverse
+                    row["regionkod"] = sample.udf_region_code
+                    row["labkod"] = sample.udf_lab_code
+                    row["internt_labbnumme"] = sample.name
+                    row["selection_criteria"] = sample.udf_selection_criteria
+                else:
+                    row["row_id"] = row_id
+                    row["sample_id"] = sample.name
+                    row["project_id"] = sample.project.name
+                    row["lims_id"] = sample.id
+                    row["PCR_well"] = sample.udf_well_id
+                    row["adapter_id"] = sample.udf_adapter_id_forward
+                    row["adapter_id_reverse"] = sample.udf_adapter_id_reverse
+                    row["sequencer_id"] = self.sequencer_id
+                    row["flowcell_id"] = self.flowcell_id
+                    row["lane_id"] = pool.udf_lane_id
+                    row["pool_id"] = pool.name
                 sheet.append(row)
         return sheet
 
