@@ -4,6 +4,7 @@ from cStringIO import StringIO
 from collections import OrderedDict
 from clarity_ext.extensions import GeneralExtension
 from clarity_ext_scripts.covid_seq.utils import DNBSEQ_DB
+import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +33,17 @@ class Extension(GeneralExtension):
         samplesheet_data = self.generate_samplesheet_data(mode="gensam")
         self.upload_samplesheet(samplesheet_data)
 
-        self.db.submit_samplesheet(
-            self.sequencer_id,
-            self.flowcell_id,
-            self.generate_samplesheet_data(),
-        )
+        try:
+            self.db.submit_samplesheet(
+                self.sequencer_id,
+                self.flowcell_id,
+                self.generate_samplesheet_data(),
+            )
+        except sa.exc.DataError as e:
+            logging.error(e)
+            self.usage_error("Unable to submit data to db: {}".format(
+                e
+            ))
 
     def generate_samplesheet_data(self, mode=""):
         """
