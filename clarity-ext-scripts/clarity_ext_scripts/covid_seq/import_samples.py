@@ -20,12 +20,9 @@ class Extension(BaseCreateSamplesExtension):
             ...
     """
 
-    def create_sample(self, sample_id, region_code, lab_code, 
-            timestamp, project, specifier=""):
+    def create_sample(self, sample_id, timestamp, project, specifier=""):
         name = [
             sample_id,
-            region_code,
-            lab_code,
             timestamp,
         ]
         if specifier:
@@ -66,40 +63,16 @@ class Extension(BaseCreateSamplesExtension):
         for _, row in samplesheet.csv.iterrows():
             well = row[samplesheet.COLUMN_WELL]
             sample_id = row[samplesheet.COLUMN_SAMPLE_ID]
-            region_code = row[samplesheet.COLUMN_REGION_CODE]
-            lab_code = row[samplesheet.COLUMN_LAB_CODE]
-            selection_criteria = row[samplesheet.COLUMN_SELECTION_CRITERIA]
-            selection_criteria_detail = row[samplesheet.COLUMN_SELECTION_CRITERIA_DETAIL]
-            biobank_plate_id = row[samplesheet.COLUMN_BIOBANK_PLATE_ID]
-            biobank_tube_id = row[samplesheet.COLUMN_BIOBANK_TUBE_ID]
-            ct_values = [
-                row[samplesheet.COLUMN_CT_1],
-                row[samplesheet.COLUMN_CT_2],
-                row[samplesheet.COLUMN_CT_3],
-                row[samplesheet.COLUMN_CT_4],
-                row[samplesheet.COLUMN_CT_5],
-            ]
+            biobank_plate_id = row[samplesheet.COLUMN_RACK_ID]
 
             substance = self.create_sample(
                 sample_id, 
-                region_code,
-                lab_code,
                 timestamp, 
                 project, 
                 sample_specifier,
             )
             substance.udf_map.force("Step ID created in", self.context.current_step.id)
-            substance.udf_map.force("Region code", region_code)
-            substance.udf_map.force("Lab code", lab_code)
-            substance.udf_map.force("Selection criteria", selection_criteria)
-            substance.udf_map.force("Selection criteria detail", selection_criteria_detail)
             substance.udf_map.force("Biobank plate id", biobank_plate_id)
-            substance.udf_map.force("Biobank tube id", biobank_tube_id)
-            substance.udf_map.force("Ct_1", ct_values[0])
-            substance.udf_map.force("Ct_2", ct_values[1])
-            substance.udf_map.force("Ct_3", ct_values[2])
-            substance.udf_map.force("Ct_4", ct_values[3])
-            substance.udf_map.force("Ct_5", ct_values[4])
             substance.udf_map.force("Well id", well)
             container[well] = substance
         return container
@@ -129,7 +102,7 @@ class Extension(BaseCreateSamplesExtension):
 
         # 2. Read the samples from the uploaded csv and ensure they are valid
         valid_biobank_plate_id = self.context.current_step.udf_biobank_plate_id
-        validated_samplesheet = self.validate_samplesheet(valid_biobank_plate_id)
+        validated_samplesheet = self.validate_tecan_file(valid_biobank_plate_id)
 
         # 3. Create the two plates in memory
         prext_plate = self.create_in_mem_container(
