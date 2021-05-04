@@ -3,7 +3,7 @@
 Contains classes that are common to the workflow for creating samples.
 """
 import logging
-from uuid import uuid4
+import cStringIO
 from collections import defaultdict
 import pandas as pd
 from clarity_ext.extensions import GeneralExtension
@@ -44,6 +44,51 @@ class PandasWrapper(object):
         If required in subclasses, return a new file_like that has been filtered
         """
         return file_like
+
+
+class TecanFile(PandasWrapper):
+    """
+    Describes the structure of the CSV file that is generated when plating samples 
+    in the Tecan Fluent pipetting robot.
+    """
+    FILE_HANDLE = "Tecan file"
+
+    COLUMN_RACK_ID = "Rack Id"
+    COLUMN_WELL = "Cavity Id"
+    COLUMN_POSITION = "Position"
+    COLUMN_SAMPLE_ID = "Sample Id"
+
+    HEADERS = [
+        COLUMN_RACK_ID ,
+        COLUMN_WELL,
+        COLUMN_POSITION,
+        COLUMN_SAMPLE_ID,
+        "CONCENTRATION",
+        "CONCENTRATIONUNIT",
+        "VOLUME",
+        "USERDEFINED1",
+        "USERDEFINED2",
+        "USERDEFINED3",
+        "USERDEFINED4",
+        "USERDEFINED5",
+        "PlateErrors",
+        "SampleErrors",
+        "SAMPLEINSTANCEID",
+        "SAMPLEID",
+    ]
+
+    STOP_AT_LINE = "Sample Tracking Report Name"
+
+    @staticmethod
+    def filter_before_parse(file_like):
+        filtered = cStringIO.StringIO()
+
+        for line in file_like:
+            if self.STOP_AT_LINE in line:
+                break
+            filtered.write(line + "\n")
+        filtered.seek(0)
+        return filtered
 
 
 class SamplesheetFile(PandasWrapper):
@@ -153,12 +198,59 @@ class SamplesheetFile(PandasWrapper):
 
 
 class BaseCreateSamplesExtension(GeneralExtension):
+    def validate_tecan_file(self, valid_biobank_plate_id=""):
+        """
+        Validate Tecan file and raise error if it's not valid.
+        """
+        tecan_file = TecanFile.create_from_context(self.context)
+
+        errors = list()
+        if not valid_biobank_plate_id:
+            errors.append("No Biobank plate id entered in step!")
+
+        observed_wells = defaultdict(int)
+        observed_sample_ids = defaultdict(int)
+        observed_rack_ids = set()
+        for idx, row in tecan_file.csv.iterrows():
+            well = row[tecan_file.COLUMN_WELL]
+            sample_id = row[tecan_file.COLUMN_SAMPLE_ID]
+            rack_id = row[tecan_file.COLUMN_RACK_ID]
+
+            # TODO: Add proper validation of input data
+            if not well:
+                errors.append("Row {}, no data for well: {}!".format(idx, well))
+            if not sample_id:
+                errors.append("Row {}, no data for sample_id: {}!".format(idx, sample_id))
+            if not rack_id:
+                errors.append("Row {}, no data for rack_id: {}!".format(idx, rack_id))
+
+            observed_wells[well] += 1
+            observed_sample_ids[sample_id] += 1
+
+            if observed_wells[well] > 1:
+                errors.append("{} exists more than once!".format(well))
+            if observed_sample_ids[sample_id] > 1:
+                errors.append("{} exists more than once!".format(sample_id))
+
+            observed_rack_ids.add(rack_id)
+
+        if len(rack_ids) > 1:
+            errors.append("More than one rack_id in file: {}!".format(rack_ids))
+
+        if len(errors) > 0:
+            msg = "There are {} errors in the tecan file. " \
+                "Please check the input file and try again. " \
+                "{}".format(
+                    len(errors), errors)
+            self.usage_error(msg)
+
+        return tecan_file
+
     def validate_samplesheet(self, valid_biobank_plate_id=""):
         """
         Validate samplesheet and raise error if it's not valid.
         """
-        samplesheet = SamplesheetFile.create_from_context(
-            self.context)
+        samplesheet = SamplesheetFile.create_from_context(self.context)
 
         errors = list()
         if not valid_biobank_plate_id:
